@@ -43,6 +43,14 @@ var anim = function (anim) {
 	 * @param {String} label - chapter label
 	 */
 	function setChapter(label) {
+
+		let currentChapter = nodes.app.getAttribute('data-chapter');
+
+		if (currentChapter && currentChapter === label) {
+			return;
+		}
+
+		nodes.app.removeAttribute('data-chapter');
 		nodes.app.setAttribute('data-chapter', label);
 	}
 

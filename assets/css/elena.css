@@ -1,0 +1,154 @@
+.m-story--elena,
+.m-story--elena .tip::before {
+	background: #F4E6BB;
+}
+
+
+/**
+ * Chapter 1
+ * ----------------------
+ */
+
+[data-label="chapter-1"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-1"] [data-label="chapter-1"] .picture {
+	opacity: 1;
+}
+
+.watch-arrow {
+	transform: rotate(360deg);
+}
+
+[data-chapter="chapter-1"] .watch-arrow {
+	transform: none;
+}
+
+[data-chapter="chapter-1"] .pull-right,
+[data-chapter="chapter-1"] .pull-left {
+	transform: none;
+	opacity: 1;
+}
+
+
+/**
+ * Chapter 2
+ * ----------------------
+ */
+
+[data-label="chapter-2"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-2"] [data-label="chapter-2"] .picture {
+	opacity: 1;
+}
+
+[data-chapter="chapter-2"] .pull-up {
+	transform: none;
+	opacity: 1;
+}
+
+[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
+	top: -50px;
+}
+
+/**
+ * Snowlakes
+ */
+.showflakes {
+	transition: 2250ms ease-out;
+	transform: translateY(-50px);
+	will-change: transform;
+}
+
+[data-chapter="chapter-2"] .showflakes {
+	transform: none;
+}
+
+.chpt2-elena {
+	transition: 500ms ease-out;
+	transform: translate3d(50px, 10px, 0);
+	will-change: transform;
+}
+
+.m-story--elena .bubble {
+	opacity: 0;
+	transition: 300ms ease-in;
+}
+
+.m-story--elena .bubble--boy {
+	transition-delay: 1000ms;
+}
+
+.m-story--elena .bubble--small {
+	top: 47%;
+	right: auto;
+	left:  20%;
+	transition-delay: 600ms;
+}
+
+[data-chapter="chapter-2"] .chpt2-elena {
+	transform: none;
+}
+
+
+[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
+	opacity: 1;
+}
+
+
+
+/**
+ * Chapter 3
+ * ----------------------
+ */
+
+[data-label="chapter-3"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-3"] [data-label="chapter-3"] .picture {
+	opacity: 1;
+}
+
+[data-chapter="chapter-3"] .zoom-out,
+[data-chapter="chapter-3"] .zoom-in {
+	transform: none;
+	opacity: 1;
+}
+
+
+
+/**
+ * Chapter 4
+ * ----------------------
+ */
+
+[data-label="chapter-4"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
+	opacity: 1;
+}
+
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+[data-chapter="chapter-4"] .bg-object-move {
+	opacity: 1;
+	transform: none;
+}
+
+
