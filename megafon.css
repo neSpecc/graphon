@@ -1,0 +1,453 @@
+@font-face {
+    font-family: "Megafont";
+    src: url(megafont.woff) format("woff");
+}
+
+.m-story {
+	position: relative;
+	font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+
+}
+
+.m-story--denis,
+.m-story--denis .tip::before {
+	background: #e4b7f4;
+}
+
+/**
+* Left
+* --------------------------
+*/
+.m-story .left {
+	position: fixed;
+	padding: 50px;
+	width: 50%;
+	box-sizing: border-box;
+}
+
+.m-story .name {
+	font-family: "Megafont";
+	font-size: 34px;
+	color: #67008D;
+}
+
+/**
+* Right
+* --------------------------
+*/
+.m-story .right {
+	max-width: 550px;
+	margin-left: 50%;
+	padding: 150px 50px;
+	box-sizing: border-box;
+}
+
+.m-story .picture {
+	position: fixed;
+	left: 0;
+	top: 80px;
+	margin-top: 20px;
+	width: 700px;
+}
+
+@media (max-width: 1390px) {
+	.m-story .picture {
+		width: 640px;
+	}
+}
+
+@media (max-width: 1200px) {
+	.m-story .picture {
+		width: 550px;
+	}
+}
+
+.m-story .picture svg {
+	max-width: 100%;
+	height: auto;
+}
+
+@media (max-width: 1000px) {
+
+	.m-story .left {
+		position: static;
+		width: auto;
+	}
+
+	.m-story .right {
+		margin-left: 0;
+		padding: 0 20px;
+		margin: 0 auto;
+		max-width: 500px;
+	}
+
+	.m-story .picture {
+		opacity: 1 !important;
+		position: static;
+	}
+}
+
+.m-story .hero {
+	padding-bottom: 40px;
+	border-bottom: 3px solid #67008D;
+	font-size: 24px;
+	line-height: 1.5em;
+}
+
+.m-story .chapter {
+	font-size: 18px;
+	line-height: 1.5em;
+}
+
+.m-story .time {
+	margin-top: 40px;
+	margin-bottom: 30px;
+	font-family: "Megafont";
+	font-size: 36px;
+	color: #00B956;
+}
+
+.m-story .tip {
+	position: relative;
+	margin-top: 40px;
+	border: 3px solid #67008D;
+	border-radius: 15px;
+	padding: 35px;
+	color: #67008D;
+}
+
+.m-story .tip::before {
+	content: attr(data-tip);
+	position: absolute;
+	top: -20px;
+	left: 25px;
+	padding: 5px 10px;
+	font-family: "Megafont";
+	color: #67008D;
+	font-size: 20px;
+}
+
+
+/**
+ * Chapters
+ * ----------------------------
+ */
+
+/**
+ *
+ * 7:00
+ * ______________
+ */
+
+[data-label="chapter-7-00"] .picture {
+	opacity: 0;
+}
+
+[data-chapter="chapter-7-00"] [data-label="chapter-7-00"] .picture {
+	opacity: 1;
+}
+
+
+/**
+ * Window
+ */
+.chpt1-window {
+	opacity: 0;
+	will-change: transform, opacity;
+	transition: 250ms ease;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-window {
+	opacity: 1;
+}
+
+/**
+ * Snowlakes
+ */
+.chpt1-showflakes {
+	transition: 2250ms ease-out;
+	transform: translateY(-50px);
+	will-change: transform;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-showflakes {
+	transform: none;
+}
+
+/**
+ * Table
+ */
+.chpt1-table {
+	transition: 600ms ease-in;
+	transform: translateX(-50px);
+	will-change: transform;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-table {
+	transform: none;
+}
+
+/**
+ * Calendar
+ */
+.chpt1-calendar {
+	transition: 400ms ease-in;
+	transform: translateY(-10px);
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-calendar {
+	transform: none;
+	opacity: 1;
+}
+
+/**
+ * Bed
+ */
+.chpt1-bed {
+	transition: 400ms ease-in;
+	transform: translateX(-15px);
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-bed {
+	transform: none;
+	opacity: 1;
+}
+
+/**
+ * Dude
+ */
+.chpt1-dude {
+	transition: 800ms ease-in;
+	opacity: 0;
+	transform: skewX(20deg) skewY(5deg) rotate(-2deg) translateY(-50px) scale(1, 0.5);
+	transform-origin: 20% 80%;
+	will-change: transform, opacity;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-dude {
+	transform: none;
+	opacity: 1;
+}
+
+/**
+ * Light
+ */
+.chpt1-light {
+	transition: 1400ms ease-in;
+	transform: scale(1, 0);
+	transform-origin: 0% 25.4%;
+	opacity: 0;
+	will-change: transform, opacity;
+}
+
+[data-chapter="chapter-7-00"] .chpt1-light {
+	transform: none;
+	opacity: 0.2;
+}
+
+
+
+/**
+ *
+ * 8:50
+ * ______________
+ */
+
+[data-label="chapter-8-50"] .picture {
+	opacity: 0;
+}
+
+[data-chapter="chapter-8-50"] [data-label="chapter-8-50"] .picture {
+	opacity: 1;
+}
+
+/**
+ * BG Objects
+ */
+.chpt2-bg-objects {
+	transition: transform 3000ms ease-out, opacity 200ms ease-in;
+	transform: translateX(-30px);
+	will-change: transform, opacity;
+	opacity: 0
+}
+
+[data-chapter="chapter-8-50"] .chpt2-bg-objects {
+	transform: translateX(30px);
+	opacity: 1;
+}
+
+/**
+ * Bag
+ */
+.chpt2-bag,
+.chpt2-comp {
+	will-change: opacity, transform;
+}
+
+[data-chapter="chapter-8-50"] .chpt2-bag {
+	animation: bounceInDown 250ms;
+}
+
+/**
+ * Computer
+ */
+[data-chapter="chapter-8-50"] .chpt2-comp {
+	animation: bounceInDown 700ms;
+}
+
+@keyframes bounceInDown {
+  from, 60%, 75%, 90%, to {
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -100px, 0);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translate3d(0, 25px, 0);
+  }
+
+  75% {
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    transform: translate3d(0, 5px, 0);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+.chpt2-dude {
+	transition: 450ms ease-in;
+	will-change: opacity;
+	opacity: 0
+}
+
+[data-chapter="chapter-8-50"] .chpt2-dude {
+	opacity: 1;
+}
+
+
+
+/**
+ *
+ * 13:15
+ * ______________
+ */
+[data-label="chapter-13-15"] .picture {
+	opacity: 0;
+}
+
+[data-chapter="chapter-13-15"] [data-label="chapter-13-15"] .picture {
+	opacity: 1;
+}
+
+/**
+ * Dude
+ */
+.chpt3-dude {
+	transition: transform 3000ms ease-out, opacity 200ms ease-in;
+	transform: scale(0.8)
+	will-change: transform, opacity;
+	opacity: 0
+}
+
+[data-chapter="chapter-13-15"] .chpt3-dude {
+	transform: scale(1.05);
+	opacity: 1;
+}
+
+/**
+ * 	14:05;
+ * 	_____________
+ */
+[data-label="chapter-14-05"] .picture {
+	opacity: 0;
+}
+
+[data-chapter="chapter-14-05"] [data-label="chapter-14-05"] .picture {
+	opacity: 1;
+}
+
+/**
+ * Dude
+ */
+.chpt4-dude {
+	transition: transform 3000ms ease-out, opacity 200ms ease-in;
+	transform: scale(0.7);
+	transform-origin: 50% 70%;
+	will-change: transform, opacity;
+	opacity: 0
+}
+
+[data-chapter="chapter-14-05"] .chpt4-dude {
+	transform: scale(1);
+	opacity: 1;
+}
+
+/**
+ * Snowlakes
+ */
+.chpt4-showflakes path:nth-child(even),
+.chpt4-showflakes path:nth-child(odd) {
+	will-change: transform;
+}
+
+.chpt4-showflakes path:nth-child(even) {
+	transition: 4050ms ease-out;
+	transform: translateY(-80px);
+}
+
+.chpt4-showflakes path:nth-child(odd) {
+	transition: 6250ms ease-out;
+	transform: translateY(-100px);
+}
+
+[data-chapter="chapter-14-05"] .chpt4-showflakes path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-14-05"] .chpt4-showflakes path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+
+/**
+ * 	Chapter 5
+ * 	_____________
+ */
+[data-label="chapter-14-30"] .picture {
+	opacity: 0;
+}
+
+[data-chapter="chapter-14-30"] [data-label="chapter-14-30"] .picture {
+	opacity: 1;
+}
+
+[data-chapter="chapter-14-30"] .chpt5-dude{
+	animation: bounceInDown 500ms;
+}
+
+.chpt5-bubble {
+	transition: transform 300ms ease-out, opacity 200ms ease-in;
+	transform: scale(0.8);
+	transform-origin: 70% 20%;
+	transition-delay: 500ms;
+	will-change: transform, opacity;
+	opacity: 0
+}
+
+[data-chapter="chapter-14-30"] .chpt5-bubble {
+	transform: scale(1);
+	opacity: 1;
+}
