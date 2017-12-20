@@ -54,7 +54,7 @@ var anim = function (anim) {
 
 		scrollDebounce = setTimeout(function() {
 			scrollFinished(event);
-		}, 70);
+		}, 30);
 	}
 
 	function scrollFinished(event) {
@@ -69,7 +69,7 @@ var anim = function (anim) {
 
 		resizeDebounce = setTimeout(function() {
 			resizeFinished(event);
-		}, 70);
+		}, 30);
 	}
 
 	function resizeFinished(event) {
@@ -104,8 +104,8 @@ var anim = function (anim) {
 
             // if an element is more or less in the middle of the viewport
 
-            var topY = viewportHeight/3.6,
-            	botY = viewportHeight/1.2;
+            var topY = viewportHeight/3.8,
+            	botY = viewportHeight/1.1;
 
             if ( pos > topY && pos < botY ){
                 return chapter;
