@@ -1,0 +1,88 @@
+.m-story--oleg,
+.m-story--oleg .tip::before {
+	background: #AEF2CC;
+}
+
+
+[data-label="chapter-1"] .picture,
+[data-label="chapter-2"] .picture,
+[data-label="chapter-3"] .picture,
+[data-label="chapter-4"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-1"] [data-label="chapter-1"] .picture,
+[data-chapter="chapter-2"] [data-label="chapter-2"] .picture,
+[data-chapter="chapter-3"] [data-label="chapter-3"] .picture,
+[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
+	opacity: 1;
+}
+
+
+/**
+ * Chapter 1
+ * ----------------------
+ */
+[data-chapter="chapter-1"] .pull-right,
+[data-chapter="chapter-1"] .zoom-in {
+	transform: none;
+	opacity: 1;
+}
+
+[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+
+/**
+ * Chapter 2
+ * ----------------------
+ */
+[data-chapter="chapter-2"] .pull-left,
+[data-chapter="chapter-2"] .slow-pull-right,
+[data-chapter="chapter-2"] .pull-right-slow {
+	transform: none;
+	opacity: 1;
+}
+
+[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+
+/**
+ * Chapter 3
+ * ----------------------
+ */
+[data-chapter="chapter-3"] .bg-object-move,
+[data-chapter="chapter-3"] .pull-up {
+	transform: none;
+	opacity: 1;
+}
+
+[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+
+/**
+ * Chapter 4
+ * ----------------------
+ */
+
+
+
+

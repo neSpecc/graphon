@@ -221,6 +221,25 @@
 }
 
 
+
+
+[data-label="chapter-1"] .picture,
+[data-label="chapter-2"] .picture,
+[data-label="chapter-3"] .picture,
+[data-label="chapter-4"] .picture {
+	opacity: 0;
+	transition: opacity 500ms ease;
+}
+
+[data-chapter="chapter-1"] [data-label="chapter-1"] .picture,
+[data-chapter="chapter-2"] [data-label="chapter-2"] .picture,
+[data-chapter="chapter-3"] [data-label="chapter-3"] .picture,
+[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
+	opacity: 1;
+}
+
+
+
 /**
  * Base animations. Dont forget to add endpoints
  */
@@ -234,6 +253,21 @@
 .pull-right {
 	transition: 300ms ease-out;
 	transform: translateX(-50px);
+	opacity: 0;
+	will-change: transform, opacity
+}
+
+.pull-right-slow {
+	transition: 600ms ease-out;
+	transform: translateX(-50px);
+	opacity: 0;
+	will-change: transform, opacity
+}
+
+
+.slow-pull-right {
+	transition: 1000ms ease-out;
+	transform: translateX(-40px);
 	opacity: 0;
 	will-change: transform, opacity
 }
@@ -273,6 +307,21 @@
 }
 
 .showflakes-evenodd path:nth-child(odd) {
+	transition: 6250ms ease-out;
+	transform: translateY(-100px);
+}
+
+.showflakes-oddeven path:nth-child(odd),
+.showflakes-oddeven path:nth-child(even) {
+	will-change: transform;
+}
+
+.showflakes-oddeven path:nth-child(odd) {
+	transition: 4050ms ease-out;
+	transform: translateY(-80px);
+}
+
+.showflakes-oddeven path:nth-child(even) {
 	transition: 6250ms ease-out;
 	transform: translateY(-100px);
 }

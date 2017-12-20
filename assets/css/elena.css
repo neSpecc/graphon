@@ -18,14 +18,6 @@
 	opacity: 1;
 }
 
-.watch-arrow {
-	transform: rotate(360deg);
-}
-
-[data-chapter="chapter-1"] .watch-arrow {
-	transform: none;
-}
-
 [data-chapter="chapter-1"] .pull-right,
 [data-chapter="chapter-1"] .pull-left {
 	transform: none;
