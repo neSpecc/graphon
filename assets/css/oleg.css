@@ -19,6 +19,14 @@
 	opacity: 1;
 }
 
+.m-story--oleg .bubble {
+	opacity: 0;
+	transform: translateY(10px);
+	transition: opacity 200ms ease-in, transform 200ms ease-in;
+	will-change: opacity, transform;
+	transition-delay: 500ms;
+}
+
 
 /**
  * Chapter 1
@@ -45,7 +53,8 @@
  */
 [data-chapter="chapter-2"] .pull-left,
 [data-chapter="chapter-2"] .slow-pull-right,
-[data-chapter="chapter-2"] .pull-right-slow {
+[data-chapter="chapter-2"] .pull-right-slow,
+[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
 	transform: none;
 	opacity: 1;
 }
@@ -58,13 +67,21 @@
 	transform: translateY(30px);
 }
 
+.m-story--oleg [data-label="chapter-2"] .bubble {
+	top: 65%;
+	right:  auto;
+	left: 30%;
+}
+
+
 
 /**
  * Chapter 3
  * ----------------------
  */
 [data-chapter="chapter-3"] .bg-object-move,
-[data-chapter="chapter-3"] .pull-up {
+[data-chapter="chapter-3"] .pull-up,
+[data-chapter="chapter-3"] [data-label="chapter-3"] .bubble {
 	transform: none;
 	opacity: 1;
 }
@@ -77,12 +94,51 @@
 	transform: translateY(30px);
 }
 
+.m-story--oleg [data-label="chapter-3"] .bubble::after {
+	left: 45%;
+}
+
+@media (max-width: 1000px){
+	.m-story--oleg [data-label="chapter-3"] .bubble {
+		top: 0;
+	}
+}
+
+
 
 /**
  * Chapter 4
  * ----------------------
  */
 
+[data-chapter="chapter-4"] .zoom-in,
+[data-chapter="chapter-4"] .pull-right,
+[data-chapter="chapter-4"] [data-label="chapter-4"] .bubble {
+	transform: none;
+	opacity: 1;
+}
+
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+.m-story--oleg [data-label="chapter-4"] .bubble {
+	left: 23%;
+	right: auto;
+	top: 10%;
+}
+
+
+@media (max-width: 1000px){
+	.m-story--oleg [data-label="chapter-4"] .bubble {
+		left: 18%;
+		top: 4%;
+	}
+}
 
 
 

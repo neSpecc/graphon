@@ -1,3 +1,11 @@
+/**
+ * Class for performing animation based on the scroll position:
+ *  - detect what element is currently at the center of viewport
+ *  - add label of this element to the main wrapper
+ *  - next, you free to add any magic with CSS
+ *
+ * @author Petr Savchenko (http://github.com/neSpecc)
+ */
 var anim = function (anim) {
 
 	'use strict';
@@ -11,10 +19,15 @@ var anim = function (anim) {
 		items: null // items for which we should detect onscreen-visibility
 	};
 
+	/**
+	 * Debounce for scroll handling optimization
+	 */
 	var scrollDebounce;
 	var resizeDebounce;
 
-
+	/**
+	 * Cache for viewport inner height
+	 */
 	var viewportHeight;
 
 
@@ -113,7 +126,7 @@ var anim = function (anim) {
             // if an element is more or less in the middle of the viewport
 
             var topY = viewportHeight/3.8,
-            	botY = viewportHeight/1.1;
+            	botY = viewportHeight/1.05;
 
             if ( pos > topY && pos < botY ){
                 return chapter;

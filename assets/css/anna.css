@@ -3,29 +3,124 @@
 	background: #C7DCE4;
 }
 
+.m-story--anna .bubble {
+	opacity: 0;
+	transform: translateY(10px);
+	transition: opacity 200ms ease-in, transform 90ms ease-in;
+	will-change: opacity, transform;
+	transition-delay: 500ms;
+}
+
+
 /**
  * Chapter 1
  * ----------------------
  */
+[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(even) {
+	transform: translateY(60px);
+}
 
+[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+[data-chapter="chapter-1"] .wall-appear-right,
+[data-chapter="chapter-1"] .pull-right,
+[data-chapter="chapter-1"] [data-label="chapter-1"] .bubble {
+	transform: none;
+	opacity: 1;
+}
+
+.m-story--anna [data-label="chapter-1"] .bubble {
+	top: 5%;
+}
+
+.m-story--anna [data-label="chapter-1"] .bubble::after {
+	left:  50%;
+}
+
+@media (max-width: 1000px) {
+	.m-story--anna [data-label="chapter-1"] .bubble {
+		top:  -20px;
+	}
+
+	.m-story--anna [data-label="chapter-1"] .bubble::after {
+		left: 60%;
+	}
+}
 
 /**
  * Chapter 2
  * ----------------------
  */
+[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(even) {
+	transform: translateY(60px);
+}
 
+[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+.m-story--anna [data-label="chapter-2"] .bubble {
+	top: 35%;
+	right: 14%;
+}
+
+@media (max-width: 1390px) {
+	.m-story--anna [data-label="chapter-2"] .bubble {
+		right: 5%;
+	}
+}
+
+@media (max-width: 1000px) {
+	.m-story--anna [data-label="chapter-2"] .bubble {
+		top: 10%;
+	}
+}
+
+[data-chapter="chapter-2"] .pull-right-slow,
+[data-chapter="chapter-2"] .slow-pull-right,
+[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
+	transform: none;
+	opacity: 1;
+}
 
 /**
  * Chapter 3
  * ----------------------
  */
+[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(even) {
+	transform: translateY(60px);
+}
 
+[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+[data-chapter="chapter-3"] .pull-left,
+[data-chapter="chapter-3"] .pull-right {
+	transform: none;
+	opacity: 1;
+}
 
 /**
  * Chapter 4
  * ----------------------
  */
 
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
+	transform: translateY(60px);
+}
+
+[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
+	transform: translateY(30px);
+}
+
+[data-chapter="chapter-4"] .zoom-out,
+[data-chapter="chapter-4"] .zoom-in {
+	transform: none;
+	opacity: 1;
+}
 
 
 

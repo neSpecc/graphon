@@ -107,6 +107,12 @@
 	background: url('../corner.svg') no-repeat;
 }
 
+.m-story .bubble-corner-top::after {
+	top: -9px;
+	transform:  rotate(180deg);
+	left: 30px;
+	right: auto;
+}
 
 .m-story .bubble img {
 	position: absolute;
@@ -343,4 +349,10 @@
 	transform: translateX(100px);
 	opacity: 0;
 	will-change: transform, opacity
+}
+
+.wall-appear-right {
+	transition: 1700ms ease-out;
+	transform: translateX(-50px);
+	will-change: transform;
 }
