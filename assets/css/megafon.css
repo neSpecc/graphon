@@ -19,8 +19,16 @@
 	left: 50px;
 }
 
+.m-story .logos img {
+	height: 40px;
+}
+
 .m-story .megafon-logo {
-	margin-right: 15px;
+	margin-right: 20px;
+}
+
+.m-story a {
+	color: #67008D;
 }
 
 /**

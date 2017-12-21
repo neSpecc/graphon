@@ -1,0 +1,213 @@
+@font-face {
+    font-family: "Megafont";
+    src: url('../fonts/megafont.woff') format("woff");
+}
+
+@font-face {
+    font-family: "Walsheim";
+    src: url('../fonts/walsheim/GTWalsheimProRegular.ttf') format("truetype");
+}
+
+.sp-megafon	{
+	position: relative;
+	display: flex;
+	height: 100%;
+	width: 100%;
+	font-family: "Walsheim", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+/**
+ * Header
+ * -------------
+ */
+
+.sp-megafon .header {
+	position: absolute;
+	top: 40px;
+	left:  50%;
+	transform:  translateX(-50%);
+	text-align: center;
+	z-index: 2;
+	max-width: 800px;
+}
+
+.sp-megafon .title {
+	font-family: "Megafont";
+	font-size: 52px;
+	margin-bottom: 25px;
+	color: #67008D;
+}
+
+.sp-megafon .caption {
+	font-size: 24px;
+	color: #808080;
+	line-height: 1.35em;
+}
+
+.sp-megafon .logo {
+	position: absolute;
+	top: 40px;
+	display: inline-block;
+	cursor: pointer;
+	z-index: 3;
+}
+
+.sp-megafon .logo img {
+	width: auto;
+	height:  60px;
+}
+
+.sp-megafon .logo--left {
+	left:  60px;
+}
+
+.sp-megafon .logo--right {
+	right:  60px;
+}
+
+
+/**
+ * Chars
+ * -------------
+ */
+
+.sp-megafon	.chars {
+	display: flex;
+	width: 100%;
+}
+
+.sp-megafon	.char {
+	display: flex;
+	position: relative;
+	width: 25%;
+	color: inherit;
+	text-decoration: none;
+	flex-direction: row;
+	overflow: hidden;
+}
+
+.sp-megafon	.char--denis {
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(228,183,244,1) 70%);
+}
+
+.sp-megafon	.char--elena {
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(244,230,187,1) 70%);
+}
+
+.sp-megafon	.char--oleg {
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(174,242,204,1) 70%);
+}
+
+.sp-megafon	.char--anna {
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(199,220,228,1) 70%);
+}
+
+.sp-megafon	.char .info {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 50px;
+	font-size: 20px;
+}
+
+.sp-megafon	.char .name {
+	font-family: "Megafont";
+	font-size: 34px;
+	margin-bottom: 10px;
+}
+
+.char--denis .name {
+	color: #67008D;
+}
+
+.char--elena .name {
+	color: #E5BF61;
+}
+
+.char--oleg .name {
+	color: #00B956;
+}
+
+.char--anna .name {
+	color: #202C4E;
+}
+
+.char .picture {
+	position: relative;
+	margin: auto -8% auto auto;
+}
+
+@media (max-width: 1410px){
+	.char .picture {
+		margin-right: -20%;
+	}
+}
+
+.char .picture .bg{
+	transition: transform 150ms ease-in;
+	will-change: transform;
+	transform: scale(1.1);
+}
+
+.char:hover .picture .bg {
+	transform: scale(1);
+}
+
+.char .picture .dude {
+	position: absolute;
+	bottom: -30px;
+	left: 35%;
+	transition: transform 150ms ease-in;
+	will-change: transform;
+}
+
+.char:hover .picture .dude {
+	transform: scale(1.05);
+}
+
+@media (max-width: 1000px){
+	.sp-megafon {
+		flex-direction: column;
+	}
+	.sp-megafon	.header {
+		position: static;
+		transform:  none;
+		max-width: auto;
+		padding: 30px;
+	}
+
+	.sp-megafon	.title {
+		font-size: 24px;
+	}
+
+	.sp-megafon	.logo {
+		position: static;
+		float: left;
+		width: 50%;
+		display: block;
+		text-align: center;
+		margin-bottom: 30px;
+	}
+
+	.sp-megafon	.logo img {
+		height: 40px;
+	}
+
+	.sp-megafon	.caption {
+		font-size: 18px;
+	}
+	.sp-megafon	.chars {
+		flex-direction: column;
+	}
+
+	.sp-megafon	.char {
+		width: auto;
+		min-height: 300px;
+	}
+
+	.sp-megafon	.char .info {
+		padding: 20px
+	}
+}
+
