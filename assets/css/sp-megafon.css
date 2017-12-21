@@ -181,6 +181,24 @@
 		font-size: 24px;
 	}
 
+	.sp-megafon	.picture {
+		margin-right: -140px;
+		transform: scale(0.7);
+	}
+
+	.char .picture .dude {
+		left: 15%;
+	}
+
+	.sp-megafon	.char .info {
+		font-size: 16px;
+	}
+
+	.sp-megafon	.char .name {
+		font-size: 22px;
+		margin-bottom: 5px;
+	}
+
 	.sp-megafon	.logo {
 		position: static;
 		float: left;
