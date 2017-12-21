@@ -1,6 +1,11 @@
 .m-story--anna,
-.m-story--anna .tip::before {
+.m-story--anna .tip::before,
+.m-story--anna .m-cta {
 	background: #C7DCE4;
+}
+
+.m-story--anna .m-cta {
+	box-shadow: 0 0 10px rgba(86, 123, 132, 0.25);
 }
 
 .m-story--anna .bubble {
@@ -9,6 +14,10 @@
 	transition: opacity 200ms ease-in, transform 90ms ease-in;
 	will-change: opacity, transform;
 	transition-delay: 500ms;
+}
+
+.m-story--anna .right {
+	padding-bottom: 560px;
 }
 
 

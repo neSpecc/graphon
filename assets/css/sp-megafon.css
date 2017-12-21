@@ -23,25 +23,35 @@
 
 .sp-megafon .header {
 	position: absolute;
-	top: 40px;
-	left:  50%;
-	transform:  translateX(-50%);
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 40px 0 100px;
 	text-align: center;
 	z-index: 2;
-	max-width: 800px;
+	width: 100%;
+	background: linear-gradient(to bottom, rgba(255,255,255,0.9) 60%,rgba(255,255,255,0) 100%);
 }
 
 .sp-megafon .title {
 	font-family: "Megafont";
-	font-size: 52px;
+	font-size: 50px;
 	margin-bottom: 25px;
 	color: #67008D;
+}
+
+@media (max-width: 1390px) {
+	.sp-megafon .title {
+		font-size: 42px;
+	}
 }
 
 .sp-megafon .caption {
 	font-size: 24px;
 	color: #808080;
 	line-height: 1.35em;
+	max-width: 800px;
+	margin: 0 auto;
 }
 
 .sp-megafon .logo {
@@ -107,7 +117,7 @@
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 50px;
+	padding: 50px 0 50px 50px;
 	font-size: 20px;
 }
 
@@ -141,6 +151,7 @@
 @media (max-width: 1410px){
 	.char .picture {
 		margin-right: -20%;
+		transform: scale(0.9);
 	}
 }
 
