@@ -285,8 +285,8 @@
 		position: relative;
 		padding-right: 65px;
 		padding-left: 65px;
-		transition: all 250ms ease;
-		will-change: transform, padding-left;
+		transition: all 150ms ease;
+		will-change: transform, padding-left, paddingLeft;
 	}
 
 	.sp-megafon	.char {
