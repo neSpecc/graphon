@@ -217,14 +217,14 @@
 
 	.sp-megafon	.picture {
 		display: block;
-		width: 150px;
+		width: 180px;
 		margin: 40px auto;
 	}
 
 	.sp-megafon	.bg,
 	.sp-megafon	.dude {
 		width: auto;
-		height: 150px;
+		height: 180px;
 		transform: scale(1) !important;
 	}
 
@@ -239,7 +239,7 @@
 	}
 
 	.sp-megafon	.char .name {
-		font-size: 28px;
+		font-size: 22px;
 		margin-bottom: 5px;
 	}
 
@@ -267,7 +267,7 @@
 		display: block;
 		white-space: nowrap;
 		overflow: hidden;
-		min-height: 350px;
+		min-height: 370px;
 	}
 
 	/**
