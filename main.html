@@ -28,46 +28,90 @@
             <img src="assets/vc-logo-black.svg" alt="">
         </a>
     </div>
-    <div class="chars">
-        <a class="char char--denis" href="denis.html">
-            <div class="picture">
-                <img class="bg" src="assets/main-denis.svg" alt="">
-                <img class="dude" src="assets/main-denis-char.svg" alt="">
+    <div class="chars swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <a class="char char--denis" href="denis.html">
+                    <div class="picture">
+                        <img class="bg" src="assets/main-denis.svg" alt="">
+                        <img class="dude" src="assets/main-denis-char.svg" alt="">
+                    </div>
+                    <div class="info">
+                        <div class="name">Денис, 21</div>
+                        студент
+                    </div>
+                </a>
             </div>
-            <div class="info">
-                <div class="name">Денис, 21</div>
-                студент
+            <div class="swiper-slide">
+                <a class="char char--elena" href="elena.html">
+                    <div class="picture">
+                        <img class="bg" src="assets/main-elena.svg" alt="">
+                        <img class="dude" src="assets/main-elena-char.svg" alt="">
+                    </div>
+                    <div class="info">
+                        <div class="name">Елена, 39</div>
+                        Учитель информатики
+                    </div>
+                </a>
             </div>
-        </a>
-        <a class="char char--elena" href="elena.html">
-            <div class="picture">
-                <img class="bg" src="assets/main-elena.svg" alt="">
-                <img class="dude" src="assets/main-elena-char.svg" alt="">
+            <div class="swiper-slide">
+                <a class="char char--oleg" href="oleg.html">
+                    <div class="picture">
+                        <img class="bg" src="assets/main-oleg.svg" alt="">
+                        <img class="dude" src="assets/main-oleg-char.svg" alt="">
+                    </div>
+                    <div class="info">
+                        <div class="name">Олег, 36</div>
+                        Предприниматель
+                    </div>
+                </a>
             </div>
-            <div class="info">
-                <div class="name">Елена, 39</div>
-                Учитель информатики
+            <div class="swiper-slide">
+                <a class="char char--anna" href="anna.html">
+                    <div class="picture">
+                        <img class="bg" src="assets/main-anna.svg" alt="">
+                        <img class="dude" src="assets/main-anna-char.svg" alt="">
+                    </div>
+                    <div class="info">
+                        <div class="name">Анна, 27</div>
+                        Управляющая
+                    </div>
+                </a>
             </div>
-        </a>
-        <a class="char char--oleg" href="oleg.html">
-            <div class="picture">
-                <img class="bg" src="assets/main-oleg.svg" alt="">
-                <img class="dude" src="assets/main-oleg-char.svg" alt="">
-            </div>
-            <div class="info">
-                <div class="name">Олег, 36</div>
-                Предприниматель
-            </div>
-        </a>
-        <a class="char char--anna" href="anna.html">
-            <div class="picture">
-                <img class="bg" src="assets/main-anna.svg" alt="">
-                <img class="dude" src="assets/main-anna-char.svg" alt="">
-            </div>
-            <div class="info">
-                <div class="name">Анна, 27</div>
-                Управляющая
-            </div>
-        </a>
+        </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.0.7/js/swiper.min.js"></script>
+<script>
+    var megafonMain = function () {
+
+        var resizeDebounce;
+
+        var swiper;
+
+        function initSwiper() {
+            if (window.innerWidth < 1000) {
+                swiper = new Swiper ('.swiper-container');
+            } else if (swiper){
+                swiper.destroy();
+                swiper = null;
+            }
+        }
+
+        return function () {
+
+            initSwiper();
+
+            window.addEventListener('resize', function () {
+                if (resizeDebounce) {
+                    window.clearTimeout(resizeDebounce);
+                }
+
+                resizeDebounce = window.setTimeout(initSwiper, 100);
+            });
+        };
+    }();
+
+    megafonMain();
+
+</script>
