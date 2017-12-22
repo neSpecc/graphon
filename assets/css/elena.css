@@ -44,9 +44,6 @@
 	opacity: 1;
 }
 
-[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
-	top: -50px;
-}
 
 /**
  * Snowlakes
@@ -88,10 +85,28 @@
 }
 
 
+[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
+	top: -50px;
+}
+
+
 [data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
 	opacity: 1;
 }
 
+@media (max-width: 1000px){
+	[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy {
+		top:  0;
+	}
+
+	[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
+		top: -10px;
+	}
+
+	.m-story--elena [data-label="chapter-2"] .bubble--small {
+		top: 55%;
+	}
+}
 
 
 /**

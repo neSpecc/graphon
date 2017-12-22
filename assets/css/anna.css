@@ -16,8 +16,10 @@
 	transition-delay: 500ms;
 }
 
-.m-story--anna .right {
-	padding-bottom: 560px;
+@media (min-width: 1000px) {
+	.m-story--anna .right {
+		padding-bottom: 560px;
+	}
 }
 
 

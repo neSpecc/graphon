@@ -15,8 +15,8 @@
 
 .m-story .logos {
 	position: fixed;
-	bottom: 50px;
-	left: 50px;
+	bottom: 30px;
+	left: 30px;
 	z-index: 2;
 }
 
@@ -25,7 +25,7 @@
 }
 
 .m-story .megafon-logo {
-	margin-right: 20px;
+	margin-right: 15px;
 }
 
 @media (max-width: 1000px) {
@@ -299,7 +299,7 @@
 [data-label="chapter-3"] .picture,
 [data-label="chapter-4"] .picture {
 	opacity: 0;
-	transition: opacity 500ms ease;
+	transition: opacity 1000ms ease;
 }
 
 [data-chapter="chapter-1"] [data-label="chapter-1"] .picture,
@@ -315,14 +315,14 @@
  * Base animations. Dont forget to add endpoints
  */
 .pull-left {
-	transition: 300ms ease-out;
+	transition: 500ms ease-out;
 	transform: translateX(50px);
 	opacity: 0;
 	will-change: transform, opacity
 }
 
 .pull-right {
-	transition: 300ms ease-out;
+	transition: 500ms ease-out;
 	transform: translateX(-50px);
 	opacity: 0;
 	will-change: transform, opacity

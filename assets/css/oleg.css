@@ -135,8 +135,8 @@
 
 @media (max-width: 1000px){
 	.m-story--oleg [data-label="chapter-4"] .bubble {
-		left: 18%;
-		top: 4%;
+		left: 15%;
+		top: 0;
 	}
 }
 
