@@ -276,6 +276,7 @@
 
 	.swiper-wrapper {
 		display: block;
+		font-size: 0;
 	}
 
 	.swiper-slide {
@@ -283,39 +284,18 @@
 		vertical-align: top;
 		box-sizing: border-box;
 		position: relative;
-		padding-right: 65px;
-		padding-left: 65px;
-		transition: all 150ms ease;
-		will-change: transform, padding-left, paddingLeft;
+		width: 84%;
 	}
 
 	.sp-megafon	.char {
 		display: block;
 		width: auto;
 		border-radius: 15px;
+		margin-left: 15px;
 	}
 
-
-
-	.sp-megafon	.swiper-slide:first-of-type {
-		padding-left: 20px;
-	}
-
-	.sp-megafon	.swiper-slide:last-of-type {
-		padding-right: 30px;
-	}
-
-	.sp-megafon	.swiper-slide-next {
-		transform:  translateX(-60px);
-		padding-left: 0;
-	}
-
-	.sp-megafon	.swiper-slide-active {
-		padding-left: 30px;
-	}
-
-	.sp-megafon	.swiper-slide-prev {
-		transform:  translateX(90px);
+	.sp-megafon	.swiper-slide:last-of-type .char{
+		margin-right: 10px;
 	}
 
 	.sp-megafon	.char .info {
