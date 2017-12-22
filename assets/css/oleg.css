@@ -4,18 +4,18 @@
 }
 
 
-[data-label="chapter-1"] .picture,
-[data-label="chapter-2"] .picture,
-[data-label="chapter-3"] .picture,
-[data-label="chapter-4"] .picture {
+.m-story--oleg [data-label="chapter-1"] .picture,
+.m-story--oleg [data-label="chapter-2"] .picture,
+.m-story--oleg [data-label="chapter-3"] .picture,
+.m-story--oleg [data-label="chapter-4"] .picture {
 	opacity: 0;
 	transition: opacity 500ms ease;
 }
 
-[data-chapter="chapter-1"] [data-label="chapter-1"] .picture,
-[data-chapter="chapter-2"] [data-label="chapter-2"] .picture,
-[data-chapter="chapter-3"] [data-label="chapter-3"] .picture,
-[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
+.m-story--oleg[data-chapter="chapter-1"] [data-label="chapter-1"] .picture,
+.m-story--oleg[data-chapter="chapter-2"] [data-label="chapter-2"] .picture,
+.m-story--oleg[data-chapter="chapter-3"] [data-label="chapter-3"] .picture,
+.m-story--oleg[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
 	opacity: 1;
 }
 
@@ -32,17 +32,18 @@
  * Chapter 1
  * ----------------------
  */
-[data-chapter="chapter-1"] .pull-right,
-[data-chapter="chapter-1"] .zoom-in {
+.m-story--oleg[data-chapter="chapter-1"] .pull-right,
+.m-story--oleg[data-chapter="chapter-1"] .zoom-in,
+.m-story--oleg[data-chapter="chapter-1"] .pull-left-slow {
 	transform: none;
 	opacity: 1;
 }
 
-[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(even) {
+.m-story--oleg[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(even) {
 	transform: translateY(60px);
 }
 
-[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(odd) {
+.m-story--oleg[data-chapter="chapter-1"] .showflakes-oddeven path:nth-child(odd) {
 	transform: translateY(30px);
 }
 
@@ -51,19 +52,19 @@
  * Chapter 2
  * ----------------------
  */
-[data-chapter="chapter-2"] .pull-left,
-[data-chapter="chapter-2"] .slow-pull-right,
-[data-chapter="chapter-2"] .pull-right-slow,
-[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
+.m-story--oleg[data-chapter="chapter-2"] .pull-left,
+.m-story--oleg[data-chapter="chapter-2"] .slow-pull-right,
+.m-story--oleg[data-chapter="chapter-2"] .pull-right-slow,
+.m-story--oleg[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
 	transform: none;
 	opacity: 1;
 }
 
-[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(even) {
+.m-story--oleg[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(even) {
 	transform: translateY(60px);
 }
 
-[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(odd) {
+.m-story--oleg[data-chapter="chapter-2"] .showflakes-evenodd path:nth-child(odd) {
 	transform: translateY(30px);
 }
 
@@ -73,24 +74,32 @@
 	left: 30%;
 }
 
+@media (max-width: 1000px) {
+	.m-story--oleg [data-label="chapter-2"] .bubble {
+		left: 0;
+		width: 88%;
+		top: 70%;
+	}
+}
+
 
 
 /**
  * Chapter 3
  * ----------------------
  */
-[data-chapter="chapter-3"] .bg-object-move,
-[data-chapter="chapter-3"] .pull-up,
-[data-chapter="chapter-3"] [data-label="chapter-3"] .bubble {
+.m-story--oleg[data-chapter="chapter-3"] .bg-object-move,
+.m-story--oleg[data-chapter="chapter-3"] .pull-up,
+.m-story--oleg[data-chapter="chapter-3"] [data-label="chapter-3"] .bubble {
 	transform: none;
 	opacity: 1;
 }
 
-[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(even) {
+.m-story--oleg[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(even) {
 	transform: translateY(60px);
 }
 
-[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(odd) {
+.m-story--oleg[data-chapter="chapter-3"] .showflakes-oddeven path:nth-child(odd) {
 	transform: translateY(30px);
 }
 
@@ -98,9 +107,17 @@
 	left: 45%;
 }
 
+@media (max-width: 1200px){
+	.m-story--oleg [data-label="chapter-3"] .bubble {
+		top: 0%;
+		max-width: 90%;
+	}
+}
+
 @media (max-width: 1000px){
 	.m-story--oleg [data-label="chapter-3"] .bubble {
-		top: 0;
+		top: -15px;
+		left: 0;
 	}
 }
 
@@ -111,18 +128,18 @@
  * ----------------------
  */
 
-[data-chapter="chapter-4"] .zoom-in,
-[data-chapter="chapter-4"] .pull-right,
-[data-chapter="chapter-4"] [data-label="chapter-4"] .bubble {
+.m-story--oleg[data-chapter="chapter-4"] .zoom-in,
+.m-story--oleg[data-chapter="chapter-4"] .pull-right,
+.m-story--oleg[data-chapter="chapter-4"] [data-label="chapter-4"] .bubble {
 	transform: none;
 	opacity: 1;
 }
 
-[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
+.m-story--oleg[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
 	transform: translateY(60px);
 }
 
-[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
+.m-story--oleg[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
 	transform: translateY(30px);
 }
 
@@ -135,8 +152,13 @@
 
 @media (max-width: 1000px){
 	.m-story--oleg [data-label="chapter-4"] .bubble {
-		left: 15%;
-		top: 0;
+		left: 1%;
+		max-width: 90%;
+		top: 1%;
+	}
+
+	.m-story--oleg [data-label="chapter-4"] .bubble::after {
+		left:  55%;
 	}
 }
 

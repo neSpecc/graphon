@@ -9,17 +9,17 @@
  * ----------------------
  */
 
-[data-label="chapter-1"] .picture {
+.m-story--elena [data-label="chapter-1"] .picture {
 	opacity: 0;
 	transition: opacity 500ms ease;
 }
 
-[data-chapter="chapter-1"] [data-label="chapter-1"] .picture {
+.m-story--elena[data-chapter="chapter-1"] [data-label="chapter-1"] .picture {
 	opacity: 1;
 }
 
-[data-chapter="chapter-1"] .pull-right,
-[data-chapter="chapter-1"] .pull-left {
+.m-story--elena[data-chapter="chapter-1"] .pull-right,
+.m-story--elena[data-chapter="chapter-1"] .pull-left {
 	transform: none;
 	opacity: 1;
 }
@@ -30,16 +30,16 @@
  * ----------------------
  */
 
-[data-label="chapter-2"] .picture {
+.m-story--elena [data-label="chapter-2"] .picture {
 	opacity: 0;
 	transition: opacity 500ms ease;
 }
 
-[data-chapter="chapter-2"] [data-label="chapter-2"] .picture {
+.m-story--elena[data-chapter="chapter-2"] [data-label="chapter-2"] .picture {
 	opacity: 1;
 }
 
-[data-chapter="chapter-2"] .pull-up {
+.m-story--elena[data-chapter="chapter-2"] .pull-up {
 	transform: none;
 	opacity: 1;
 }
@@ -48,17 +48,17 @@
 /**
  * Snowlakes
  */
-.showflakes {
+.m-story--elena .showflakes {
 	transition: 2250ms ease-out;
 	transform: translateY(-50px);
 	will-change: transform;
 }
 
-[data-chapter="chapter-2"] .showflakes {
+.m-story--elena[data-chapter="chapter-2"] .showflakes {
 	transform: none;
 }
 
-.chpt2-elena {
+.m-story--elena .chpt2-elena {
 	transition: 500ms ease-out;
 	transform: translate3d(50px, 10px, 0);
 	will-change: transform;
@@ -80,31 +80,45 @@
 	transition-delay: 600ms;
 }
 
-[data-chapter="chapter-2"] .chpt2-elena {
+.m-story--elena[data-chapter="chapter-2"] .chpt2-elena {
 	transform: none;
 }
 
 
-[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
+.m-story--elena [data-label="chapter-2"] .bubble--boy img {
 	top: -50px;
 }
 
 
-[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
+.m-story--elena[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble {
 	opacity: 1;
 }
 
+@media (max-width: 1200px){
+	.m-story--elena [data-label="chapter-2"] .bubble--boy {
+		top: 5%;
+	}
+}
+
+
 @media (max-width: 1000px){
-	[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy {
-		top:  0;
+	.m-story--elena[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy {
+		top:  auto;
+		bottom:  10%;
+		left: 2%;
+		max-width: 86%;
 	}
 
-	[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
-		top: -10px;
+	.m-story--elena[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy::after {
+		display: none;
+	}
+
+	.m-story--elena[data-chapter="chapter-2"] [data-label="chapter-2"] .bubble--boy img {
+		top: -25px;
 	}
 
 	.m-story--elena [data-label="chapter-2"] .bubble--small {
-		top: 55%;
+		top: 35%;
 	}
 }
 
@@ -114,17 +128,17 @@
  * ----------------------
  */
 
-[data-label="chapter-3"] .picture {
+.m-story--elena [data-label="chapter-3"] .picture {
 	opacity: 0;
 	transition: opacity 500ms ease;
 }
 
-[data-chapter="chapter-3"] [data-label="chapter-3"] .picture {
+.m-story--elena[data-chapter="chapter-3"] [data-label="chapter-3"] .picture {
 	opacity: 1;
 }
 
-[data-chapter="chapter-3"] .zoom-out,
-[data-chapter="chapter-3"] .zoom-in {
+.m-story--elena[data-chapter="chapter-3"] .zoom-out,
+.m-story--elena[data-chapter="chapter-3"] .zoom-in {
 	transform: none;
 	opacity: 1;
 }
@@ -136,24 +150,24 @@
  * ----------------------
  */
 
-[data-label="chapter-4"] .picture {
+.m-story--elena [data-label="chapter-4"] .picture {
 	opacity: 0;
 	transition: opacity 500ms ease;
 }
 
-[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
+.m-story--elena[data-chapter="chapter-4"] [data-label="chapter-4"] .picture {
 	opacity: 1;
 }
 
-[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
+.m-story--elena[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(even) {
 	transform: translateY(60px);
 }
 
-[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
+.m-story--elena[data-chapter="chapter-4"] .showflakes-evenodd path:nth-child(odd) {
 	transform: translateY(30px);
 }
 
-[data-chapter="chapter-4"] .bg-object-move {
+.m-story--elena[data-chapter="chapter-4"] .bg-object-move {
 	opacity: 1;
 	transform: none;
 }
