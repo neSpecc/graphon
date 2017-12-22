@@ -126,7 +126,7 @@ var anim = function (anim) {
             // if an element is more or less in the middle of the viewport
 
             var topY = viewportHeight/3.8,
-            	botY = viewportHeight/1.05;
+            	botY = viewportHeight/1.3;
 
             if ( pos > topY && pos < botY ){
                 return chapter;
