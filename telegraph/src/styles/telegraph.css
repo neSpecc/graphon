@@ -1,0 +1,314 @@
+/**
+ * Styles for Telegraph charts module
+ * @todo split modules for separate files and use PostCSS for better scaling
+ * @author Peter Savchenko <specc.dev@gmail.com>
+ */
+
+/**
+ * Chart module
+ * --------------------------------
+ */
+.tg-chart {
+    position: relative;
+    margin-bottom: 25px;
+    overflow: hidden;
+    font-size: 14px;
+    font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+}
+
+.tg-chart__viewport {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.tg-chart svg {
+    width: 100%;
+    height: 100%;
+}
+
+.tg-chart path {
+    transform-origin: bottom left;
+    transition: transform 150ms ease, opacity 200ms ease;
+    will-change: transform, opacity;
+}
+
+.tg-chart .tg-graph--hidden {
+    opacity: 0;
+}
+
+.tg-chart footer {
+    display: flex;
+    padding: 15px 0;
+    color: #939CA1;
+    font-size: 14px;
+    font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+    justify-content: space-between;
+}
+
+.tg-chart time {
+    white-space: nowrap;
+    display: inline-block;
+    /*width: 45px;*/
+    text-align: center;
+    transition: opacity 250ms ease;
+    will-change: opacity;
+}
+
+.tg-chart time:first-of-type {
+    text-align: right;
+}
+
+.tg-chart .skip-odd time:nth-of-type(2n),
+.tg-chart .skip-third time:nth-of-type(3n),
+.tg-chart .skip-fifth time:nth-of-type(5n),
+.tg-chart .skip-seventh time:nth-of-type(7n) {
+    opacity: 0;
+    width: 0;
+}
+
+/*.tg-chart .skip-1 time:nth-of-type(2n),*/
+/*.tg-chart .skip-3 time:nth-of-type(3n),*/
+/*.tg-chart .skip-5 time:nth-of-type(5n),*/
+/*.tg-chart .skip-7 time:nth-of-type(7n),*/
+/*.tg-chart .skip-9 time:nth-of-type(9n),*/
+/*.tg-chart .skip-11 time:nth-of-type(11n),*/
+/*.tg-chart .skip-13 time:nth-of-type(13n),*/
+/*.tg-chart .skip-15 time:nth-of-type(15n),*/
+/*.tg-chart .skip-17 time:nth-of-type(17n),*/
+/*.tg-chart .skip-19 time:nth-of-type(19n),*/
+/*.tg-chart .skip-21 time:nth-of-type(21n) {*/
+    /*opacity: 0;*/
+    /*position: absolute;*/
+/*}*/
+
+
+/**
+* Line below the Tooltip
+* --------------------------------
+*/
+.tg-chart__cursor-line {
+    position: absolute;
+    width: 1px;
+    background: rgba(170,181,191,0.33);
+    top: 0;
+    height: 400px;
+    left: 50%;
+}
+
+/**
+ * Mini map module
+ * --------------------------------
+ */
+.tg-minimap {
+    position: relative;
+    height: 60px;
+    margin-bottom: 20px;
+    border-top: 2px solid rgba(125,175,210,0.25);
+    border-bottom: 2px solid rgba(125,175,210,0.25);
+}
+
+
+.tg-minimap__left,
+.tg-minimap__right {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 20%;
+    background: rgba(240, 245, 249, 0.73);
+    border-top: 2px solid #f4f8fb;
+    border-bottom: 2px solid #f4f8fb;
+    z-index: 2;
+}
+
+.tg-minimap__left {
+    left: 0;
+}
+
+.tg-minimap__right {
+    right: 0;
+}
+
+.tg-minimap__left-scaler,
+.tg-minimap__right-scaler {
+    position: absolute;
+    height: 100%;
+    width: 26px;
+    top: 0;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.tg-minimap__left-scaler {
+    right: -13px;
+}
+
+.tg-minimap__right-scaler {
+    left: -13px;
+}
+
+.tg-minimap__left-scaler::before,
+.tg-minimap__right-scaler::before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 6px;
+    background: rgba(125,175,210,0.25);
+}
+
+.tg-minimap__left-scaler::before {
+    left: 13px;
+}
+
+.tg-minimap__right-scaler::before {
+    left: 7px;
+}
+
+.tg-minimap__left-scaler:hover::before,
+.tg-minimap__right-scaler:hover::before {
+    background: rgba(132,168,192,0.32)
+}
+
+
+/**
+* Grid
+* --------------------------------
+*/
+.tg-grid {
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 0;
+    height: 400px;
+    color: #939CA1;
+    font-size: 14px;
+    font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+}
+
+.tg-grid__section {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(170,181,191, 0.3);
+}
+
+.tg-grid__section:not(.no-animation) {
+    animation: jump-in 200ms ease-in;
+}
+
+@keyframes jump-in {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+
+/**
+* Tooltip
+* --------------------------------
+*/
+.tg-tooltip {
+    position: absolute;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.13);
+    top: 20px;
+    padding: 15px;
+    z-index: 3;
+    transition: left 150ms ease, opacity 200ms ease;
+    will-change: left, opacity;
+    opacity: 0;
+}
+
+.tg-tooltip--showed {
+    opacity: 1;
+}
+
+.tg-tooltip__title {
+    font-weight: 400;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+.tg-tooltip__values {
+    display: flex;
+}
+
+.tg-tooltip__values-item:not(:last-of-type) {
+    margin-right: 10px;
+}
+
+.tg-tooltip__values-item b {
+    display: block;
+    font-size: 18px;
+    white-space: nowrap;
+}
+
+
+
+/**
+ * Legend module
+ * --------------------------------
+ */
+.tg-legend {
+    margin-bottom: 50px;
+    font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+}
+
+.tg-legend__item {
+    display: inline-block;
+    padding: 5px 12px 5px 5px;
+    border-radius: 30px;
+    border: 1px solid rgba(170,181,191,0.33);
+    margin-right: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.tg-legend__checkbox {
+    position: relative;
+    display: inline-block;
+    vertical-align: text-bottom;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #DAE2E7;
+    border-radius: 50%;
+    background: transparent;
+    margin-right: 5px;
+}
+
+.tg-legend__item--enabled .tg-legend__checkbox::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 4px;
+    display: inline-block;
+    width: 8px;
+    height: 4px;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(-45deg);
+    animation: rolling 150ms ease;
+}
+
+@keyframes rolling {
+    from {
+        transform: rotate(10deg);
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    to {
+        transform: rotate(-45deg);
+        opacity: 1;
+        width: 8px;
+        height: 4px;
+    }
+}
