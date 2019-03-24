@@ -4,8 +4,8 @@
   "description": "Module for rendering simple charts",
   "author": "Peter Savchenko <specc.dev@gmail.com>",
   "scripts": {
-    "build": "webpack ./src/telegraph.js --output-library=Telegraph -p",
-    "build:dev": "webpack ./src/telegraph.js --output-library=Telegraph -d --watch"
+    "build": "webpack ./src/telegraph.js --output-library=Telegraph",
+    "build:dev": "webpack ./src/telegraph.js --output-library=Telegraph --devtool=source-map"
   },
   "devDependencies": {
     "webpack": "^4.29.6",
