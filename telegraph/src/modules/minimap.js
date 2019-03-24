@@ -200,11 +200,32 @@ export default class Minimap {
     this.nodes.wrapper.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
     });
+
+    /**
+     * @todo add support to touches
+     * （╯°□°）╯︵( .o.)
+     */
+
+    this.nodes.wrapper.addEventListener('touchstart', (event) => {
+      this.viewportMousedown(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchmove', (event) => {
+      this.viewportMousemove(event);
+   });
+
+    this.nodes.wrapper.addEventListener('touchcancel', (event) => {
+      this.viewportMouseleave(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchend', (event) => {
+      this.viewportMouseup(event);
+    });
   }
 
   /**
    * Viewport under finger
-   * @param {MouseEvent} event
+   * @param {MouseEvent|TouchEvent} event
    */
   viewportMousedown(event){
     const {target} = event;
@@ -214,8 +235,8 @@ export default class Minimap {
     const leftScalerClicked = !!target.closest(`.${Minimap.CSS.leftZoneScaler}`);
     const rightScalerClicked = !!target.closest(`.${Minimap.CSS.rightZoneScaler}`);
 
-    this.moveStartX = event.pageX;
-    this.moveStartLayerX = event.layerX;
+    this.moveStartX = !event.touches ? event.pageX : event.touches[0].pageX;
+    this.moveStartLayerX = !event.touches ? event.layerX : event.touches[0].layerX;
 
     if (leftScalerClicked || rightScalerClicked){
       this.leftScalerClicked = leftScalerClicked;
@@ -283,6 +304,10 @@ export default class Minimap {
    */
   viewportDragged(event){
     let delta = event.pageX - this.moveStartX;
+
+    if (event.touches) {
+      delta = event.touches[0].pageX;
+    }
 
     this.moveViewport(delta);
     this.syncScrollWithChart();
