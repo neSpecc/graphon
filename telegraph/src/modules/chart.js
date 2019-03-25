@@ -142,6 +142,7 @@ export default class Chart {
     this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
+    this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
   }
 
   /**

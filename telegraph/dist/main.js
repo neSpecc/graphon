@@ -1457,6 +1457,7 @@ class chart_Chart {
     this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
+    this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);
   }
 
   /**
