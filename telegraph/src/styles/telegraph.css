@@ -201,10 +201,17 @@
     right: 0;
     padding-bottom: 5px;
     border-bottom: 1px solid rgba(170,181,191, 0.3);
+    transition: bottom 100ms ease, opacity 150ms ease, transform 150ms ease;
+    will-change: bottom, opacity;
+}
+
+.tg-grid__section--hidden {
+    opacity: 0;
+    transform: translateY(-30px);
 }
 
 .tg-grid__section:not(.no-animation) {
-    animation: jump-in 200ms ease-in;
+    /*animation: jump-in 200ms ease-in;*/
 }
 
 @keyframes jump-in {
@@ -319,7 +326,7 @@
 
 @keyframes rolling {
     from {
-        transform: rotate(-20deg) translate(1px, 6px) scale(0.8);
+        transform: rotate(-20deg) translate(2px, 7px) scale(0.8);
         opacity: 0;
         width: 0;
         height: 0;

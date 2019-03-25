@@ -23,6 +23,7 @@ export default class Graph {
     this.canvas = undefined;
     this.legend = undefined;
     this.grid = undefined;
+    this.gridLines = [];
 
 
     this.stepX = dateLabelWidth;
@@ -41,7 +42,8 @@ export default class Graph {
   static get CSS(){
     return {
       grid: 'tg-grid',
-      gridSection: 'tg-grid__section'
+      gridSection: 'tg-grid__section',
+      gridSectionHidden: 'tg-grid__section--hidden'
     }
   }
 
@@ -169,12 +171,19 @@ export default class Graph {
     this.paths[name] = path;
   }
 
-  renderGrid(forceMax){
-    if (this.grid){
-      this.grid.remove();
+  /**
+   * Render or updates a grid
+   * @param {number} forceMax - new max value for updating
+   * @param {boolean} isUpdating - true for updating
+   */
+  renderGrid(forceMax, isUpdating = false){
+    if (!this.grid) {
+      this.grid = Dom.make('div', Graph.CSS.grid);
+      this.gridLines = [];
+      Dom.insertBefore(this.canvas.parentNode, this.grid);
     }
 
-    this.grid = Dom.make('div', Graph.CSS.grid);
+
 
     let stepY = this.stepY;
     const height = this.height;
@@ -194,27 +203,34 @@ export default class Graph {
       linesCount = height / (stepY * kY) >> 0;
     }
 
+    if (this.gridLines.length){
+      this.gridLines.forEach( line => {
+        line.classList.add(Graph.CSS.gridSectionHidden);
+      })
+    }
+
     // Drawing horizontal lines
 
     for (let j = 0; j <= linesCount; j++) {
       let y = j * stepY;
+      let line;
 
-      let line = Dom.make('div', Graph.CSS.gridSection);
+      if (this.gridLines.length && this.gridLines[j]){
+        line = this.gridLines[j];
+      } else {
+        line = Dom.make('div', Graph.CSS.gridSection);
+        this.grid.appendChild(line);
+        this.gridLines.push(line);
+      }
 
       if (j === 0){
         line.classList.add('no-animation');
       }
 
+      line.classList.remove(Graph.CSS.gridSectionHidden);
       line.style.bottom = y * kY + 'px';
       line.textContent = Numbers.beautify(Math.round(y));
-
-      this.grid.appendChild(line);
     }
-
-    /**
-     * @todo pass this.wrapper or something
-     */
-    Dom.insertBefore(this.canvas.parentNode, this.grid);
   }
 
   /**
@@ -292,7 +308,7 @@ export default class Graph {
      * Rerender grid if it was rendered before
      */
     if (this.grid){
-      this.renderGrid(newMax * 1.2);
+      this.renderGrid(newMax * 1.2, true);
     }
   }
 
