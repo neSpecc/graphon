@@ -313,13 +313,13 @@
 }
 
 .tg-legend__item--enabled .tg-legend__checkbox::before {
-    animation: rolling 200ms 150ms ease;
+    animation: rolling 200ms 100ms ease;
     animation-fill-mode: forwards;
 }
 
 @keyframes rolling {
     from {
-        transform: rotate(-5deg) translate(-1px, 6px) scale(0.8);
+        transform: rotate(-20deg) translate(1px, 6px) scale(0.8);
         opacity: 0;
         width: 0;
         height: 0;
