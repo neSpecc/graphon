@@ -1357,6 +1357,12 @@ class chart_Chart {
     this.wrapperLeftCoord = undefined;
     this.scaling = 1;
     this.scrollValue = 0;
+
+    /**
+     * Any properties can be cached here
+     * @type {{}}
+     */
+    this.cache = {};
   }
 
   /**
@@ -1444,7 +1450,12 @@ class chart_Chart {
    * @return {number}
    */
   get viewportWidth(){
-    return this.nodes.wrapper.offsetWidth;
+    if (this.cache.viewportWidth){
+      return this.cache.viewportWidth;
+    }
+
+    this.cache.viewportWidth = this.nodes.wrapper.offsetWidth;
+    return this.cache.viewportWidth;
   }
 
   /**
@@ -1452,7 +1463,12 @@ class chart_Chart {
    * @return {number}
    */
   get viewportHeight(){
-    return this.nodes.wrapper.offsetHeight;
+    if (this.cache.viewportHeight){
+      return this.cache.viewportHeight;
+    }
+
+    this.cache.viewportHeight = this.nodes.wrapper.offsetHeight;
+    return this.cache.viewportHeight;
   }
 
   /**
