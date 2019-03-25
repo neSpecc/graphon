@@ -982,7 +982,7 @@ class minimap_Minimap {
     // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
     this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
-    this.syncScrollWithChart();
+    this.syncScrollWithChart(this.viewportOffsetLeft);
   }
 
   /**
@@ -1144,11 +1144,16 @@ class minimap_Minimap {
     this.modules.chart.fitToMax(true);
   }
 
-  syncScrollWithChart(){
+  /**
+   * Sync scroll between minimap and chart
+   * @param {number} [newScroll] - pass scroll if you have
+   */
+  syncScrollWithChart(newScroll = null){
     /**
      * How many percents of mini-map is scrolled
      */
-    const minimapScrolledPortion = this.scrolledValue / this.wrapperWidth;
+    let scrolledValue = !isNaN(parseInt(newScroll)) ? newScroll : this.scrolledValue;
+    const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
     this.modules.chart.scroll(chartScroll);
@@ -1189,8 +1194,6 @@ class minimap_Minimap {
       this.nodes.rightZone.style.width = newScalerWidth + 'px';
     }
 
-    this.syncScrollWithChart();
-
     const newViewportWidth = side === 'left' ?
       this.wrapperWidth - newScalerWidth - parseInt(this.nodes.rightZone.style.width, 10) :
       this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - newScalerWidth;
@@ -1199,7 +1202,8 @@ class minimap_Minimap {
 
 
     this.modules.chart.scale(scaling);
-
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : parseInt(this.nodes.leftZone.style.width));
+    
     if (this.scaleDebounce){
       clearTimeout(this.scaleDebounce);
     }
