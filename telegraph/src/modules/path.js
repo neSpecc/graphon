@@ -162,7 +162,7 @@ export default class Path {
     let oldTransform = this.path.style.transform;
     let oldTransition = this.path.style.transition;
 
-      this.path.style.transition = 'transform 150ms ease-out, opacity 150ms ease';
+    this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
 
     if (oldTransform.includes('scaleY')){
       this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)

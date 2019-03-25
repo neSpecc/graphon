@@ -19,6 +19,7 @@
 .tg-chart__viewport {
     display: inline-block;
     vertical-align: bottom;
+    will-change: transform;
 }
 
 .tg-chart svg {
@@ -131,6 +132,7 @@
     border-bottom: 2px solid #f4f8fb;
     z-index: 2;
     cursor: default;
+    will-change: width;
 }
 
 .tg-minimap__left {
