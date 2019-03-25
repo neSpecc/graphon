@@ -259,10 +259,11 @@ export default class Graph {
     }
 
     this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.8);
+    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
     this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
     this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
+    this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
+    this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
   }
 
   get step(){
@@ -276,7 +277,12 @@ export default class Graph {
       path.scaleY(scaling);
     });
 
-    this.renderGrid(newMax * 1.2);
+    /**
+     * Rerender grid if it was rendered before
+     */
+    if (this.grid){
+      this.renderGrid(newMax * 1.2);
+    }
   }
 
   checkPathVisibility(name){

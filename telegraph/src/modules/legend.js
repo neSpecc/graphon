@@ -63,6 +63,8 @@ export default class Legend {
    */
   itemClicked(name){
     this.modules.chart.togglePath(name);
+    this.modules.minimap.togglePath(name);
+
     this.buttons[name].classList.toggle(Legend.CSS.itemEnabled);
 
     const checkbox = this.buttons[name].querySelector(`.${Legend.CSS.checkbox}`);

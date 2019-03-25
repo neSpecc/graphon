@@ -707,10 +707,11 @@ class graph_Graph {
     }
 
     this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.8);
+    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
     this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
     this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
+    this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
+    this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
   }
 
   get step(){
@@ -724,7 +725,12 @@ class graph_Graph {
       path.scaleY(scaling);
     });
 
-    this.renderGrid(newMax * 1.2);
+    /**
+     * Rerender grid if it was rendered before
+     */
+    if (this.grid){
+      this.renderGrid(newMax * 1.2);
+    }
   }
 
   checkPathVisibility(name){
@@ -1136,6 +1142,26 @@ class minimap_Minimap {
     const scaling = this.viewportWidthInitial / this.width ;
     this.modules.chart.scale(scaling);
     this.modules.chart.fitToMax();
+  }
+
+  /**
+   * Toggle path visibility
+   * @param {string} name - graph name
+   */
+  togglePath(name){
+    this.graph.togglePathVisibility(name);
+    this.fitToMax();
+  }
+
+  /**
+   * Upscale or downscale graph to fit visible points
+   */
+  fitToMax(){
+    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.graph.checkPathVisibility(line)).map(line => {
+      return Math.max(...this.state.getLinePoints(line));
+    }));
+
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
 // CONCATENATED MODULE: ./src/modules/tooltip.js
@@ -1569,6 +1595,8 @@ class legend_Legend {
    */
   itemClicked(name){
     this.modules.chart.togglePath(name);
+    this.modules.minimap.togglePath(name);
+
     this.buttons[name].classList.toggle(legend_Legend.CSS.itemEnabled);
 
     const checkbox = this.buttons[name].querySelector(`.${legend_Legend.CSS.checkbox}`);

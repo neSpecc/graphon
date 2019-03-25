@@ -26,13 +26,15 @@
     height: 100%;
 }
 
-.tg-chart path {
+.tg-chart path,
+.tg-minimap path {
     transform-origin: bottom left;
     transition: transform 150ms ease, opacity 200ms ease;
     will-change: transform, opacity;
 }
 
-.tg-chart .tg-graph--hidden {
+.tg-chart .tg-graph--hidden,
+.tg-minimap .tg-graph--hidden {
     opacity: 0;
 }
 
@@ -61,7 +63,9 @@
 .tg-chart .skip-odd time:nth-of-type(2n),
 .tg-chart .skip-third time:nth-of-type(3n),
 .tg-chart .skip-fifth time:nth-of-type(5n),
-.tg-chart .skip-seventh time:nth-of-type(7n) {
+.tg-chart .skip-seventh time:nth-of-type(7n),
+.tg-chart .skip-ninth time:nth-of-type(9n),
+.tg-chart .skip-eleventh time:nth-of-type(11n) {
     opacity: 0;
     width: 0;
 }

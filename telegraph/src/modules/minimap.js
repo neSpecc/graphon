@@ -399,4 +399,24 @@ export default class Minimap {
     this.modules.chart.scale(scaling);
     this.modules.chart.fitToMax();
   }
+
+  /**
+   * Toggle path visibility
+   * @param {string} name - graph name
+   */
+  togglePath(name){
+    this.graph.togglePathVisibility(name);
+    this.fitToMax();
+  }
+
+  /**
+   * Upscale or downscale graph to fit visible points
+   */
+  fitToMax(){
+    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.graph.checkPathVisibility(line)).map(line => {
+      return Math.max(...this.state.getLinePoints(line));
+    }));
+
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
+  }
 }
