@@ -140,22 +140,36 @@ export default class Path {
 
   scaleX(scaling){
     let oldTransform = this.path.style.transform;
+    // let oldTransition = this.path.style.transition;
+
+    // this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
 
     if (oldTransform.includes('scaleX')){
       this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
     }
+
+    // setTimeout(() => {
+    //   this.path.style.transition = oldTransition;
+    // }, 100)
   }
 
   scaleY(scaling){
     let oldTransform = this.path.style.transform;
+    let oldTransition = this.path.style.transition;
+
+      this.path.style.transition = 'transform 150ms ease-out, opacity 150ms ease';
 
     if (oldTransform.includes('scaleY')){
       this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleY(${scaling})`;
     }
+
+      setTimeout(() => {
+        this.path.style.transition = oldTransition;
+      }, 300)
   }
 
   get isHidden(){

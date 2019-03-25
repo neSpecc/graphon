@@ -29,7 +29,7 @@
 .tg-chart path,
 .tg-minimap path {
     transform-origin: bottom left;
-    transition: transform 150ms ease, opacity 200ms ease;
+    transition: opacity 150ms ease;
     will-change: transform, opacity;
 }
 
@@ -275,12 +275,13 @@
 
 .tg-legend__item {
     display: inline-block;
-    padding: 5px 12px 5px 5px;
+    padding: 5px 12px 6px 5px;
     border-radius: 30px;
     border: 1px solid rgba(170,181,191,0.33);
     margin-right: 15px;
     margin-bottom: 15px;
     cursor: pointer;
+    user-select: none;
 }
 
 .tg-legend__checkbox {
@@ -293,6 +294,7 @@
     border-radius: 50%;
     background: transparent;
     margin-right: 5px;
+    margin-bottom: -1px;
 }
 
 .tg-legend__item--enabled .tg-legend__checkbox::before {
@@ -311,7 +313,7 @@
 
 @keyframes rolling {
     from {
-        transform: rotate(10deg) translateY(4px);
+        transform: rotate(-5deg) translate(-1px, 6px) scale(0.8);
         opacity: 0;
         width: 0;
         height: 0;

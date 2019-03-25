@@ -255,6 +255,28 @@ function getPageX(event) {
 
   return event.pageX;
 }
+// CONCATENATED MODULE: ./src/utils/debounce.js
+/**
+ * Invoke a function with debounce
+ * @param {function} func - callback
+ * @param {number} wait - how many second should be awaited before calling a callback
+ * @param {boolean} immediate - pass true to call immediately
+ * @return {Function}
+ */
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+};
 // CONCATENATED MODULE: ./src/utils/numbers.js
 function beautify(number) {
   if (number < 1000) {
@@ -419,22 +441,36 @@ class path_Path {
 
   scaleX(scaling){
     let oldTransform = this.path.style.transform;
+    // let oldTransition = this.path.style.transition;
+
+    // this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
 
     if (oldTransform.includes('scaleX')){
       this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
     }
+
+    // setTimeout(() => {
+    //   this.path.style.transition = oldTransition;
+    // }, 100)
   }
 
   scaleY(scaling){
     let oldTransform = this.path.style.transform;
+    let oldTransition = this.path.style.transition;
+
+      this.path.style.transition = 'transform 150ms ease-out, opacity 150ms ease';
 
     if (oldTransform.includes('scaleY')){
       this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleY(${scaling})`;
     }
+
+      setTimeout(() => {
+        this.path.style.transition = oldTransition;
+      }, 300)
   }
 
   get isHidden(){
@@ -719,6 +755,10 @@ class graph_Graph {
     return this.stepX;
   }
 
+  /**
+   * Scale path on OY
+   * @param {number} newMax - new max value
+   */
   scaleToMaxPoint(newMax){
     let scaling = this.maxPoint / newMax * 0.8;
 
@@ -743,6 +783,7 @@ class graph_Graph {
   }
 }
 // CONCATENATED MODULE: ./src/modules/minimap.js
+
 
 
 
@@ -806,6 +847,11 @@ class minimap_Minimap {
      * Indicator that right scaler zone is dragged
      */
     this.rightScalerClicked = false;
+
+    /**
+     * Scale debounce
+     */
+    this.scaleDebounce = undefined;
 
     this.graph = new graph_Graph(this.state, {
       stroke: 1
@@ -1063,10 +1109,7 @@ class minimap_Minimap {
     this.moveViewport(delta);
     this.syncScrollWithChart();
 
-    /**
-     * @todo add debounce
-     */
-    this.modules.chart.fitToMax();
+    this.modules.chart.fitToMax(true);
   }
 
   syncScrollWithChart(){
@@ -1115,8 +1158,17 @@ class minimap_Minimap {
     }
 
     const scaling = this.viewportWidthInitial / this.width ;
+
+
     this.modules.chart.scale(scaling);
-    this.modules.chart.fitToMax();
+
+    if (this.scaleDebounce){
+      clearTimeout(this.scaleDebounce);
+    }
+
+    this.scaleDebounce = setTimeout(() => {
+      this.modules.chart.fitToMax(true);
+    }, 30)
   }
 
   /**
@@ -1193,8 +1245,8 @@ class tooltip_Tooltip {
     let offsetLeft = -25;
     const tooltipWidth = this.nodes.wrapper.offsetWidth;
 
-    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 3){
-      offsetLeft = -1.1 * tooltipWidth;
+    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
+      offsetLeft = -1.3 * tooltipWidth;
     } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
       offsetLeft = -0.8 * tooltipWidth;
     } else if (lineLeftCoord < 45){
@@ -1265,7 +1317,7 @@ class chart_Chart {
 
     this.tooltip = new tooltip_Tooltip(this.modules);
     this.graph = new graph_Graph(this.state, {
-      stroke: 3
+      stroke: 2.5
     });
 
     this.wrapperLeftCoord = undefined;

@@ -51,8 +51,8 @@ export default class Tooltip {
     let offsetLeft = -25;
     const tooltipWidth = this.nodes.wrapper.offsetWidth;
 
-    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 3){
-      offsetLeft = -1.1 * tooltipWidth;
+    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
+      offsetLeft = -1.3 * tooltipWidth;
     } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
       offsetLeft = -0.8 * tooltipWidth;
     } else if (lineLeftCoord < 45){

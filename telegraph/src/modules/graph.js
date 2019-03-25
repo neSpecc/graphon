@@ -271,6 +271,10 @@ export default class Graph {
     return this.stepX;
   }
 
+  /**
+   * Scale path on OY
+   * @param {number} newMax - new max value
+   */
   scaleToMaxPoint(newMax){
     let scaling = this.maxPoint / newMax * 0.8;
 

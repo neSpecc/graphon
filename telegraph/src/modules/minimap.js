@@ -1,5 +1,6 @@
 import * as Dom from '../utils/dom.js';
 import * as Event from '../utils/event.js';
+import debounce from '../utils/debounce.js';
 import Graph from './graph.js';
 
 
@@ -61,6 +62,11 @@ export default class Minimap {
      * Indicator that right scaler zone is dragged
      */
     this.rightScalerClicked = false;
+
+    /**
+     * Scale debounce
+     */
+    this.scaleDebounce = undefined;
 
     this.graph = new Graph(this.state, {
       stroke: 1
@@ -318,10 +324,7 @@ export default class Minimap {
     this.moveViewport(delta);
     this.syncScrollWithChart();
 
-    /**
-     * @todo add debounce
-     */
-    this.modules.chart.fitToMax();
+    this.modules.chart.fitToMax(true);
   }
 
   syncScrollWithChart(){
@@ -370,8 +373,17 @@ export default class Minimap {
     }
 
     const scaling = this.viewportWidthInitial / this.width ;
+
+
     this.modules.chart.scale(scaling);
-    this.modules.chart.fitToMax();
+
+    if (this.scaleDebounce){
+      clearTimeout(this.scaleDebounce);
+    }
+
+    this.scaleDebounce = setTimeout(() => {
+      this.modules.chart.fitToMax(true);
+    }, 30)
   }
 
   /**

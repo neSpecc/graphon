@@ -29,7 +29,7 @@ export default class Chart {
 
     this.tooltip = new Tooltip(this.modules);
     this.graph = new Graph(this.state, {
-      stroke: 3
+      stroke: 2.5
     });
 
     this.wrapperLeftCoord = undefined;
