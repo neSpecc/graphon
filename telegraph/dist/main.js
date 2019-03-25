@@ -604,8 +604,15 @@ class graph_Graph {
      * All lines maximum value
      */
     const max = this.state.max;
-    const stepsAvailable = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000];
-    this.stepY = stepsAvailable.reverse().find( step => max > step );
+    const stepsAvailable = [5, 10, 25, 50, 100, 1000, 500, 10000, 5000, 100000, 1000000, 10000000];
+    let newStepYIndex = stepsAvailable.reverse().findIndex( step => max > step ),
+    newStepY = stepsAvailable[newStepYIndex];
+
+    if (max / newStepY < 3 && newStepYIndex < stepsAvailable.length - 1){
+      newStepY = stepsAvailable[newStepYIndex + 1];
+    }
+
+    this.stepY = newStepY;
   }
 
 
