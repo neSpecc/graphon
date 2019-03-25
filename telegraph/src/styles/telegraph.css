@@ -19,8 +19,6 @@
 .tg-chart__viewport {
     display: inline-block;
     vertical-align: bottom;
-    transition: transform 100ms ease;
-    will-change: transform;
 }
 
 .tg-chart svg {
