@@ -1,4 +1,5 @@
 import * as Dom from '../utils/dom.js';
+import * as Event from '../utils/event.js';
 import Graph from './graph.js';
 
 
@@ -30,6 +31,17 @@ export default class Minimap {
     this.viewportWidth = 100;
     this.viewportWidthInitial = 100;
     this.viewportOffsetLeft = 0;
+
+    /**
+     * Remember width on touch start
+     */
+    this.viewportWidthBeforeDrag = undefined;
+
+    /**
+     * @uses in this.viewportMousemove()
+     * To compute delta we should remember previous X
+     */
+    this.prevPageX = 0;
 
     /**
      * Clicked pageX
@@ -165,13 +177,41 @@ export default class Minimap {
   }
 
   /**
+   * Value of left zone width minimum
+   */
+  get leftZoneMinimumWidth(){
+    return 0;
+  }
+
+  /**
+   * Value of left zone width maximum
+   */
+  get leftZoneMaximumWidth(){
+    return this.wrapperWidth - this.viewportWidthInitial - parseInt(this.nodes.rightZone.style.width);
+  }
+
+  /**
+   * Value of right zone width minimum
+   */
+  get rightZoneMinimumWidth(){
+    return this.viewportWidthInitial;
+  }
+
+  /**
+   * Value of right zone width maximum
+   */
+  get rightZoneMaximumWidth(){
+    return this.wrapperWidth - this.viewportWidthInitial;
+  }
+
+  /**
    * Moves viewport from left for passed value
    * @param {string} offsetLeft
    */
   moveViewport(offsetLeft){
     const width = this.width;
     const maxLeft = this.wrapperWidth - width;
-    const minLeft = 0;
+    const minLeft = this.leftZoneMinimumWidth;
 
     let newLeft = this.viewportOffsetLeft + offsetLeft;
 
@@ -181,7 +221,7 @@ export default class Minimap {
       newLeft = maxLeft;
     }
     this.nodes.leftZone.style.width = newLeft + 'px';
-    this.nodes.rightZone.style.width = this.wrapperWidth - width - newLeft;
+    this.nodes.rightZone.style.width = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
   }
 
   bindEvents(){
@@ -200,11 +240,6 @@ export default class Minimap {
     this.nodes.wrapper.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
     });
-
-    /**
-     * @todo add support to touches
-     * （╯°□°）╯︵( .o.)
-     */
 
     this.nodes.wrapper.addEventListener('touchstart', (event) => {
       this.viewportMousedown(event);
@@ -235,8 +270,7 @@ export default class Minimap {
     const leftScalerClicked = !!target.closest(`.${Minimap.CSS.leftZoneScaler}`);
     const rightScalerClicked = !!target.closest(`.${Minimap.CSS.rightZoneScaler}`);
 
-    this.moveStartX = !event.touches ? event.pageX : event.touches[0].pageX;
-    this.moveStartLayerX = !event.touches ? event.layerX : event.touches[0].layerX;
+    this.moveStartX = Event.getPageX(event);
 
     if (leftScalerClicked || rightScalerClicked){
       this.leftScalerClicked = leftScalerClicked;
@@ -245,6 +279,7 @@ export default class Minimap {
       return;
     }
 
+    this.viewportWidthBeforeDrag = this.width;
     this.viewportPressed = true;
   }
 
@@ -303,11 +338,7 @@ export default class Minimap {
    * @param {MouseEvent} event
    */
   viewportDragged(event){
-    let delta = event.pageX - this.moveStartX;
-
-    if (event.touches) {
-      delta = event.touches[0].pageX;
-    }
+    let delta = Event.getPageX(event) - this.moveStartX;
 
     this.moveViewport(delta);
     this.syncScrollWithChart();
@@ -330,36 +361,38 @@ export default class Minimap {
 
   /**
    * Viewport side-scaler is moved
-   * @param {MouseEvent} event
-   * @param {string} direction — 'left' or 'right'
+   * @param {MouseEvent|TouchEvent} event
+   * @param {string} side — 'left' or 'right'
    */
   scalerDragged(event, side){
-    let delta = event.layerX - this.moveStartLayerX;
-    let pullDirection = event.pageX - this.moveStartX < 0 ? 'left' : 'right';
+    let deltaX = Event.getPageX(event) - this.moveStartX;
+    let delta = deltaX - this.prevPageX;
 
+    this.prevPageX = deltaX;
     if (!delta){
       return;
     }
 
-    /**
-     * Workaround case with fast-forward dragging
-     */
-    if (delta > 5){
-      delta = 5;
-
-      if (side === 'left'){
-        delta = pullDirection === 'left' ? -5 : 5;
-      }
-    } else if (delta < -5){
-      delta = -5;
-    }
+    let newWidth;
 
     if (side === 'left'){
       delta = delta * -1;
-      this.nodes.leftZone.style.width = parseInt(this.nodes.leftZone.style.width) - delta + 'px';
+      newWidth = parseInt(this.nodes.leftZone.style.width) - delta;
+
+      if (newWidth > this.leftZoneMaximumWidth) {
+        return;
+      }
+
+      this.nodes.leftZone.style.width = newWidth + 'px';
       this.syncScrollWithChart();
     } else {
-      this.nodes.rightZone.style.width = parseInt(this.nodes.rightZone.style.width) - delta + 'px';
+      newWidth = parseInt(this.nodes.rightZone.style.width) - delta;
+
+      if (newWidth > this.rightZoneMaximumWidth){
+        return;
+      }
+
+      this.nodes.rightZone.style.width = newWidth + 'px';
     }
 
     const scaling = this.viewportWidthInitial / this.width ;

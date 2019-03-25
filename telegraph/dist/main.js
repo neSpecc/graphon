@@ -1,2 +1,1661 @@
-var Telegraph=function(t){var e={};function s(i){if(e[i])return e[i].exports;var r=e[i]={i:i,l:!1,exports:{}};return t[i].call(r.exports,r,r.exports,s),r.l=!0,r.exports}return s.m=t,s.c=e,s.d=function(t,e,i){s.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:i})},s.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},s.t=function(t,e){if(1&e&&(t=s(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var i=Object.create(null);if(s.r(i),Object.defineProperty(i,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var r in t)s.d(i,r,function(e){return t[e]}.bind(null,r));return i},s.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return s.d(e,"a",e),e},s.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},s.p="",s(s.s=0)}([function(t,e,s){"use strict";s.r(e);class i{constructor(t){this.columns=t.columns,this.colors=t.colors,this.names=t.names,this.types=t.types}get dates(){return this.columns[0].slice(1)}get linesAvailable(){return Object.keys(this.names)}get daysCount(){return this.columns[0].length-1}getLinePoints(t){return this.getColumnByName(t).slice(1)}getColumnByName(t){return this.columns[this.columns.findIndex(e=>e[0]===t)]}getPointsSlice(t,e,s){return this.getLinePoints(t).slice(e,e+s)}getLineColor(t){return this.colors[t]}get max(){const t=this.linesAvailable.map(t=>Math.max(...this.getLinePoints(t)));return Math.max(...t)}get colorsList(){return Object.entries(this.colors).map(([t,e])=>e)}get namesList(){return Object.entries(this.names).map(([t,e])=>e)}}function r(t,e,s={}){const i=["svg","path","rect","circle","text"].includes(t)?document.createElementNS("http://www.w3.org/2000/svg",t):document.createElement(t);if(Array.isArray(e)&&e.length?i.classList.add(...e):e&&(i.className=e),s&&Object.keys(s).length)for(let t in s)s.hasOwnProperty(t)&&i.setAttribute(t,s[t]);return i}function h(t){if(t<1e3)return t;if(t<1e4){let e=Math.floor(t/1e3),s=t-1e3*e;return s>100?e+" "+s:s>10?e+" 0"+s:e+" 00"+s}return t<1e6?Math.floor(t/1e3)+"k":Math.floor(t/1e6)+"M"}class n{constructor({color:t,svg:e,max:s,stroke:i,stepX:h,opacity:n=1}){this.svg=e,this.kY=0!==s?this.canvasHeight/s:1,this.stepX=h,this.prevX=0,this.path=r("path",null,{"stroke-width":i,stroke:t,fill:"transparent","stroke-linecap":"round","vector-effect":"non-scaling-stroke",opacity:n}),this.pathData=""}static get CSS(){return{graphHidden:"tg-graph--hidden"}}get canvasHeight(){return parseInt(this.svg.style.height,10)}get canvasWidth(){return this.svg.offsetWidth}y(t){return Math.round(this.canvasHeight-t*this.kY)}x(t){return t}moveTo(t,e){this.pathData+=`M ${this.x(t)} ${this.y(e)}`}stepTo(t){this.prevX=this.prevX+this.stepX,this.pathData+=` L ${this.x(this.prevX)} ${this.y(t)}`}lineTo(t,e){this.pathData+=` L ${this.x(t)} ${this.y(e)}`}render(){this.path.setAttribute("d",this.pathData),this.svg.appendChild(this.path),this.animate()}dropText(t){let e=r("text",null,{x:this.prevX+this.stepX,y:this.y(t),fill:"#cccccc",textAnchor:"left","dominant-baseline":"use-script"});e.appendChild(document.createTextNode(t)),e.style.fontSize="13px",this.svg.appendChild(e)}animate(){const t=this.path.getTotalLength();this.path.style.transition=this.path.style.WebkitTransition="none",this.path.style.strokeDasharray=t+" "+t,this.path.style.strokeDashoffset=t,this.path.getBoundingClientRect(),this.path.style.transition=this.path.style.WebkitTransition="stroke-dashoffset 2000ms ease-in",this.path.style.strokeDashoffset="0",setTimeout(()=>{this.path.style.removeProperty("transition"),this.path.style.removeProperty("stroke-dasharray"),this.path.style.removeProperty("stroke-dashoffset")},2e3)}scaleX(t){let e=this.path.style.transform;e.includes("scaleX")?this.path.style.transform=e.replace(/(scaleX\(\S+\))/,`scaleX(${t})`):this.path.style.transform=e+` scaleX(${t})`}scaleY(t){let e=this.path.style.transform;e.includes("scaleY")?this.path.style.transform=e.replace(/(scaleY\(\S+\))/,`scaleY(${t})`):this.path.style.transform=e+` scaleY(${t})`}get isHidden(){return this.path.classList.contains(n.CSS.graphHidden)}toggleVisibility(){this.path.classList.toggle(n.CSS.graphHidden)}}class a{constructor(t,{stroke:e}){this.state=t,this.canvas=void 0,this.legend=void 0,this.grid=void 0,this.stepX=45,this.stepY=10,this.strokeWidth=e,this.initialWidth=void 0,this.maxPoint=1.2*this.state.max,this.paths={}}static get CSS(){return{grid:"tg-grid",gridSection:"tg-grid__section"}}get pathsList(){return Object.entries(this.paths).map(([t,e])=>e)}renderCanvas({width:t,height:e}={}){return this.canvas=r("svg"),t?(this.canvas.style.width=t+"px",this.initialWidth=t):this.setCanvasWidth(),e&&(this.canvas.style.height=e+"px"),this.computeSteps(),this.canvas}setCanvasWidth(){this.initialWidth=this.state.daysCount*this.stepX,this.canvas.style.width=this.initialWidth+"px"}get width(){return parseInt(this.canvas.style.width,10)}get height(){return parseInt(this.canvas.style.height,10)}computeSteps(){this.stepX=Math.ceil(parseInt(this.canvas.style.width,10)/this.state.daysCount);const t=this.state.max;this.stepY=[1,10,100,1e3,1e4,1e5,1e6,1e7].reverse().find(e=>t>e)}renderLine(t){const e=this.state.getLinePoints(t),s=this.state.getLineColor(t),i=e[0],r=new n({svg:this.canvas,color:s,max:this.maxPoint,stroke:this.strokeWidth,stepX:this.stepX});r.moveTo(0,i),e.forEach(t=>{r.stepTo(t)}),r.render(),this.paths[t]=r}renderGrid(t){this.grid&&this.grid.remove(),this.grid=r("div",a.CSS.grid);let e=this.stepY;const s=this.height,i=(this.width,s/(t||this.maxPoint));let n=s/(e*i)>>0;0===n&&(n=s/((e/=3)*i)>>0);for(let t=0;t<=n;t++){let s=t*e,n=r("div",a.CSS.gridSection);0===t&&n.classList.add("no-animation"),n.style.bottom=s*i+"px",n.textContent=h(Math.round(s)),this.grid.appendChild(n)}var o,l;o=this.canvas.parentNode,l=this.grid,o.parentNode.insertBefore(l,o)}renderLegend(t){var e,s;this.legend=r("footer"),t.forEach((t,e)=>{if(e%2==1)return;const s=new Date(t),i=r("time");i.textContent=s.toLocaleDateString("en-US",{day:"numeric",month:"short"}),this.legend.appendChild(i)}),e=this.canvas,s=this.legend,e.parentNode.insertBefore(s,e.nextSibling)}scaleLines(t){this.pathsList.forEach(e=>{e.scaleX(t)});const e=this.initialWidth*t;this.canvas.style.width=e+"px";const s=Math.round(e/this.stepX),i=Math.round(this.initialWidth/this.stepX),r=Math.floor(i/s+.9);r%2==1&&this.legend.classList.add(`skip-${r}`),this.legend.classList.toggle("skip-odd",i/s>1.7),this.legend.classList.toggle("skip-odd",i/s>1.7),this.legend.classList.toggle("skip-third",i/s>3.8),this.legend.classList.toggle("skip-fifth",i/s>5.5),this.legend.classList.toggle("skip-seventh",i/s>7)}get step(){return this.stepX}scaleToMaxPoint(t){let e=this.maxPoint/t*.8;this.pathsList.forEach(t=>{t.scaleY(e)}),this.renderGrid(1.2*t)}checkPathVisibility(t){return!this.paths[t].isHidden}togglePathVisibility(t){this.paths[t].toggleVisibility()}}class o{constructor(t){this.modules=t,this.state=t.state,this.nodes={wrapper:void 0,canvas:void 0,leftZone:void 0,leftZoneScaler:void 0,rightZone:void 0,rightZoneScaler:void 0},this.wrapperWidthCached=void 0,this.viewportWidth=100,this.viewportWidthInitial=100,this.viewportOffsetLeft=0,this.moveStartX=void 0,this.moveStartLayerX=void 0,this.wrapperLeftCoord=void 0,this.viewportPressed=!1,this.leftScalerClicked=!1,this.rightScalerClicked=!1,this.graph=new a(this.state,{stroke:1})}static get CSS(){return{wrapper:"tg-minimap",leftZone:"tg-minimap__left",leftZoneScaler:"tg-minimap__left-scaler",rightZone:"tg-minimap__right",rightZoneScaler:"tg-minimap__right-scaler"}}renderUi(){return this.nodes.wrapper=r("div",o.CSS.wrapper),this.nodes.leftZone=r("div",o.CSS.leftZone),this.nodes.rightZone=r("div",o.CSS.rightZone),this.nodes.leftZoneScaler=r("div",o.CSS.leftZoneScaler),this.nodes.rightZoneScaler=r("div",o.CSS.rightZoneScaler),this.nodes.leftZone.appendChild(this.nodes.leftZoneScaler),this.nodes.rightZone.appendChild(this.nodes.rightZoneScaler),this.nodes.wrapper.appendChild(this.nodes.leftZone),this.nodes.wrapper.appendChild(this.nodes.rightZone),this.bindEvents(),this.nodes.wrapper}renderMap(){this.nodes.canvas=this.graph.renderCanvas({width:this.nodes.wrapper.offsetWidth,height:this.nodes.wrapper.offsetHeight}),this.state.linesAvailable.forEach(t=>{this.graph.renderLine(t)}),this.setInitialPosition(),this.nodes.wrapper.appendChild(this.nodes.canvas)}get wrapperWidth(){return this.wrapperWidthCached||this.nodes.wrapper.offsetWidth}get width(){return this.wrapperWidth-parseInt(this.nodes.leftZone.style.width,10)-parseInt(this.nodes.rightZone.style.width,10)}set width(t){const e=this.modules.chart.scrollDistance;this.nodes.leftZone.style.width=e+"px",this.nodes.rightZone.style.width=this.wrapperWidth-e-t+"px",this.viewportWidth=t}setInitialPosition(){let t=this.nodes.wrapper.getBoundingClientRect();this.wrapperWidthCached=t.width,this.wrapperLeftCoord=t.left;const e=this.modules.chart.viewportWidth/this.modules.chart.width;this.width=this.wrapperWidth*e,this.viewportWidthInitial=this.width,this.viewportOffsetLeft=0,this.moveViewport(this.viewportOffsetLeft),this.syncScrollWithChart()}get scrolledValue(){return parseInt(this.nodes.leftZone.style.width,10)}moveViewport(t){const e=this.width,s=this.wrapperWidth-e;let i=this.viewportOffsetLeft+t;i<0?i=0:i>s&&(i=s),this.nodes.leftZone.style.width=i+"px",this.nodes.rightZone.style.width=this.wrapperWidth-e-i}bindEvents(){this.nodes.wrapper.addEventListener("mousedown",t=>{this.viewportMousedown(t)}),this.nodes.wrapper.addEventListener("mousemove",t=>{this.viewportMousemove(t)}),this.nodes.wrapper.addEventListener("mouseleave",t=>{this.viewportMouseleave(t)}),this.nodes.wrapper.addEventListener("mouseup",t=>{this.viewportMouseup(t)}),this.nodes.wrapper.addEventListener("touchstart",t=>{this.viewportMousedown(t)}),this.nodes.wrapper.addEventListener("touchmove",t=>{this.viewportMousemove(t)}),this.nodes.wrapper.addEventListener("touchcancel",t=>{this.viewportMouseleave(t)}),this.nodes.wrapper.addEventListener("touchend",t=>{this.viewportMouseup(t)})}viewportMousedown(t){const{target:e}=t;t.preventDefault();const s=!!e.closest(`.${o.CSS.leftZoneScaler}`),i=!!e.closest(`.${o.CSS.rightZoneScaler}`);if(this.moveStartX=t.touches?t.touches[0].pageX:t.pageX,this.moveStartLayerX=t.touches?t.touches[0].layerX:t.layerX,s||i)return this.leftScalerClicked=s,this.rightScalerClicked=i,void(this.viewportPressed=!1);this.viewportPressed=!0}viewportMousemove(t){this.viewportPressed?this.viewportDragged(t):this.leftScalerClicked?this.scalerDragged(t,"left"):this.rightScalerClicked&&this.scalerDragged(t,"right")}viewportMouseleave(t){this.viewportPressed?this.finishSliding():this.leftScalerClicked?this.finishLeftScaling():this.rightScalerClicked&&this.finishRightScaling()}viewportMouseup(){this.viewportPressed?this.finishSliding():this.leftScalerClicked?this.finishLeftScaling():this.rightScalerClicked&&this.finishRightScaling()}finishSliding(){this.viewportPressed=!1,this.viewportOffsetLeft=parseInt(this.scrolledValue,10)}finishLeftScaling(){this.leftScalerClicked=!1}finishRightScaling(){this.rightScalerClicked=!1}viewportDragged(t){let e=t.pageX-this.moveStartX;t.touches&&(e=t.touches[0].pageX),this.moveViewport(e),this.syncScrollWithChart(),this.modules.chart.fitToMax()}syncScrollWithChart(){const t=this.scrolledValue/this.wrapperWidth*this.modules.chart.width;this.modules.chart.scroll(t)}scalerDragged(t,e){let s=t.layerX-this.moveStartLayerX,i=t.pageX-this.moveStartX<0?"left":"right";if(!s)return;s>5?(s=5,"left"===e&&(s="left"===i?-5:5)):s<-5&&(s=-5),"left"===e?(s*=-1,this.nodes.leftZone.style.width=parseInt(this.nodes.leftZone.style.width)-s+"px",this.syncScrollWithChart()):this.nodes.rightZone.style.width=parseInt(this.nodes.rightZone.style.width)-s+"px";const r=this.viewportWidthInitial/this.width;this.modules.chart.scale(r),this.modules.chart.fitToMax()}}class l{constructor(t){this.modules=t,this.nodes={wrapper:void 0,title:void 0,values:void 0}}static get CSS(){return{wrapper:"tg-tooltip",showed:"tg-tooltip--showed",title:"tg-tooltip__title",values:"tg-tooltip__values",value:"tg-tooltip__values-item"}}render(){return this.nodes.wrapper=r("div",l.CSS.wrapper),this.nodes.title=r("div",l.CSS.title),this.nodes.values=r("div",l.CSS.values),this.nodes.wrapper.appendChild(this.nodes.title),this.nodes.wrapper.appendChild(this.nodes.values),this.nodes.wrapper}show(){this.nodes.wrapper.classList.add(l.CSS.showed)}hide(){this.nodes.wrapper.classList.remove(l.CSS.showed)}move(t){let e=-25;const s=this.nodes.wrapper.offsetWidth;t>this.modules.chart.viewportWidth-s/3?e=-1.1*s:t>this.modules.chart.viewportWidth-s?e=-.8*s:t<45&&(e=20),this.nodes.wrapper.style.left=`${t+e}px`}clear(){this.nodes.title.textContent="",this.nodes.values.innerHTML=""}set values(t){this.clear(),t.forEach(({name:t,value:e})=>{const s=r("div",l.CSS.value),i=this.modules.state.colors[t],n=this.modules.state.names[t];s.innerHTML=`<b>${h(e)}</b>${n}`,s.style.color=i,this.nodes.values.appendChild(s)})}set title(t){this.nodes.title.innerHTML=t}}class d{constructor(t){this.modules=t,this.state=t.state,this.nodes={wrapper:void 0,viewport:void 0,canvas:void 0,cursorLine:void 0},this.tooltip=new l(this.modules),this.graph=new a(this.state,{stroke:3}),this.wrapperLeftCoord=void 0,this.scaling=1,this.scrollValue=0}static get CSS(){return{wrapper:"tg-chart",viewport:"tg-chart__viewport",cursorLine:"tg-chart__cursor-line"}}get scrollDistance(){return this.scrollValue*this.scaling}get scalingValue(){return this.scaling}renderUi(){return this.nodes.wrapper=r("div",d.CSS.wrapper),this.nodes.viewport=r("div",d.CSS.viewport),this.nodes.cursorLine=r("div",d.CSS.cursorLine),this.nodes.wrapper.appendChild(this.nodes.viewport),this.nodes.wrapper.appendChild(this.nodes.cursorLine),this.nodes.wrapper.appendChild(this.tooltip.render()),this.bindEvents(),this.nodes.wrapper}renderCharts(){this.calculateWrapperCoords(),this.nodes.canvas=this.graph.renderCanvas({height:400}),this.nodes.viewport.appendChild(this.nodes.canvas);const t=this.state.dates;this.state.linesAvailable.forEach(t=>{this.graph.renderLine(t)}),this.graph.renderGrid(),this.graph.renderLegend(t)}get width(){return this.graph.width}get viewportWidth(){return this.nodes.wrapper.offsetWidth}get viewportHeight(){return this.nodes.wrapper.offsetHeight}scroll(t){let e=-1*t;this.nodes.viewport.style.transform=`translateX(${e}px)`,this.scrollValue=e}scale(t){this.graph.scaleLines(t),this.scaling=t}get leftPointIndex(){return Math.round(-1*this.scrollValue/this.graph.step/this.scaling)}notHiddenGraph(t){return this.graph.checkPathVisibility(t)}fitToMax(){const t=this.graph.step,e=Math.round(this.viewportWidth/t/this.scaling),s=Math.max(...this.state.linesAvailable.filter(t=>this.notHiddenGraph(t)).map(t=>{let s=this.state.getPointsSlice(t,this.leftPointIndex,e);return Math.max(...s)}));this.graph.scaleToMaxPoint(s)}calculateWrapperCoords(){let t=this.nodes.wrapper.getBoundingClientRect();this.wrapperLeftCoord=t.left}bindEvents(){this.nodes.wrapper.addEventListener("mousemove",t=>{this.mouseMove(t)}),this.nodes.wrapper.addEventListener("mouseleave",t=>{this.mouseLeave(t)})}mouseMove(t){let e=t.pageX-this.wrapperLeftCoord,s=Math.round(e/this.graph.stepX/this.scaling);this.tooltip.show();let i=this.scrollValue%this.graph.stepX,r=s*this.graph.stepX*this.scaling;this.nodes.cursorLine.style.left=`${r+i}px`;const h=this.leftPointIndex+s-1,n=this.state.linesAvailable.filter(t=>this.notHiddenGraph(t)).map(t=>({name:t,value:this.state.getLinePoints(t)[h]})),a=this.state.dates[h];a&&(this.tooltip.values=n,this.tooltip.move(r),this.tooltip.title=new Date(a).toLocaleDateString("en-US",{day:"numeric",month:"short",weekday:"short"}))}mouseLeave(){this.tooltip.hide()}togglePath(t){this.graph.togglePathVisibility(t),this.fitToMax()}}class p{constructor(t){this.modules=t,this.nodes={wrapper:void 0},this.buttons={}}static get CSS(){return{wrapper:"tg-legend",item:"tg-legend__item",itemEnabled:"tg-legend__item--enabled",checkbox:"tg-legend__checkbox"}}render(){return this.nodes.wrapper=r("div",p.CSS.wrapper),Object.entries(this.modules.state.names).map(([t,e])=>({name:t,title:e})).forEach(({name:t,title:e})=>{let s=r("div",[p.CSS.item,p.CSS.itemEnabled]),i=r("span",p.CSS.checkbox);i.style.borderColor=this.modules.state.colors[t],i.style.backgroundColor=this.modules.state.colors[t],s.appendChild(i),s.appendChild(document.createTextNode(e)),this.buttons[t]=s,s.addEventListener("click",()=>{this.itemClicked(t)}),this.nodes.wrapper.appendChild(s)}),this.nodes.wrapper}itemClicked(t){this.modules.chart.togglePath(t),this.buttons[t].classList.toggle(p.CSS.itemEnabled);const e=this.buttons[t].querySelector(`.${p.CSS.checkbox}`);this.buttons[t].classList.contains(p.CSS.itemEnabled)?e.style.backgroundColor=this.modules.state.colors[t]:e.style.backgroundColor="transparent"}}s.d(e,"default",function(){return c});class c{constructor({holderId:t,inputData:e}){this.holder=document.getElementById(t),this.state=new i(e),this.minimap=new o(this),this.chart=new d(this),this.legend=new p(this),this.prepareUi(),this.chart.renderCharts(),this.minimap.renderMap()}prepareUi(){this.holder.appendChild(this.chart.renderUi()),this.holder.appendChild(this.minimap.renderUi()),this.holder.appendChild(this.legend.render())}}}]);
+var Telegraph =
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/modules/state.js
+/**
+ * This class stores the sate of application
+ * @todo add cache to all getters
+ */
+class State {
+  /**
+   * @param {ChartData} chartsData - input data
+   */
+  constructor(chartsData){
+    this.columns = chartsData.columns;
+    this.colors = chartsData.colors;
+    this.names = chartsData.names;
+    this.types = chartsData.types;
+  }
+
+  /**
+   * Column with dates is 0-index column, so shift it
+   * First element in arrays is column name ("x") so slice it
+   * @return {number[]} - array of dates in milliseconds
+   */
+  get dates(){
+    return this.columns[0].slice(1);
+  }
+
+  /**
+   * Return available line names
+   * @return {string[]} - array of graph names
+   */
+  get linesAvailable(){
+    return Object.keys(this.names);
+  }
+
+  /**
+   * Returns numbers of days at the input data
+   * @return {number}
+   */
+  get daysCount(){
+    return this.columns[0].length - 1; // -1 because the first element is column type ("x")
+  }
+
+  /**
+   * Returns values of line by line name
+   * @param {string} lineName - "y0", "y1" etc
+   * @return {number[]}
+   */
+  getLinePoints(lineName){
+    return this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+  }
+
+  /**
+   * Return column by name
+   * @param {string} name - "y0", "y1" etc
+   * @return {array}
+   */
+  getColumnByName(name){
+    return this.columns[this.columns.findIndex(column => column[0] === name)];
+  }
+
+  /**
+   * Return N points from passed position
+   * @param {string} lineName - "y0", "y1", ...etc
+   * @param {number} from - start position
+   * @param {number} count - how many items requested
+   * @return {number[]}
+   */
+  getPointsSlice(lineName, from, count){
+    return this.getLinePoints(lineName).slice(from, from + count);
+  }
+
+  /**
+   * Returns color of line by line name
+   * @param {string} lineName - "y0", "y1" etc
+   * @return {string} - hex color like "#333333"
+   */
+  getLineColor(lineName){
+    return this.colors[lineName];
+  }
+
+  /**
+   * Return maximum value from all charts
+   * @return {number}
+   */
+  get max(){
+    const maxPerLines = this.linesAvailable.map( name => {
+      return Math.max(...this.getLinePoints(name));
+    });
+
+    return Math.max(...maxPerLines);
+  }
+
+  /**
+   * Array of available colors
+   * @return {string[]}
+   */
+  get colorsList(){
+    return Object.entries(this.colors).map(([name, value]) => value);
+  }
+
+  /**
+   * Array of available chart names
+   * @return {string[]}
+   */
+  get namesList(){
+    return Object.entries(this.names).map(([name, value]) => value);
+  }
+}
+// CONCATENATED MODULE: ./src/utils/dom.js
+/**
+ * Create HTML element
+ * @param {string} tagName - HTML element tag name
+ * @param {string[]|string} classNames - array of CSS classes
+ * @param attributes - any attributes
+ * @return {HTMLElement}
+ */
+function make(tagName, classNames = undefined, attributes = {}) {
+  const svgNamespace = 'http://www.w3.org/2000/svg';
+  const svgElements = ['svg', 'path', 'rect', 'circle', 'text'];
+  const isSvg = svgElements.includes(tagName);
+  const el = !isSvg ? document.createElement(tagName) : document.createElementNS(svgNamespace, tagName);
+
+  if (Array.isArray(classNames) && classNames.length) {
+    el.classList.add(...classNames);
+  } else if (classNames) {
+    el.className = classNames;
+  }
+
+  if (attributes && Object.keys(attributes).length) {
+    for (let attrName in attributes) {
+      if (attributes.hasOwnProperty(attrName)) {
+        el.setAttribute(attrName, attributes[attrName]);
+      }
+    }
+  }
+
+  return el;
+}
+
+/**
+ * Inserts one element after another
+ */
+function insertAfter(target, element) {
+  target.parentNode.insertBefore(element, target.nextSibling);
+}
+
+/**
+ * Insert one element before another
+ */
+function insertBefore(target, element) {
+  target.parentNode.insertBefore(element, target);
+}
+// CONCATENATED MODULE: ./src/utils/event.js
+/**
+ * Return pageX for passed Event
+ * @param {MouseEvent|TouchEvent} event
+ */
+function getPageX(event) {
+  if (event.touches){
+    return event.touches[0].pageX;
+  }
+
+  return event.pageX;
+}
+// CONCATENATED MODULE: ./src/utils/numbers.js
+function beautify(number) {
+  if (number < 1000) {
+    return number
+  } else if (number < 10000){
+      let thousands = Math.floor(number / 1000);
+      let left = number - thousands * 1000;
+
+      if (left > 100){
+        return thousands + ' ' + left;
+      } else if (left > 10) {
+        return thousands + ' 0' + left;
+      } else {
+        return thousands + ' 00' + left;
+      }
+  } else if (number < 1000000) {
+      return Math.floor(number / 1000) + 'k';
+  } else {
+    return Math.floor(number / 1000000) + 'M';
+  }
+}
+// CONCATENATED MODULE: ./src/modules/path.js
+
+
+/**
+ * Helper for creating an SVG path
+ */
+class path_Path {
+  constructor({color, svg, max, stroke, stepX, opacity = 1}){
+    this.svg = svg;
+    this.kY = max !== 0 ? this.canvasHeight / max : 1;
+    this.stepX = stepX;
+    this.prevX = 0;
+
+    this.path = make('path', null, {
+      'stroke-width' : stroke,
+      stroke : color,
+      fill : 'transparent',
+      'stroke-linecap' : 'round',
+      'vector-effect': 'non-scaling-stroke',
+      opacity
+    });
+
+    this.pathData = '';
+  }
+
+  static get CSS(){
+    return {
+      graphHidden: 'tg-graph--hidden'
+    }
+  }
+
+  /**
+   * @todo get offsetHeight instead of style.height
+   * @todo cache value
+   * @return {number}
+   */
+  get canvasHeight(){
+    return parseInt(this.svg.style.height, 10);
+  }
+
+  get canvasWidth(){
+    return this.svg.offsetWidth;
+  }
+
+  /**
+   * Compute Y value with scaling
+   */
+  y(val){
+    return Math.round(this.canvasHeight - val * this.kY);
+  }
+
+  /**
+   * Compute X value with scaling
+   */
+  x(val){
+    return val;
+  }
+
+  /**
+   * Go to passed coords
+   * @param {number} x
+   * @param {number} y
+   */
+  moveTo(x, y){
+    this.pathData += `M ${this.x(x)} ${this.y(y)}`;
+  }
+
+  /**
+   * Continue line to the next value
+   * @param {number} y
+   */
+  stepTo(y){
+    this.prevX = this.prevX + this.stepX;
+    this.pathData += ` L ${this.x(this.prevX)} ${this.y(y)}`;
+  }
+
+  /**
+   * Create a new line with x and y
+   * @param {number} x
+   * @param {number} y
+   */
+  lineTo(x, y){
+    this.pathData += ` L ${this.x(x)} ${this.y(y)}`;
+  }
+
+  /**
+   * Append a line
+   */
+  render(){
+    this.path.setAttribute('d', this.pathData);
+    this.svg.appendChild(this.path);
+    this.animate();
+  }
+
+  /**
+   * Drop text to passed point
+   * @param value
+   */
+  dropText(value){
+    let text = make('text', null, {
+      x: this.prevX + this.stepX,
+      y: this.y(value),
+      fill: '#cccccc',
+      textAnchor: 'left',
+      'dominant-baseline': 'use-script'
+    })
+
+    text.appendChild(document.createTextNode(value));
+    text.style.fontSize = 13 + 'px';
+
+    this.svg.appendChild(text);
+  }
+
+  animate(){
+    const speed = 2000;
+    const length = this.path.getTotalLength();
+
+    // Clear any previous transition
+    this.path.style.transition = this.path.style.WebkitTransition = 'none';
+
+    // Set up the starting position
+    this.path.style.strokeDasharray = length + ' ' + length;
+    this.path.style.strokeDashoffset = length;
+
+    // Trigger a Layout so styles are re-calculated
+    // A browser picks up the starting position before animating
+    this.path.getBoundingClientRect();
+
+    // Define our transition
+    this.path.style.transition = this.path.style.WebkitTransition = 'stroke-dashoffset ' + speed + 'ms' + ' ease-in';
+
+    // Go.
+    this.path.style.strokeDashoffset = '0';
+
+    setTimeout(() => {
+      this.path.style.removeProperty('transition');
+      this.path.style.removeProperty('stroke-dasharray');
+      this.path.style.removeProperty('stroke-dashoffset');
+    }, speed)
+  };
+
+  scaleX(scaling){
+    let oldTransform = this.path.style.transform;
+
+    if (oldTransform.includes('scaleX')){
+      this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
+    } else {
+      this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
+    }
+  }
+
+  scaleY(scaling){
+    let oldTransform = this.path.style.transform;
+
+    if (oldTransform.includes('scaleY')){
+      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)
+    } else {
+      this.path.style.transform = oldTransform + ` scaleY(${scaling})`;
+    }
+  }
+
+  get isHidden(){
+    return this.path.classList.contains(path_Path.CSS.graphHidden);
+  }
+
+  toggleVisibility(){
+    this.path.classList.toggle(path_Path.CSS.graphHidden);
+  }
+}
+// CONCATENATED MODULE: ./src/modules/graph.js
+
+
+
+
+/**
+ * Working with svg paths for charts
+ */
+class graph_Graph {
+  /**
+   * @param {State} state
+   */
+  constructor(state, {stroke}){
+    /**
+     * Width of date label is used for default stepX value in 1:1 scale
+     * @type {number}
+     */
+    const dateLabelWidth = 45;
+
+    this.state = state;
+    /**
+     * @todo move to this.nodes
+     */
+    this.canvas = undefined;
+    this.legend = undefined;
+    this.grid = undefined;
+
+
+    this.stepX = dateLabelWidth;
+    this.stepY = 10;
+    this.strokeWidth = stroke;
+    this.initialWidth = undefined;
+    this.maxPoint = this.state.max * 1.2; // 20% for padding top
+
+    /**
+     * List of drawn lines
+     * @type {object} name -> Path
+     */
+    this.paths = {};
+  }
+
+  static get CSS(){
+    return {
+      grid: 'tg-grid',
+      gridSection: 'tg-grid__section'
+    }
+  }
+
+  /**
+   * Return Graph's paths as array
+   * @return {Path[]}
+   */
+  get pathsList(){
+    return Object.entries(this.paths).map(([name, path]) => {
+      return path;
+    });
+  }
+
+
+  /**
+   * Prepares the SVG element
+   * @param {number} [width] - strict canvas width
+   * @param {number} [height] - strict canvas height
+   * @return {SVGElement}
+   */
+  renderCanvas({width, height} = {}){
+    this.canvas = make('svg');
+
+    if (!width){
+      this.setCanvasWidth();
+    } else {
+      this.canvas.style.width = width + 'px';
+      this.initialWidth = width;
+    }
+
+    if (height){
+      this.canvas.style.height = height + 'px';
+    }
+
+    this.computeSteps();
+
+    return this.canvas;
+  }
+
+  /**
+   * Compute and set initial canvas width
+   */
+  setCanvasWidth(){
+    this.initialWidth = this.state.daysCount * this.stepX;
+    this.canvas.style.width = this.initialWidth + 'px';
+  }
+
+  /**
+   * Return total (big) chart width
+   * @return {number}
+   */
+  get width(){
+    return parseInt(this.canvas.style.width, 10);
+  }
+
+  /**
+   * Return chart height
+   * @return {number}
+   */
+  get height(){
+    return parseInt(this.canvas.style.height, 10);
+  }
+
+  /**
+   * Calculates stepX by canvas width and total points count
+   */
+  computeSteps(){
+    this.stepX = Math.ceil(parseInt(this.canvas.style.width, 10) / this.state.daysCount);
+    /**
+     * All lines maximum value
+     */
+    const max = this.state.max;
+    const stepsAvailable = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000];
+    this.stepY = stepsAvailable.reverse().find( step => max > step );
+  }
+
+
+  /**
+   * Renders a line by name
+   * @param {string} name - line name ("y0", "y1" etc)
+   */
+  renderLine(name){
+    /**
+     * Array of chart Y values
+     */
+    const values = this.state.getLinePoints(name);
+
+    /**
+     * Color of drawing line
+     */
+    const color = this.state.getLineColor(name);
+
+    /**
+     * Point to from which we will start drawing
+     */
+    const leftPoint = values[0];
+
+    /**
+     * Create a Path instance
+     */
+    const path = new path_Path({
+      svg: this.canvas,
+      color,
+      max: this.maxPoint,
+      stroke: this.strokeWidth,
+      stepX: this.stepX,
+    });
+
+    path.moveTo(0, leftPoint);
+
+    values.forEach( column => {
+      // path.dropText(column);  for testing purposes
+      path.stepTo(column);
+    });
+
+    path.render();
+
+    this.paths[name] = path;
+  }
+
+  renderGrid(forceMax){
+    if (this.grid){
+      this.grid.remove();
+    }
+
+    this.grid = make('div', graph_Graph.CSS.grid);
+
+    let stepY = this.stepY;
+    const height = this.height;
+    const width = this.width;
+    const max = forceMax || this.maxPoint;
+    const kY = height / max;
+
+    let linesCount = height / (stepY * kY) >> 0;
+
+    if (linesCount === 0){
+      stepY = stepY / 3;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 1){
+      stepY = stepY / 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    // Drawing horizontal lines
+
+    for (let j = 0; j <= linesCount; j++) {
+      let y = j * stepY;
+
+      let line = make('div', graph_Graph.CSS.gridSection);
+
+      if (j === 0){
+        line.classList.add('no-animation');
+      }
+
+      line.style.bottom = y * kY + 'px';
+      line.textContent = beautify(Math.round(y));
+
+      this.grid.appendChild(line);
+    }
+
+    /**
+     * @todo pass this.wrapper or something
+     */
+    insertBefore(this.canvas.parentNode, this.grid);
+  }
+
+  /**
+   * Renders a legend with dates
+   * @param {number[]} dates
+   */
+  renderLegend(dates){
+    this.legend = make('footer');
+
+    dates.forEach((date, index) => {
+      /**
+       * Skip every second
+       */
+      if (index % 2 === 1){
+        return;
+      }
+
+      const dt = new Date(date);
+      const dateEl = make('time');
+      dateEl.textContent = dt.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short'
+      });
+
+      this.legend.appendChild(dateEl)
+    });
+
+    insertAfter(this.canvas, this.legend);
+  }
+
+  /**
+   * Scale left legend
+   * @param {number} scaling
+   */
+  scaleLines(scaling){
+    this.pathsList.forEach( path => {
+      path.scaleX(scaling);
+    });
+
+    const newWidth = this.initialWidth * scaling;
+    this.canvas.style.width = newWidth + 'px';
+
+    const canFit = Math.round(newWidth / this.stepX);
+    const nowFit = Math.round(this.initialWidth / this.stepX);
+    const fitability = Math.floor(nowFit / canFit + 0.9);
+
+    if (fitability % 2 === 1){
+      this.legend.classList.add(`skip-${fitability}`);
+    }
+
+    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
+    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
+    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.8);
+    this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
+    this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
+  }
+
+  get step(){
+    return this.stepX;
+  }
+
+  scaleToMaxPoint(newMax){
+    let scaling = this.maxPoint / newMax * 0.8;
+
+    this.pathsList.forEach( path => {
+      path.scaleY(scaling);
+    });
+
+    this.renderGrid(newMax * 1.2);
+  }
+
+  checkPathVisibility(name){
+    return !this.paths[name].isHidden;
+  }
+
+  togglePathVisibility(name){
+    this.paths[name].toggleVisibility();
+  }
+}
+// CONCATENATED MODULE: ./src/modules/minimap.js
+
+
+
+
+
+/**
+ * Module for working with Chart Mini map
+ * - Render UI
+ * - Render graphs
+ * - Scaling
+ * - Scrolling
+ */
+class minimap_Minimap {
+  constructor(modules){
+    this.modules = modules;
+    /**
+     * @param {State} state
+     */
+    this.state = modules.state;
+    this.nodes = {
+      wrapper: undefined,
+      canvas: undefined,
+
+      leftZone: undefined,
+      leftZoneScaler: undefined,
+      rightZone: undefined,
+      rightZoneScaler: undefined,
+    };
+
+    this.wrapperWidthCached = undefined;
+    this.viewportWidth = 100;
+    this.viewportWidthInitial = 100;
+    this.viewportOffsetLeft = 0;
+
+    /**
+     * Remember width on touch start
+     */
+    this.viewportWidthBeforeDrag = undefined;
+
+    /**
+     * @uses in this.viewportMousemove()
+     * To compute delta we should remember previous X
+     */
+    this.prevPageX = 0;
+
+    /**
+     * Clicked pageX
+     */
+    this.moveStartX = undefined;
+
+    /**
+     * Clicked layerX
+     */
+    this.moveStartLayerX = undefined;
+    this.wrapperLeftCoord = undefined;
+
+    /**
+     * Indicator that viewport zone is dragged
+     */
+    this.viewportPressed = false;
+
+    /**
+     * Indicator that left scaler zone is dragged
+     */
+    this.leftScalerClicked = false;
+
+    /**
+     * Indicator that right scaler zone is dragged
+     */
+    this.rightScalerClicked = false;
+
+    this.graph = new graph_Graph(this.state, {
+      stroke: 1
+    });
+  }
+
+  static get CSS(){
+    return {
+      wrapper: 'tg-minimap',
+      leftZone: 'tg-minimap__left',
+      leftZoneScaler: 'tg-minimap__left-scaler',
+      rightZone: 'tg-minimap__right',
+      rightZoneScaler: 'tg-minimap__right-scaler',
+    }
+  }
+
+  /**
+   * Prepares minimap UI
+   * @return {Element}
+   */
+  renderUi(){
+    this.nodes.wrapper = make('div', minimap_Minimap.CSS.wrapper);
+    this.nodes.leftZone = make('div', minimap_Minimap.CSS.leftZone);
+    this.nodes.rightZone = make('div', minimap_Minimap.CSS.rightZone);
+    this.nodes.leftZoneScaler = make('div', minimap_Minimap.CSS.leftZoneScaler);
+    this.nodes.rightZoneScaler = make('div', minimap_Minimap.CSS.rightZoneScaler);
+
+    this.nodes.leftZone.appendChild(this.nodes.leftZoneScaler);
+    this.nodes.rightZone.appendChild(this.nodes.rightZoneScaler);
+
+    this.nodes.wrapper.appendChild(this.nodes.leftZone);
+    this.nodes.wrapper.appendChild(this.nodes.rightZone);
+
+    this.bindEvents();
+
+    return this.nodes.wrapper;
+  }
+
+  /**
+   * Fill UI with chart and set initial Position
+   */
+  renderMap(){
+    this.nodes.canvas = this.graph.renderCanvas({
+      width: this.nodes.wrapper.offsetWidth,
+      height: this.nodes.wrapper.offsetHeight
+    });
+
+    this.state.linesAvailable.forEach( name => {
+      this.graph.renderLine(name);
+    });
+
+    this.setInitialPosition();
+
+    this.nodes.wrapper.appendChild(this.nodes.canvas);
+  }
+
+  /**
+   * Return width of a mini map
+   * @return {number}
+   */
+  get wrapperWidth(){
+    return this.wrapperWidthCached || this.nodes.wrapper.offsetWidth;
+  }
+
+  /**
+   * Compute current minimap width
+   * @return {number}
+   */
+  get width(){
+    return this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - parseInt(this.nodes.rightZone.style.width, 10);
+  }
+
+  /**
+   * Set new with to the minimap's viewport
+   * @param value
+   */
+  set width(value){
+    const scrollDistance = this.modules.chart.scrollDistance;
+
+    this.nodes.leftZone.style.width = scrollDistance + 'px';
+    this.nodes.rightZone.style.width = this.wrapperWidth - scrollDistance - value + 'px';
+    this.viewportWidth = value;
+  }
+
+  /**
+   * Initial width and offset
+   */
+  setInitialPosition(){
+    let rect = this.nodes.wrapper.getBoundingClientRect();
+    this.wrapperWidthCached = rect.width;
+    this.wrapperLeftCoord = rect.left;
+
+    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    this.width = this.wrapperWidth * chartToViewportRatio;
+    this.viewportWidthInitial = this.width;
+    this.viewportOffsetLeft = 0;
+    this.moveViewport(this.viewportOffsetLeft);
+    this.syncScrollWithChart();
+  }
+
+  /**
+   * Current scroll value
+   * @return {number}
+   */
+  get scrolledValue(){
+    return parseInt(this.nodes.leftZone.style.width, 10);
+  }
+
+  /**
+   * Value of left zone width minimum
+   */
+  get leftZoneMinimumWidth(){
+    return 0;
+  }
+
+  /**
+   * Value of left zone width maximum
+   */
+  get leftZoneMaximumWidth(){
+    return this.wrapperWidth - this.viewportWidthInitial - parseInt(this.nodes.rightZone.style.width);
+  }
+
+  /**
+   * Value of right zone width minimum
+   */
+  get rightZoneMinimumWidth(){
+    return this.viewportWidthInitial;
+  }
+
+  /**
+   * Value of right zone width maximum
+   */
+  get rightZoneMaximumWidth(){
+    return this.wrapperWidth - this.viewportWidthInitial;
+  }
+
+  /**
+   * Moves viewport from left for passed value
+   * @param {string} offsetLeft
+   */
+  moveViewport(offsetLeft){
+    const width = this.width;
+    const maxLeft = this.wrapperWidth - width;
+    const minLeft = this.leftZoneMinimumWidth;
+
+    let newLeft = this.viewportOffsetLeft + offsetLeft;
+
+    if (newLeft < minLeft){
+      newLeft = minLeft;
+    } else if (newLeft > maxLeft){
+      newLeft = maxLeft;
+    }
+    this.nodes.leftZone.style.width = newLeft + 'px';
+    this.nodes.rightZone.style.width = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
+  }
+
+  bindEvents(){
+    this.nodes.wrapper.addEventListener('mousedown', (event) => {
+      this.viewportMousedown(event);
+    });
+
+    this.nodes.wrapper.addEventListener('mousemove', (event) => {
+      this.viewportMousemove(event);
+    });
+
+    this.nodes.wrapper.addEventListener('mouseleave', (event) => {
+      this.viewportMouseleave(event);
+    });
+
+    this.nodes.wrapper.addEventListener('mouseup', (event) => {
+      this.viewportMouseup(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchstart', (event) => {
+      this.viewportMousedown(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchmove', (event) => {
+      this.viewportMousemove(event);
+   });
+
+    this.nodes.wrapper.addEventListener('touchcancel', (event) => {
+      this.viewportMouseleave(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchend', (event) => {
+      this.viewportMouseup(event);
+    });
+  }
+
+  /**
+   * Viewport under finger
+   * @param {MouseEvent|TouchEvent} event
+   */
+  viewportMousedown(event){
+    const {target} = event;
+
+    event.preventDefault();
+
+    const leftScalerClicked = !!target.closest(`.${minimap_Minimap.CSS.leftZoneScaler}`);
+    const rightScalerClicked = !!target.closest(`.${minimap_Minimap.CSS.rightZoneScaler}`);
+
+    this.moveStartX = getPageX(event);
+
+    if (leftScalerClicked || rightScalerClicked){
+      this.leftScalerClicked = leftScalerClicked;
+      this.rightScalerClicked = rightScalerClicked;
+      this.viewportPressed = false;
+      return;
+    }
+
+    this.viewportWidthBeforeDrag = this.width;
+    this.viewportPressed = true;
+  }
+
+  /**
+   * Viewport dragged
+   * @param {MouseEvent} event
+   */
+  viewportMousemove(event){
+    if (this.viewportPressed){
+      this.viewportDragged(event);
+    } else if (this.leftScalerClicked){
+      this.scalerDragged(event, 'left');
+    } else if (this.rightScalerClicked){
+      this.scalerDragged(event, 'right');
+    }
+  }
+
+  /**
+   * Viewport dragend
+   * @param {MouseEvent} event
+   */
+  viewportMouseleave(event){
+    if (this.viewportPressed){
+      this.finishSliding();
+    } else if (this.leftScalerClicked){
+      this.finishLeftScaling();
+    } else if (this.rightScalerClicked){
+      this.finishRightScaling();
+    }
+  }
+
+  viewportMouseup(){
+    if (this.viewportPressed){
+      this.finishSliding();
+    } else if (this.leftScalerClicked){
+      this.finishLeftScaling();
+    } else if (this.rightScalerClicked){
+      this.finishRightScaling();
+    }
+  }
+
+  finishSliding(){
+    this.viewportPressed = false;
+    this.viewportOffsetLeft = parseInt(this.scrolledValue, 10);
+  }
+
+  finishLeftScaling(){
+    this.leftScalerClicked = false;
+  }
+
+  finishRightScaling(){
+    this.rightScalerClicked = false;
+  }
+
+  /**
+   * @param {MouseEvent} event
+   */
+  viewportDragged(event){
+    let delta = getPageX(event) - this.moveStartX;
+
+    this.moveViewport(delta);
+    this.syncScrollWithChart();
+
+    /**
+     * @todo add debounce
+     */
+    this.modules.chart.fitToMax();
+  }
+
+  syncScrollWithChart(){
+    /**
+     * How many percents of mini-map is scrolled
+     */
+    const minimapScrolledPortion = this.scrolledValue / this.wrapperWidth;
+    const chartScroll = minimapScrolledPortion * this.modules.chart.width;
+
+    this.modules.chart.scroll(chartScroll);
+  }
+
+  /**
+   * Viewport side-scaler is moved
+   * @param {MouseEvent|TouchEvent} event
+   * @param {string} side — 'left' or 'right'
+   */
+  scalerDragged(event, side){
+    let deltaX = getPageX(event) - this.moveStartX;
+    let delta = deltaX - this.prevPageX;
+
+    this.prevPageX = deltaX;
+    if (!delta){
+      return;
+    }
+
+    let newWidth;
+
+    if (side === 'left'){
+      delta = delta * -1;
+      newWidth = parseInt(this.nodes.leftZone.style.width) - delta;
+
+      if (newWidth > this.leftZoneMaximumWidth) {
+        return;
+      }
+
+      this.nodes.leftZone.style.width = newWidth + 'px';
+      this.syncScrollWithChart();
+    } else {
+      newWidth = parseInt(this.nodes.rightZone.style.width) - delta;
+
+      if (newWidth > this.rightZoneMaximumWidth){
+        return;
+      }
+
+      this.nodes.rightZone.style.width = newWidth + 'px';
+    }
+
+    const scaling = this.viewportWidthInitial / this.width ;
+    this.modules.chart.scale(scaling);
+    this.modules.chart.fitToMax();
+  }
+}
+// CONCATENATED MODULE: ./src/modules/tooltip.js
+
+
+
+class tooltip_Tooltip {
+  /**
+   * @param {Telegraph} modules
+   */
+  constructor(modules){
+    this.modules = modules;
+    this.nodes = {
+      wrapper:  undefined,
+      title: undefined,
+      values: undefined
+    }
+  }
+
+  /**
+   * CSS map
+   * @return {{wrapper: string, title: string, values: string, value: string}}
+   */
+  static get CSS(){
+    return {
+      wrapper: 'tg-tooltip',
+      showed: 'tg-tooltip--showed',
+      title: 'tg-tooltip__title',
+      values: 'tg-tooltip__values',
+      value: 'tg-tooltip__values-item',
+    }
+  }
+
+  render(){
+    this.nodes.wrapper = make('div', tooltip_Tooltip.CSS.wrapper);
+    this.nodes.title = make('div', tooltip_Tooltip.CSS.title);
+    this.nodes.values = make('div', tooltip_Tooltip.CSS.values);
+
+    this.nodes.wrapper.appendChild(this.nodes.title);
+    this.nodes.wrapper.appendChild(this.nodes.values);
+
+    return this.nodes.wrapper;
+  }
+
+  show(){
+    this.nodes.wrapper.classList.add(tooltip_Tooltip.CSS.showed);
+  }
+
+  hide(){
+    this.nodes.wrapper.classList.remove(tooltip_Tooltip.CSS.showed);
+  }
+
+  move(lineLeftCoord){
+    let offsetLeft = -25;
+    const tooltipWidth = this.nodes.wrapper.offsetWidth;
+
+    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 3){
+      offsetLeft = -1.1 * tooltipWidth;
+    } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
+      offsetLeft = -0.8 * tooltipWidth;
+    } else if (lineLeftCoord < 45){
+      offsetLeft = 20;
+    }
+
+    this.nodes.wrapper.style.left = `${lineLeftCoord + offsetLeft}px`;
+  }
+
+  clear(){
+    this.nodes.title.textContent = '';
+    this.nodes.values.innerHTML = '';
+  }
+
+  /**
+   * Render values of current hovered points
+   * @param {{name: string, value: number}[]} values
+   */
+  set values(values){
+    this.clear();
+
+    values.forEach( ({name, value}) => {
+      const item = make('div', tooltip_Tooltip.CSS.value);
+      const color = this.modules.state.colors[name];
+      const title = this.modules.state.names[name];
+
+
+      item.innerHTML = `<b>${beautify(value)}</b>${title}`;
+      item.style.color = color;
+
+      this.nodes.values.appendChild(item);
+    })
+  }
+
+  set title(string){
+    this.nodes.title.innerHTML = string;
+  }
+}
+// CONCATENATED MODULE: ./src/modules/chart.js
+
+
+
+
+
+/**
+ * Module for working with main Chart zone
+ * - Render UI
+ * - Render axes
+ * - Render graphs
+ * - Toggle lines visibility
+ */
+class chart_Chart {
+  /**
+   * @param {Telegraph} modules
+   */
+  constructor(modules){
+    this.modules = modules;
+    /**
+     * @param {State} state
+     */
+    this.state = modules.state;
+    this.nodes = {
+      wrapper: undefined,
+      viewport: undefined,
+      canvas: undefined,
+      cursorLine: undefined
+    };
+
+    this.tooltip = new tooltip_Tooltip(this.modules);
+    this.graph = new graph_Graph(this.state, {
+      stroke: 3
+    });
+
+    this.wrapperLeftCoord = undefined;
+    this.scaling = 1;
+    this.scrollValue = 0;
+  }
+
+  /**
+   * CSS map
+   * @return {{wrapper: string, viewport: string, cursorLine: string}}
+   */
+  static get CSS(){
+    return {
+      wrapper: 'tg-chart',
+      viewport: 'tg-chart__viewport',
+      cursorLine: 'tg-chart__cursor-line',
+      cursorLineShowed: 'tg-chart__cursor-line--showed',
+    }
+  }
+
+  /**
+   * Return current scroll distance
+   * @return {number}
+   */
+  get scrollDistance() {
+    return this.scrollValue * this.scaling;
+  }
+
+  /**
+   * Return current scaling value
+   * @return {number|*}
+   */
+  get scalingValue(){
+    return this.scaling;
+  }
+
+  /**
+   * Prepare UI
+   * @return {Element}
+   */
+  renderUi(){
+    this.nodes.wrapper = make('div', chart_Chart.CSS.wrapper);
+    this.nodes.viewport = make('div', chart_Chart.CSS.viewport);
+    this.nodes.cursorLine = make('div', chart_Chart.CSS.cursorLine);
+
+    this.nodes.wrapper.appendChild(this.nodes.viewport);
+    this.nodes.wrapper.appendChild(this.nodes.cursorLine);
+
+    this.nodes.wrapper.appendChild(this.tooltip.render());
+
+    this.bindEvents();
+
+    return this.nodes.wrapper;
+  }
+
+  /**
+   * Renders charts
+   */
+  renderCharts(){
+    this.calculateWrapperCoords();
+
+    /**
+     * @todo pass height through the initial settings
+     */
+    this.nodes.canvas = this.graph.renderCanvas({
+      height: 400
+    });
+    this.nodes.viewport.appendChild(this.nodes.canvas);
+
+    const dates = this.state.dates;
+
+    this.state.linesAvailable.forEach( name => {
+      this.graph.renderLine(name);
+    });
+
+    this.graph.renderGrid();
+    this.graph.renderLegend(dates);
+  }
+
+  /**
+   * Total chart width
+   * @return {number}
+   */
+  get width(){
+    return this.graph.width;
+  }
+
+  /**
+   * Visible viewport width
+   * @return {number}
+   */
+  get viewportWidth(){
+    return this.nodes.wrapper.offsetWidth;
+  }
+
+  /**
+   * Visible viewport height
+   * @return {number}
+   */
+  get viewportHeight(){
+    return this.nodes.wrapper.offsetHeight;
+  }
+
+  /**
+   * Perform scroll
+   * @param position
+   */
+  scroll(position){
+    let newLeft = position * -1;
+    this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
+    this.scrollValue = newLeft;
+  }
+
+  /**
+   * Perform scaling
+   * @param {number} scaling
+   */
+  scale(scaling){
+    this.graph.scaleLines(scaling);
+
+    this.scaling = scaling;
+  }
+
+  /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return Math.round(this.scrollValue * -1/ this.graph.step / this.scaling);
+  }
+
+  /**
+   * Filter to skip hidden line
+   * @param {string} line - name of the graph
+   * @return {boolean}
+   */
+  notHiddenGraph(line){
+    return this.graph.checkPathVisibility(line);
+  }
+
+  /**
+   * Upscale or downscale graph to fit visible points
+   */
+  fitToMax(){
+    const stepX = this.graph.step;
+    const pointsVisible = Math.round(this.viewportWidth / stepX / this.scaling);
+    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+      let slice = this.state.getPointsSlice(line, this.leftPointIndex, pointsVisible);
+      return Math.max(...slice);
+    }));
+
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
+  }
+
+  /**
+   * Store wrapper rectangle data
+   */
+  calculateWrapperCoords(){
+    let rect = this.nodes.wrapper.getBoundingClientRect();
+
+    this.wrapperLeftCoord = rect.left;
+  }
+
+  bindEvents(){
+    this.nodes.wrapper.addEventListener('mousemove', (event) => {
+      this.mouseMove(event);
+    });
+
+    this.nodes.wrapper.addEventListener('mouseleave', (event) => {
+      this.mouseLeave(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchmove', (event) => {
+      this.mouseMove(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchcancel', (event) => {
+      this.mouseLeave(event);
+    });
+  }
+
+  /**
+   * Shows line with Tooltip
+   * @param {MouseEvent|TouchEvent} event
+   */
+  mouseMove(event){
+    let viewportX = getPageX(event) - this.wrapperLeftCoord ;
+    let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
+
+    this.tooltip.show();
+
+    let scrollOffset = this.scrollValue % this.graph.stepX;
+    let newLeft = pointIndex * this.graph.stepX * this.scaling;
+
+    this.nodes.cursorLine.style.left = `${newLeft + scrollOffset}px`;
+    this.nodes.cursorLine.classList.add(chart_Chart.CSS.cursorLineShowed);
+
+    const hoveredPointIndex = this.leftPointIndex + pointIndex - 1;
+
+    const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
+      return {
+        name: line,
+        value: this.state.getLinePoints(line)[hoveredPointIndex]
+      }
+    });
+
+    const date = this.state.dates[hoveredPointIndex];
+
+    /**
+     * Skip bounding empty positions
+     */
+    if (!date){
+      return;
+    }
+
+    this.tooltip.values = values;
+    this.tooltip.move(newLeft);
+    this.tooltip.title = (new Date(date)).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      weekday: 'short'
+    });
+  }
+
+  mouseLeave(){
+    this.tooltip.hide();
+    this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);
+  }
+
+  /**
+   * Toggle path visibility
+   * @param {string} name - graph name
+   */
+  togglePath(name){
+    this.graph.togglePathVisibility(name);
+    this.fitToMax();
+  }
+}
+// CONCATENATED MODULE: ./src/modules/legend.js
+
+
+class legend_Legend {
+  /**
+   * @param {Telegraph} modules
+   */
+  constructor(modules){
+    this.modules = modules;
+    this.nodes = {
+      wrapper: undefined,
+    };
+
+    this.buttons = {};
+  }
+
+  static get CSS(){
+    return {
+      wrapper: 'tg-legend',
+      item: 'tg-legend__item',
+      itemEnabled: 'tg-legend__item--enabled',
+      checkbox: 'tg-legend__checkbox',
+    }
+  }
+
+  /**
+   * Show graphs togglers
+   * @return {Element}
+   */
+  render(){
+    this.nodes.wrapper = make('div', legend_Legend.CSS.wrapper);
+
+    /**
+     * Object with names -> array with names
+     */
+    const namesArray = Object.entries(this.modules.state.names).map(([name, title]) => {
+      return {name, title}
+    });
+
+    namesArray.forEach(({name, title}) => {
+      let item = make('div', [legend_Legend.CSS.item, legend_Legend.CSS.itemEnabled]),
+        checkbox = make('span', legend_Legend.CSS.checkbox);
+
+      checkbox.style.borderColor = this.modules.state.colors[name];
+      checkbox.style.backgroundColor = this.modules.state.colors[name];
+
+      item.appendChild(checkbox);
+      item.appendChild(document.createTextNode(title));
+
+      this.buttons[name] = item;
+
+      item.addEventListener('click', () => {
+        this.itemClicked(name);
+      });
+
+      this.nodes.wrapper.appendChild(item);
+    });
+    return this.nodes.wrapper;
+  }
+
+  /**
+   * Click handler for togglers
+   * @param {string} name - graph name
+   */
+  itemClicked(name){
+    this.modules.chart.togglePath(name);
+    this.buttons[name].classList.toggle(legend_Legend.CSS.itemEnabled);
+
+    const checkbox = this.buttons[name].querySelector(`.${legend_Legend.CSS.checkbox}`);
+
+    /**
+     * @todo add animation
+     */
+    if (this.buttons[name].classList.contains(legend_Legend.CSS.itemEnabled)){
+      checkbox.style.backgroundColor = this.modules.state.colors[name];
+    } else {
+      checkbox.style.backgroundColor = 'transparent';
+    }
+  }
+}
+
+// CONCATENATED MODULE: ./src/telegraph.js
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return telegraph_Telegraph; });
+
+
+
+
+
+/**
+ * @typedef {object} ChartData
+ * @property {array} columns – List of all data columns in the chart.
+ *                             0 - position ("x", "y0", "y1")
+ *                             1+ - values
+ *                             "x" values are UNIX timestamps in milliseconds.
+ * @property {{x, y0, y1}} types – Chart types for each of the columns.
+ *                                 Supported values:
+ *                                 "line" (line on the graph with linear interpolation),
+ *                                 "x" (x axis values for each of the charts at the corresponding positions).
+ * @property {{y0: string, y1: string}} colors – Color for each line in 6-hex-digit format (e.g. "#AAAAAA").
+ * @property {{y0: string, y1: string}} names – Names for each line.
+ */
+
+class telegraph_Telegraph {
+  /**
+   * Main entry constructor
+   * @param {string} holderId - where to append a Chart
+   * @param {ChartData} inputData - chart data
+   */
+  constructor({holderId, inputData}){
+    this.holder = document.getElementById(holderId);
+
+    /**
+     * Module that stores all main app state values
+     */
+    this.state = new State(inputData);
+
+    /**
+     * Module for mini map
+     */
+    this.minimap = new minimap_Minimap(this);
+
+    /**
+     * Working with main chart zone
+     */
+    this.chart = new chart_Chart(this);
+
+    /**
+     * Working with legend items
+     */
+    this.legend = new legend_Legend(this);
+
+    /**
+     * Create base UI elements
+     */
+    this.prepareUi();
+
+    /**
+     * Render chart and minimap
+     */
+    this.chart.renderCharts();
+    this.minimap.renderMap()
+  }
+
+  /**
+   * Create base app UI
+   */
+  prepareUi(){
+    this.holder.appendChild(this.chart.renderUi());
+    this.holder.appendChild(this.minimap.renderUi());
+    this.holder.appendChild(this.legend.render());
+  }
+}
+
+/***/ })
+/******/ ]);
 //# sourceMappingURL=main.js.map

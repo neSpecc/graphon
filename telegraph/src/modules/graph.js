@@ -81,20 +81,27 @@ export default class Graph {
     return this.canvas;
   }
 
+  /**
+   * Compute and set initial canvas width
+   */
   setCanvasWidth(){
     this.initialWidth = this.state.daysCount * this.stepX;
     this.canvas.style.width = this.initialWidth + 'px';
-
   }
 
+  /**
+   * Return total (big) chart width
+   * @return {number}
+   */
   get width(){
     return parseInt(this.canvas.style.width, 10);
   }
 
+  /**
+   * Return chart height
+   * @return {number}
+   */
   get height(){
-    /**
-     * @todo unhardcode padding top
-     */
     return parseInt(this.canvas.style.height, 10);
   }
 
@@ -172,6 +179,11 @@ export default class Graph {
 
     if (linesCount === 0){
       stepY = stepY / 3;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 1){
+      stepY = stepY / 2;
       linesCount = height / (stepY * kY) >> 0;
     }
 

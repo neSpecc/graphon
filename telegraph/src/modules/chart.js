@@ -1,6 +1,7 @@
 import * as Dom from '../utils/dom.js';
 import Graph from './graph.js';
 import Tooltip from "./tooltip";
+import * as Event from '../utils/event.js';
 
 /**
  * Module for working with main Chart zone
@@ -36,11 +37,16 @@ export default class Chart {
     this.scrollValue = 0;
   }
 
+  /**
+   * CSS map
+   * @return {{wrapper: string, viewport: string, cursorLine: string}}
+   */
   static get CSS(){
     return {
       wrapper: 'tg-chart',
       viewport: 'tg-chart__viewport',
-      cursorLine: 'tg-chart__cursor-line'
+      cursorLine: 'tg-chart__cursor-line',
+      cursorLineShowed: 'tg-chart__cursor-line--showed',
     }
   }
 
@@ -60,6 +66,10 @@ export default class Chart {
     return this.scaling;
   }
 
+  /**
+   * Prepare UI
+   * @return {Element}
+   */
   renderUi(){
     this.nodes.wrapper = Dom.make('div', Chart.CSS.wrapper);
     this.nodes.viewport = Dom.make('div', Chart.CSS.viewport);
@@ -99,14 +109,26 @@ export default class Chart {
     this.graph.renderLegend(dates);
   }
 
+  /**
+   * Total chart width
+   * @return {number}
+   */
   get width(){
     return this.graph.width;
   }
 
+  /**
+   * Visible viewport width
+   * @return {number}
+   */
   get viewportWidth(){
     return this.nodes.wrapper.offsetWidth;
   }
 
+  /**
+   * Visible viewport height
+   * @return {number}
+   */
   get viewportHeight(){
     return this.nodes.wrapper.offsetHeight;
   }
@@ -179,14 +201,22 @@ export default class Chart {
     this.nodes.wrapper.addEventListener('mouseleave', (event) => {
       this.mouseLeave(event);
     });
+
+    this.nodes.wrapper.addEventListener('touchmove', (event) => {
+      this.mouseMove(event);
+    });
+
+    this.nodes.wrapper.addEventListener('touchcancel', (event) => {
+      this.mouseLeave(event);
+    });
   }
 
   /**
    * Shows line with Tooltip
-   * @param {MouseEvent} event
+   * @param {MouseEvent|TouchEvent} event
    */
   mouseMove(event){
-    let viewportX = event.pageX - this.wrapperLeftCoord ;
+    let viewportX = Event.getPageX(event) - this.wrapperLeftCoord ;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
 
     this.tooltip.show();
@@ -195,6 +225,7 @@ export default class Chart {
     let newLeft = pointIndex * this.graph.stepX * this.scaling;
 
     this.nodes.cursorLine.style.left = `${newLeft + scrollOffset}px`;
+    this.nodes.cursorLine.classList.add(Chart.CSS.cursorLineShowed);
 
     const hoveredPointIndex = this.leftPointIndex + pointIndex - 1;
 
@@ -225,6 +256,7 @@ export default class Chart {
 
   mouseLeave(){
     this.tooltip.hide();
+    this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
   }
 
   /**

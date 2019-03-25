@@ -93,6 +93,13 @@
     top: 0;
     height: 400px;
     left: 50%;
+    opacity: 0;
+    transition: opacity 150ms ease, left 150ms ease;
+    will-change: opacity, left;
+}
+
+.tg-chart__cursor-line--showed {
+    opacity: 1;
 }
 
 /**
@@ -294,12 +301,12 @@
     border-left: 2px solid #fff;
     border-bottom: 2px solid #fff;
     transform: rotate(-45deg);
-    animation: rolling 150ms ease;
+    animation: rolling 200ms ease;
 }
 
 @keyframes rolling {
     from {
-        transform: rotate(10deg);
+        transform: rotate(10deg) translateY(4px);
         opacity: 0;
         width: 0;
         height: 0;

@@ -5,7 +5,7 @@
   "author": "Peter Savchenko <specc.dev@gmail.com>",
   "scripts": {
     "build": "webpack ./src/telegraph.js --output-library=Telegraph",
-    "build:dev": "webpack ./src/telegraph.js --output-library=Telegraph --devtool=source-map"
+    "build:dev": "webpack ./src/telegraph.js --output-library=Telegraph --devtool=source-map --watch"
   },
   "devDependencies": {
     "webpack": "^4.29.6",
