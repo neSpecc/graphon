@@ -73,8 +73,9 @@ export default class Legend {
      * @todo add animation
      */
     if (this.buttons[name].classList.contains(Legend.CSS.itemEnabled)){
-      checkbox.style.backgroundColor = this.modules.state.colors[name];
+      checkbox.style.boxShadow = `inset 0 0 0 10px ${this.modules.state.colors[name]}`;
     } else {
+      checkbox.style.boxShadow = 'none';
       checkbox.style.backgroundColor = 'transparent';
     }
   }

@@ -15,6 +15,7 @@ export default class Path {
       stroke : color,
       fill : 'transparent',
       'stroke-linecap' : 'round',
+      'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
       opacity
     });
@@ -68,8 +69,10 @@ export default class Path {
    * Continue line to the next value
    * @param {number} y
    */
-  stepTo(y){
-    this.prevX = this.prevX + this.stepX;
+  stepTo(y, skipStep){
+    if (!skipStep){
+      this.prevX = this.prevX + this.stepX;
+    }
     this.pathData += ` L ${this.x(this.prevX)} ${this.y(y)}`;
   }
 
@@ -95,9 +98,9 @@ export default class Path {
    * Drop text to passed point
    * @param value
    */
-  dropText(value){
+  dropText(value, skipStepX = false){
     let text = Dom.make('text', null, {
-      x: this.prevX + this.stepX,
+      x: !skipStepX ? this.prevX + this.stepX: this.prevX,
       y: this.y(value),
       fill: '#cccccc',
       textAnchor: 'left',

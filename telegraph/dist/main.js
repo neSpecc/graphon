@@ -316,6 +316,7 @@ class path_Path {
       stroke : color,
       fill : 'transparent',
       'stroke-linecap' : 'round',
+      'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
       opacity
     });
@@ -369,8 +370,10 @@ class path_Path {
    * Continue line to the next value
    * @param {number} y
    */
-  stepTo(y){
-    this.prevX = this.prevX + this.stepX;
+  stepTo(y, skipStep){
+    if (!skipStep){
+      this.prevX = this.prevX + this.stepX;
+    }
     this.pathData += ` L ${this.x(this.prevX)} ${this.y(y)}`;
   }
 
@@ -396,9 +399,9 @@ class path_Path {
    * Drop text to passed point
    * @param value
    */
-  dropText(value){
+  dropText(value, skipStepX = false){
     let text = make('text', null, {
-      x: this.prevX + this.stepX,
+      x: !skipStepX ? this.prevX + this.stepX: this.prevX,
       y: this.y(value),
       fill: '#cccccc',
       textAnchor: 'left',
@@ -637,9 +640,15 @@ class graph_Graph {
 
     path.moveTo(0, leftPoint);
 
-    values.forEach( column => {
-      // path.dropText(column);  for testing purposes
-      path.stepTo(column);
+    values.forEach( (column, index )=> {
+      if (index === 0){
+        // path.dropText(column, true);
+        path.stepTo(column, true);
+      } else {
+        // path.dropText(column);
+        path.stepTo(column);
+      }
+
     });
 
     path.render();
@@ -986,7 +995,7 @@ class minimap_Minimap {
    * Value of right zone width maximum
    */
   get rightZoneMaximumWidth(){
-    return this.wrapperWidth - this.viewportWidthInitial;
+    return this.wrapperWidth - this.viewportWidthInitial - this.scrolledValue;
   }
 
   /**
@@ -1146,9 +1155,9 @@ class minimap_Minimap {
       }
 
       this.nodes.leftZone.style.width = newWidth + 'px';
-      this.syncScrollWithChart();
+
     } else {
-      newWidth =  this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
+      newWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
       if (newWidth > this.rightZoneMaximumWidth){
         return;
@@ -1156,6 +1165,8 @@ class minimap_Minimap {
 
       this.nodes.rightZone.style.width = newWidth + 'px';
     }
+
+    this.syncScrollWithChart();
 
     const scaling = this.viewportWidthInitial / this.width ;
 
@@ -1504,18 +1515,25 @@ class chart_Chart {
    * @param {MouseEvent|TouchEvent} event
    */
   mouseMove(event){
-    let viewportX = getPageX(event) - this.wrapperLeftCoord ;
+    let x = getPageX(event);
+    let viewportX = x - this.wrapperLeftCoord ;
+    let scrollOffset = this.scrollValue % this.graph.stepX;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
+    let hoveredPointIndex = pointIndex + this.leftPointIndex;
+
+    if (Math.abs(scrollOffset) > (this.graph.stepX / 2) ){
+      pointIndex = pointIndex + 1;
+    }
+
+    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
+    let newLeft = (pointIndex * this.graph.stepX + scrollOffset) * this.scaling;
+
+    // console.log('scroll offset %o | step %o | index %o | x %o | drawn at %o | first step offset %o | left index %o', scrollOffset, this.graph.stepX, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
 
-    let scrollOffset = this.scrollValue % this.graph.stepX;
-    let newLeft = pointIndex * this.graph.stepX * this.scaling;
-
-    this.nodes.cursorLine.style.left = `${newLeft + scrollOffset}px`;
+    this.nodes.cursorLine.style.left = `${newLeft}px`;
     this.nodes.cursorLine.classList.add(chart_Chart.CSS.cursorLineShowed);
-
-    const hoveredPointIndex = this.leftPointIndex + pointIndex - 1;
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
@@ -1632,8 +1650,9 @@ class legend_Legend {
      * @todo add animation
      */
     if (this.buttons[name].classList.contains(legend_Legend.CSS.itemEnabled)){
-      checkbox.style.backgroundColor = this.modules.state.colors[name];
+      checkbox.style.boxShadow = `inset 0 0 0 10px ${this.modules.state.colors[name]}`;
     } else {
+      checkbox.style.boxShadow = 'none';
       checkbox.style.backgroundColor = 'transparent';
     }
   }

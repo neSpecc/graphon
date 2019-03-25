@@ -153,9 +153,15 @@ export default class Graph {
 
     path.moveTo(0, leftPoint);
 
-    values.forEach( column => {
-      // path.dropText(column);  for testing purposes
-      path.stepTo(column);
+    values.forEach( (column, index )=> {
+      if (index === 0){
+        // path.dropText(column, true);
+        path.stepTo(column, true);
+      } else {
+        // path.dropText(column);
+        path.stepTo(column);
+      }
+
     });
 
     path.render();

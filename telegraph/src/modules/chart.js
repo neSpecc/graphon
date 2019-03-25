@@ -216,18 +216,25 @@ export default class Chart {
    * @param {MouseEvent|TouchEvent} event
    */
   mouseMove(event){
-    let viewportX = Event.getPageX(event) - this.wrapperLeftCoord ;
+    let x = Event.getPageX(event);
+    let viewportX = x - this.wrapperLeftCoord ;
+    let scrollOffset = this.scrollValue % this.graph.stepX;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
+    let hoveredPointIndex = pointIndex + this.leftPointIndex;
+
+    if (Math.abs(scrollOffset) > (this.graph.stepX / 2) ){
+      pointIndex = pointIndex + 1;
+    }
+
+    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
+    let newLeft = (pointIndex * this.graph.stepX + scrollOffset) * this.scaling;
+
+    // console.log('scroll offset %o | step %o | index %o | x %o | drawn at %o | first step offset %o | left index %o', scrollOffset, this.graph.stepX, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
 
-    let scrollOffset = this.scrollValue % this.graph.stepX;
-    let newLeft = pointIndex * this.graph.stepX * this.scaling;
-
-    this.nodes.cursorLine.style.left = `${newLeft + scrollOffset}px`;
+    this.nodes.cursorLine.style.left = `${newLeft}px`;
     this.nodes.cursorLine.classList.add(Chart.CSS.cursorLineShowed);
-
-    const hoveredPointIndex = this.leftPointIndex + pointIndex - 1;
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {

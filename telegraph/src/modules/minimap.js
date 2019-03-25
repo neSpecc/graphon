@@ -201,7 +201,7 @@ export default class Minimap {
    * Value of right zone width maximum
    */
   get rightZoneMaximumWidth(){
-    return this.wrapperWidth - this.viewportWidthInitial;
+    return this.wrapperWidth - this.viewportWidthInitial - this.scrolledValue;
   }
 
   /**
@@ -361,9 +361,9 @@ export default class Minimap {
       }
 
       this.nodes.leftZone.style.width = newWidth + 'px';
-      this.syncScrollWithChart();
+
     } else {
-      newWidth =  this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
+      newWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
       if (newWidth > this.rightZoneMaximumWidth){
         return;
@@ -371,6 +371,8 @@ export default class Minimap {
 
       this.nodes.rightZone.style.width = newWidth + 'px';
     }
+
+    this.syncScrollWithChart();
 
     const scaling = this.viewportWidthInitial / this.width ;
 

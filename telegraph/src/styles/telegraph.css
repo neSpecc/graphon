@@ -295,9 +295,10 @@
     background: transparent;
     margin-right: 5px;
     margin-bottom: -1px;
+    transition: box-shadow 260ms ease;
 }
 
-.tg-legend__item--enabled .tg-legend__checkbox::before {
+.tg-legend__checkbox::before {
     content: '';
     position: absolute;
     left: 3px;
@@ -308,7 +309,12 @@
     border-left: 2px solid #fff;
     border-bottom: 2px solid #fff;
     transform: rotate(-45deg);
-    animation: rolling 200ms ease;
+    opacity: 0;
+}
+
+.tg-legend__item--enabled .tg-legend__checkbox::before {
+    animation: rolling 200ms 150ms ease;
+    animation-fill-mode: forwards;
 }
 
 @keyframes rolling {
