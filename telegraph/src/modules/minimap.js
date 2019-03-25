@@ -38,12 +38,6 @@ export default class Minimap {
     this.viewportWidthBeforeDrag = undefined;
 
     /**
-     * @uses in this.viewportMousemove()
-     * To compute delta we should remember previous X
-     */
-    this.prevPageX = 0;
-
-    /**
      * Clicked pageX
      */
     this.moveStartX = undefined;
@@ -51,7 +45,6 @@ export default class Minimap {
     /**
      * Clicked layerX
      */
-    this.moveStartLayerX = undefined;
     this.wrapperLeftCoord = undefined;
 
     /**
@@ -162,7 +155,8 @@ export default class Minimap {
 
     const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
     this.width = this.wrapperWidth * chartToViewportRatio;
-    this.viewportWidthInitial = this.width;
+    this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
+    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
     this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart();
@@ -229,15 +223,11 @@ export default class Minimap {
       this.viewportMousedown(event);
     });
 
-    this.nodes.wrapper.addEventListener('mousemove', (event) => {
+    document.body.addEventListener('mousemove', (event) => {
       this.viewportMousemove(event);
     });
 
-    this.nodes.wrapper.addEventListener('mouseleave', (event) => {
-      this.viewportMouseleave(event);
-    });
-
-    this.nodes.wrapper.addEventListener('mouseup', (event) => {
+    document.body.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
     });
 
@@ -247,10 +237,6 @@ export default class Minimap {
 
     this.nodes.wrapper.addEventListener('touchmove', (event) => {
       this.viewportMousemove(event);
-   });
-
-    this.nodes.wrapper.addEventListener('touchcancel', (event) => {
-      this.viewportMouseleave(event);
     });
 
     this.nodes.wrapper.addEventListener('touchend', (event) => {
@@ -270,6 +256,7 @@ export default class Minimap {
     const leftScalerClicked = !!target.closest(`.${Minimap.CSS.leftZoneScaler}`);
     const rightScalerClicked = !!target.closest(`.${Minimap.CSS.rightZoneScaler}`);
 
+    this.viewportWidthBeforeDrag = this.width;
     this.moveStartX = Event.getPageX(event);
 
     if (leftScalerClicked || rightScalerClicked){
@@ -279,7 +266,7 @@ export default class Minimap {
       return;
     }
 
-    this.viewportWidthBeforeDrag = this.width;
+
     this.viewportPressed = true;
   }
 
@@ -297,20 +284,6 @@ export default class Minimap {
     }
   }
 
-  /**
-   * Viewport dragend
-   * @param {MouseEvent} event
-   */
-  viewportMouseleave(event){
-    if (this.viewportPressed){
-      this.finishSliding();
-    } else if (this.leftScalerClicked){
-      this.finishLeftScaling();
-    } else if (this.rightScalerClicked){
-      this.finishRightScaling();
-    }
-  }
-
   viewportMouseup(){
     if (this.viewportPressed){
       this.finishSliding();
@@ -323,15 +296,17 @@ export default class Minimap {
 
   finishSliding(){
     this.viewportPressed = false;
-    this.viewportOffsetLeft = parseInt(this.scrolledValue, 10);
+    this.viewportOffsetLeft = this.scrolledValue;
   }
 
   finishLeftScaling(){
     this.leftScalerClicked = false;
+    this.viewportOffsetLeft = this.scrolledValue;
   }
 
   finishRightScaling(){
     this.rightScalerClicked = false;
+    this.viewportOffsetLeft = this.scrolledValue;
   }
 
   /**
@@ -365,10 +340,9 @@ export default class Minimap {
    * @param {string} side — 'left' or 'right'
    */
   scalerDragged(event, side){
-    let deltaX = Event.getPageX(event) - this.moveStartX;
-    let delta = deltaX - this.prevPageX;
+    let pageX = Event.getPageX(event);
+    let delta = pageX - this.moveStartX;
 
-    this.prevPageX = deltaX;
     if (!delta){
       return;
     }
@@ -377,7 +351,7 @@ export default class Minimap {
 
     if (side === 'left'){
       delta = delta * -1;
-      newWidth = parseInt(this.nodes.leftZone.style.width) - delta;
+      newWidth = this.viewportOffsetLeft - delta;
 
       if (newWidth > this.leftZoneMaximumWidth) {
         return;
@@ -386,7 +360,7 @@ export default class Minimap {
       this.nodes.leftZone.style.width = newWidth + 'px';
       this.syncScrollWithChart();
     } else {
-      newWidth = parseInt(this.nodes.rightZone.style.width) - delta;
+      newWidth =  this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
       if (newWidth > this.rightZoneMaximumWidth){
         return;

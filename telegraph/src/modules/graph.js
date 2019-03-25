@@ -109,7 +109,8 @@ export default class Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = Math.ceil(parseInt(this.canvas.style.width, 10) / this.state.daysCount);
+    this.stepX = parseInt(this.canvas.style.width, 10) / this.state.daysCount;
+
     /**
      * All lines maximum value
      */
