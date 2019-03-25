@@ -1167,31 +1167,35 @@ class minimap_Minimap {
       return;
     }
 
-    let newWidth;
+    let newScalerWidth;
 
     if (side === 'left'){
       delta = delta * -1;
-      newWidth = this.viewportOffsetLeft - delta;
+      newScalerWidth = this.viewportOffsetLeft - delta;
 
-      if (newWidth > this.leftZoneMaximumWidth) {
+      if (newScalerWidth > this.leftZoneMaximumWidth) {
         return;
       }
 
-      this.nodes.leftZone.style.width = newWidth + 'px';
+      this.nodes.leftZone.style.width = newScalerWidth + 'px';
 
     } else {
-      newWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
+      newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
-      if (newWidth > this.rightZoneMaximumWidth){
+      if (newScalerWidth > this.rightZoneMaximumWidth){
         return;
       }
 
-      this.nodes.rightZone.style.width = newWidth + 'px';
+      this.nodes.rightZone.style.width = newScalerWidth + 'px';
     }
 
     this.syncScrollWithChart();
 
-    const scaling = this.viewportWidthInitial / this.width ;
+    const newViewportWidth = side === 'left' ?
+      this.wrapperWidth - newScalerWidth - parseInt(this.nodes.rightZone.style.width, 10) :
+      this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - newScalerWidth;
+
+    const scaling = this.viewportWidthInitial / newViewportWidth ;
 
 
     this.modules.chart.scale(scaling);
