@@ -141,6 +141,7 @@ export default class Chart {
     let newLeft = position * -1;
     this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
+    this.tooltip.hide();
   }
 
   /**

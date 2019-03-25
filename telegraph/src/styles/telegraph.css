@@ -116,6 +116,7 @@
     margin-bottom: 20px;
     border-top: 2px solid rgba(125,175,210,0.25);
     border-bottom: 2px solid rgba(125,175,210,0.25);
+    cursor: pointer;
 }
 
 
@@ -129,6 +130,7 @@
     border-top: 2px solid #f4f8fb;
     border-bottom: 2px solid #f4f8fb;
     z-index: 2;
+    cursor: default;
 }
 
 .tg-minimap__left {
@@ -146,7 +148,7 @@
     width: 26px;
     top: 0;
     z-index: 2;
-    cursor: pointer;
+    cursor: col-resize;
 }
 
 .tg-minimap__left-scaler {
@@ -237,7 +239,7 @@
     border-radius: 5px;
     box-shadow: 0 1px 4px 0 rgba(0,0,0,0.13);
     top: 20px;
-    padding: 15px;
+    padding: 10px 15px;
     z-index: 3;
     transition: left 150ms ease, opacity 200ms ease;
     will-change: left, opacity;
@@ -251,7 +253,7 @@
 .tg-tooltip__title {
     font-weight: 400;
     font-size: 15px;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     white-space: nowrap;
 }
 
@@ -338,4 +340,38 @@
         width: 8px;
         height: 4px;
     }
+}
+
+
+/**
+ * Night mode
+ * --------------------------------
+ */
+.tg--night-mode {
+    background: #242F3E;
+    color: #E2E8EE;
+}
+
+.tg--night-mode .tg-minimap__left,
+.tg--night-mode .tg-minimap__right {
+    background: rgba(30, 40, 53, 0.73);
+    border-color: #1f2938;
+}
+
+.tg--night-mode .tg-chart footer,
+.tg--night-mode .tg-grid {
+    color: #5C6C7B;
+}
+
+.tg--night-mode .tg-legend__item {
+    border-color: #384757;
+}
+
+.tg--night-mode .tg-tooltip {
+    background: #273240;
+    box-shadow: 0 2px 4px 0 rgba(18,29,39,0.67);
+}
+
+.tg--night-mode .tg-tooltip__title {
+    color: #E2E8EE;
 }

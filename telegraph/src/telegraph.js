@@ -59,11 +59,29 @@ export default class Telegraph {
   }
 
   /**
+   * CSS classes map
+   * @return {{nightModeEnabled: string}}
+   */
+  static get CSS(){
+    return {
+      nightModeEnabled : 'tg--night-mode'
+    }
+  }
+
+  /**
    * Create base app UI
    */
   prepareUi(){
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
     this.holder.appendChild(this.legend.render());
+  }
+
+  /**
+   * @public
+   * Toggles night mode
+   */
+  toggleNightMode(){
+    this.holder.classList.toggle(Telegraph.CSS.nightModeEnabled);
   }
 }
