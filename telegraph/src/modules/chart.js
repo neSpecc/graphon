@@ -31,7 +31,7 @@ export default class Chart {
     this.tooltip = new Tooltip(this.modules);
     this.pointer = new Pointer(this.modules);
     this.graph = new Graph(this.state, {
-      stroke: 2.5
+      stroke: 2.6
     });
 
     this.wrapperLeftCoord = undefined;

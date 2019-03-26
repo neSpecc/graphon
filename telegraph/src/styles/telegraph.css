@@ -414,3 +414,7 @@
 .tg--night-mode .tg-tooltip__title {
     color: #E2E8EE;
 }
+
+.tg--night-mode .tg-pointer__pointer {
+    background: #242F3E;
+}

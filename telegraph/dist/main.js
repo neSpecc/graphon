@@ -1517,7 +1517,7 @@ class chart_Chart {
     this.tooltip = new tooltip_Tooltip(this.modules);
     this.pointer = new pointer_Pointer(this.modules);
     this.graph = new graph_Graph(this.state, {
-      stroke: 2.5
+      stroke: 2.6
     });
 
     this.wrapperLeftCoord = undefined;
