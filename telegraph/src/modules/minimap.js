@@ -75,7 +75,8 @@ export default class Minimap {
     this.rightZoneWidth = 0;
 
     this.graph = new Graph(this.state, {
-      stroke: 1
+      stroke: 1,
+      animate: true
     });
   }
 
@@ -183,6 +184,7 @@ export default class Minimap {
 
     const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
     this.width = this.wrapperWidth * chartToViewportRatio;
+
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
     // this.viewportOffsetLeft = 0;
