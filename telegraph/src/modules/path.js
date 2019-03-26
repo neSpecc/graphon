@@ -167,16 +167,25 @@ export default class Path {
   }
 
   scaleY(scaleY){
-    this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
-    this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
+    // this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    // this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
-    if (this.debounce){
-      clearTimeout(this.debounce);
+    let oldTransform = this.path.style.transform;
+
+    if (oldTransform.includes('scaleY')){
+      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaleY})`)
+    } else {
+      this.path.style.transform = oldTransform + ` scaleY(${scaleY})`;
     }
 
-    this.debounce = setTimeout(() => {
-      this.path.style.transition = 'opacity 150ms ease';
-    }, 300)
+
+    // if (this.debounce){
+    //   clearTimeout(this.debounce);
+    // }
+    //
+    // this.debounce = setTimeout(() => {
+    //   this.path.style.transition = 'opacity 150ms ease';
+    // }, 300)
   }
 
   get isHidden(){

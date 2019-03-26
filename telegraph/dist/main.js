@@ -468,16 +468,25 @@ class path_Path {
   }
 
   scaleY(scaleY){
-    this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
-    this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
+    // this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    // this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
-    if (this.debounce){
-      clearTimeout(this.debounce);
+    let oldTransform = this.path.style.transform;
+
+    if (oldTransform.includes('scaleY')){
+      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaleY})`)
+    } else {
+      this.path.style.transform = oldTransform + ` scaleY(${scaleY})`;
     }
 
-    this.debounce = setTimeout(() => {
-      this.path.style.transition = 'opacity 150ms ease';
-    }, 300)
+
+    // if (this.debounce){
+    //   clearTimeout(this.debounce);
+    // }
+    //
+    // this.debounce = setTimeout(() => {
+    //   this.path.style.transition = 'opacity 150ms ease';
+    // }, 300)
   }
 
   get isHidden(){
@@ -1034,6 +1043,7 @@ class minimap_Minimap {
     this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
+    this.modules.chart.fitToMax();
   }
 
   /**
@@ -1398,7 +1408,7 @@ class chart_Chart {
       wrapper: undefined,
       viewport: undefined,
       canvas: undefined,
-      cursorLine: undefined
+      cursorLine: undefined,
     };
 
     this.tooltip = new tooltip_Tooltip(this.modules);
@@ -1535,6 +1545,7 @@ class chart_Chart {
     this.graph.pathsList.forEach( path => {
       path.setMatrix(this.scaling, 1, newLeft);
     });
+    this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
     this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);

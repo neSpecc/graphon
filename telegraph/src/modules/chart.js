@@ -24,7 +24,7 @@ export default class Chart {
       wrapper: undefined,
       viewport: undefined,
       canvas: undefined,
-      cursorLine: undefined
+      cursorLine: undefined,
     };
 
     this.tooltip = new Tooltip(this.modules);
@@ -161,6 +161,7 @@ export default class Chart {
     this.graph.pathsList.forEach( path => {
       path.setMatrix(this.scaling, 1, newLeft);
     });
+    this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
     this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
