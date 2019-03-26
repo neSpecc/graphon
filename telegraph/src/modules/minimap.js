@@ -68,6 +68,12 @@ export default class Minimap {
      */
     this.scaleDebounce = undefined;
 
+    /**
+     * Cache for zones size
+     */
+    this.leftZoneWidth = 0;
+    this.rightZoneWidth = 0;
+
     this.graph = new Graph(this.state, {
       stroke: 1
     });
@@ -136,18 +142,34 @@ export default class Minimap {
    * @return {number}
    */
   get width(){
-    return this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - parseInt(this.nodes.rightZone.style.width, 10);
+    return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
+  }
+
+  /**
+   * Left zone width setter
+   */
+  set leftWidth(val){
+    this.leftZoneWidth = val;
+    this.nodes.leftZone.style.width = val + 'px';
+  }
+
+  /**
+   * Right zone width setter
+   */
+  set rightWidth(val){
+    this.rightZoneWidth = val;
+    this.nodes.rightZone.style.width = val + 'px';
   }
 
   /**
    * Set new with to the minimap's viewport
-   * @param value
+   * @param {number} value
    */
   set width(value){
     const scrollDistance = this.modules.chart.scrollDistance;
 
-    this.nodes.leftZone.style.width = scrollDistance + 'px';
-    this.nodes.rightZone.style.width = this.wrapperWidth - scrollDistance - value + 'px';
+    this.leftWidth = scrollDistance;
+    this.rightWidth = this.wrapperWidth - scrollDistance - value;
     this.viewportWidth = value;
   }
 
@@ -173,7 +195,7 @@ export default class Minimap {
    * @return {number}
    */
   get scrolledValue(){
-    return parseInt(this.nodes.leftZone.style.width, 10);
+    return this.leftZoneWidth;
   }
 
   /**
@@ -187,7 +209,7 @@ export default class Minimap {
    * Value of left zone width maximum
    */
   get leftZoneMaximumWidth(){
-    return this.wrapperWidth - this.viewportWidthInitial - parseInt(this.nodes.rightZone.style.width);
+    return this.wrapperWidth - this.viewportWidthInitial - this.rightZoneWidth;
   }
 
   /**
@@ -220,8 +242,8 @@ export default class Minimap {
     } else if (newLeft > maxLeft){
       newLeft = maxLeft;
     }
-    this.nodes.leftZone.style.width = newLeft + 'px';
-    this.nodes.rightZone.style.width = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
+    this.leftWidth = newLeft;
+    this.rightWidth = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
   }
 
   bindEvents(){
@@ -365,7 +387,7 @@ export default class Minimap {
         return;
       }
 
-      this.nodes.leftZone.style.width = newScalerWidth + 'px';
+      this.leftWidth = newScalerWidth;
 
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
@@ -374,26 +396,19 @@ export default class Minimap {
         return;
       }
 
-      this.nodes.rightZone.style.width = newScalerWidth + 'px';
+      this.rightWidth = newScalerWidth;
     }
 
     const newViewportWidth = side === 'left' ?
-      this.wrapperWidth - newScalerWidth - parseInt(this.nodes.rightZone.style.width, 10) :
-      this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - newScalerWidth;
+      this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
+      this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
 
     const scaling = this.viewportWidthInitial / newViewportWidth ;
 
-
     this.modules.chart.scale(scaling);
-    this.syncScrollWithChart(side === 'left' ? newScalerWidth : parseInt(this.nodes.leftZone.style.width));
-    
-    if (this.scaleDebounce){
-      clearTimeout(this.scaleDebounce);
-    }
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth);
 
-    this.scaleDebounce = setTimeout(() => {
-      this.modules.chart.fitToMax(true);
-    }, 30)
+    this.modules.chart.fitToMax();
   }
 
   /**

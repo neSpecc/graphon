@@ -155,7 +155,12 @@ export default class Chart {
    */
   scroll(position){
     let newLeft = position * -1;
-    this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
+    // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
+    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
+    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
+    this.graph.pathsList.forEach( path => {
+      path.setMatrix(this.scaling, 1, newLeft);
+    });
     this.scrollValue = newLeft;
     this.tooltip.hide();
     this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
@@ -166,7 +171,7 @@ export default class Chart {
    * @param {number} scaling
    */
   scale(scaling){
-    this.graph.scaleLines(scaling);
+    this.graph.scaleLines(scaling, this.scrollValue);
 
     this.scaling = scaling;
   }
@@ -199,7 +204,7 @@ export default class Chart {
       return Math.max(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.scaleToMaxPoint(maxVisiblePoint, this.scaling, this.scrollValue);
   }
 
   /**

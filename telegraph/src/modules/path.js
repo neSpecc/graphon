@@ -6,6 +6,7 @@ import * as Dom from "../utils/dom";
 export default class Path {
   constructor({color, svg, max, stroke, stepX, opacity = 1}){
     this.svg = svg;
+    this.canvasHeight = parseInt(this.svg.style.height, 10);
     this.kY = max !== 0 ? this.canvasHeight / max : 1;
     this.stepX = stepX;
     this.prevX = 0;
@@ -21,25 +22,32 @@ export default class Path {
     });
 
     this.pathData = '';
+
+    /**
+     * Cache for CSS transform matrix
+     * @type {{scaleX: number, scaleY: number, translateX: number}}
+     */
+    this.matrix = {
+      scaleX: 1,
+      scaleY: 1,
+      translateX: 0
+    }
+
+    /**
+     * Debounce for transition removing
+     * @type {null}
+     */
+    this.debounce = null;
   }
 
+  /**
+   * CSS classes map
+   * @return {{graphHidden: string}}
+   */
   static get CSS(){
     return {
       graphHidden: 'tg-graph--hidden'
     }
-  }
-
-  /**
-   * @todo get offsetHeight instead of style.height
-   * @todo cache value
-   * @return {number}
-   */
-  get canvasHeight(){
-    return parseInt(this.svg.style.height, 10);
-  }
-
-  get canvasWidth(){
-    return this.svg.offsetWidth;
   }
 
   /**
@@ -141,38 +149,34 @@ export default class Path {
     }, speed)
   };
 
+  setMatrix(scaleX, scaleY, translateX){
+    this.path.style.transform = `matrix(${scaleX},0,0,${scaleY}, ${translateX},0)`;
+    this.matrix = {
+      scaleX, scaleY, translateX
+    }
+  }
+
   scaleX(scaling){
     let oldTransform = this.path.style.transform;
-    // let oldTransition = this.path.style.transition;
-
-    // this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
 
     if (oldTransform.includes('scaleX')){
       this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
     }
-
-    // setTimeout(() => {
-    //   this.path.style.transition = oldTransition;
-    // }, 100)
   }
 
-  scaleY(scaling){
-    let oldTransform = this.path.style.transform;
-    let oldTransition = this.path.style.transition;
+  scaleY(scaleY){
+    this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
-    this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
-
-    if (oldTransform.includes('scaleY')){
-      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)
-    } else {
-      this.path.style.transform = oldTransform + ` scaleY(${scaling})`;
+    if (this.debounce){
+      clearTimeout(this.debounce);
     }
 
-      setTimeout(() => {
-        this.path.style.transition = oldTransition;
-      }, 300)
+    this.debounce = setTimeout(() => {
+      this.path.style.transition = 'opacity 150ms ease';
+    }, 300)
   }
 
   get isHidden(){

@@ -307,6 +307,7 @@ function beautify(number) {
 class path_Path {
   constructor({color, svg, max, stroke, stepX, opacity = 1}){
     this.svg = svg;
+    this.canvasHeight = parseInt(this.svg.style.height, 10);
     this.kY = max !== 0 ? this.canvasHeight / max : 1;
     this.stepX = stepX;
     this.prevX = 0;
@@ -322,25 +323,32 @@ class path_Path {
     });
 
     this.pathData = '';
+
+    /**
+     * Cache for CSS transform matrix
+     * @type {{scaleX: number, scaleY: number, translateX: number}}
+     */
+    this.matrix = {
+      scaleX: 1,
+      scaleY: 1,
+      translateX: 0
+    }
+
+    /**
+     * Debounce for transition removing
+     * @type {null}
+     */
+    this.debounce = null;
   }
 
+  /**
+   * CSS classes map
+   * @return {{graphHidden: string}}
+   */
   static get CSS(){
     return {
       graphHidden: 'tg-graph--hidden'
     }
-  }
-
-  /**
-   * @todo get offsetHeight instead of style.height
-   * @todo cache value
-   * @return {number}
-   */
-  get canvasHeight(){
-    return parseInt(this.svg.style.height, 10);
-  }
-
-  get canvasWidth(){
-    return this.svg.offsetWidth;
   }
 
   /**
@@ -442,38 +450,34 @@ class path_Path {
     }, speed)
   };
 
+  setMatrix(scaleX, scaleY, translateX){
+    this.path.style.transform = `matrix(${scaleX},0,0,${scaleY}, ${translateX},0)`;
+    this.matrix = {
+      scaleX, scaleY, translateX
+    }
+  }
+
   scaleX(scaling){
     let oldTransform = this.path.style.transform;
-    // let oldTransition = this.path.style.transition;
-
-    // this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
 
     if (oldTransform.includes('scaleX')){
       this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
     } else {
       this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
     }
-
-    // setTimeout(() => {
-    //   this.path.style.transition = oldTransition;
-    // }, 100)
   }
 
-  scaleY(scaling){
-    let oldTransform = this.path.style.transform;
-    let oldTransition = this.path.style.transition;
+  scaleY(scaleY){
+    this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
-    this.path.style.transition = 'transform 100ms ease, opacity 150ms ease';
-
-    if (oldTransform.includes('scaleY')){
-      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaling})`)
-    } else {
-      this.path.style.transform = oldTransform + ` scaleY(${scaling})`;
+    if (this.debounce){
+      clearTimeout(this.debounce);
     }
 
-      setTimeout(() => {
-        this.path.style.transition = oldTransition;
-      }, 300)
+    this.debounce = setTimeout(() => {
+      this.path.style.transition = 'opacity 150ms ease';
+    }, 300)
   }
 
   get isHidden(){
@@ -524,6 +528,14 @@ class graph_Graph {
      * @type {object} name -> Path
      */
     this.paths = {};
+
+    /**
+     * Cache for canvas width and height values
+     * @type {number}
+     * @private
+     */
+    this._width = 0;
+    this._height = 0;
   }
 
   static get CSS(){
@@ -555,14 +567,13 @@ class graph_Graph {
     this.canvas = make('svg');
 
     if (!width){
-      this.setCanvasWidth();
+      this.computeInitialWidth();
     } else {
-      this.canvas.style.width = width + 'px';
-      this.initialWidth = width;
+      this.width = this.initialWidth = width;
     }
 
     if (height){
-      this.canvas.style.height = height + 'px';
+      this.height = height;
     }
 
     this.computeSteps();
@@ -573,9 +584,9 @@ class graph_Graph {
   /**
    * Compute and set initial canvas width
    */
-  setCanvasWidth(){
+  computeInitialWidth(){
     this.initialWidth = this.state.daysCount * this.stepX;
-    this.canvas.style.width = this.initialWidth + 'px';
+    this.width = this.initialWidth;
   }
 
   /**
@@ -583,7 +594,16 @@ class graph_Graph {
    * @return {number}
    */
   get width(){
-    return parseInt(this.canvas.style.width, 10);
+    return this._width;
+  }
+
+  /**
+   * Set canvas width
+   * @param {number} val
+   */
+  set width(val){
+    this._width = val;
+    this.canvas.style.width = val + 'px';
   }
 
   /**
@@ -591,14 +611,23 @@ class graph_Graph {
    * @return {number}
    */
   get height(){
-    return parseInt(this.canvas.style.height, 10);
+    return this._height;
+  }
+
+  /**
+   * Set canvas height
+   * @param {number} val
+   */
+  set height(val){
+    this._height = val;
+    this.canvas.style.height = val + 'px';
   }
 
   /**
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = parseInt(this.canvas.style.width, 10) / this.state.daysCount;
+    this.stepX = this.width / this.state.daysCount;
 
     /**
      * All lines maximum value
@@ -681,7 +710,6 @@ class graph_Graph {
 
     let stepY = this.stepY;
     const height = this.height;
-    const width = this.width;
     const max = forceMax || this.maxPoint;
     const kY = height / max;
 
@@ -765,7 +793,7 @@ class graph_Graph {
     });
 
     const newWidth = this.initialWidth * scaling;
-    this.canvas.style.width = newWidth + 'px';
+    this.width = newWidth;
 
     const canFit = Math.round(newWidth / this.stepX);
     const nowFit = Math.round(this.initialWidth / this.stepX);
@@ -791,10 +819,11 @@ class graph_Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax){
+  scaleToMaxPoint(newMax, scaleX, scroll){
     let scaling = this.maxPoint / newMax * 0.8;
 
     this.pathsList.forEach( path => {
+      // path.setMatrix(scaleX, scaling, scroll);
       path.scaleY(scaling);
     });
 
@@ -885,6 +914,12 @@ class minimap_Minimap {
      */
     this.scaleDebounce = undefined;
 
+    /**
+     * Cache for zones size
+     */
+    this.leftZoneWidth = 0;
+    this.rightZoneWidth = 0;
+
     this.graph = new graph_Graph(this.state, {
       stroke: 1
     });
@@ -953,18 +988,34 @@ class minimap_Minimap {
    * @return {number}
    */
   get width(){
-    return this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - parseInt(this.nodes.rightZone.style.width, 10);
+    return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
+  }
+
+  /**
+   * Left zone width setter
+   */
+  set leftWidth(val){
+    this.leftZoneWidth = val;
+    this.nodes.leftZone.style.width = val + 'px';
+  }
+
+  /**
+   * Right zone width setter
+   */
+  set rightWidth(val){
+    this.rightZoneWidth = val;
+    this.nodes.rightZone.style.width = val + 'px';
   }
 
   /**
    * Set new with to the minimap's viewport
-   * @param value
+   * @param {number} value
    */
   set width(value){
     const scrollDistance = this.modules.chart.scrollDistance;
 
-    this.nodes.leftZone.style.width = scrollDistance + 'px';
-    this.nodes.rightZone.style.width = this.wrapperWidth - scrollDistance - value + 'px';
+    this.leftWidth = scrollDistance;
+    this.rightWidth = this.wrapperWidth - scrollDistance - value;
     this.viewportWidth = value;
   }
 
@@ -990,7 +1041,7 @@ class minimap_Minimap {
    * @return {number}
    */
   get scrolledValue(){
-    return parseInt(this.nodes.leftZone.style.width, 10);
+    return this.leftZoneWidth;
   }
 
   /**
@@ -1004,7 +1055,7 @@ class minimap_Minimap {
    * Value of left zone width maximum
    */
   get leftZoneMaximumWidth(){
-    return this.wrapperWidth - this.viewportWidthInitial - parseInt(this.nodes.rightZone.style.width);
+    return this.wrapperWidth - this.viewportWidthInitial - this.rightZoneWidth;
   }
 
   /**
@@ -1037,8 +1088,8 @@ class minimap_Minimap {
     } else if (newLeft > maxLeft){
       newLeft = maxLeft;
     }
-    this.nodes.leftZone.style.width = newLeft + 'px';
-    this.nodes.rightZone.style.width = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
+    this.leftWidth = newLeft;
+    this.rightWidth = this.wrapperWidth - this.viewportWidthBeforeDrag - newLeft;
   }
 
   bindEvents(){
@@ -1182,7 +1233,7 @@ class minimap_Minimap {
         return;
       }
 
-      this.nodes.leftZone.style.width = newScalerWidth + 'px';
+      this.leftWidth = newScalerWidth;
 
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
@@ -1191,26 +1242,19 @@ class minimap_Minimap {
         return;
       }
 
-      this.nodes.rightZone.style.width = newScalerWidth + 'px';
+      this.rightWidth = newScalerWidth;
     }
 
     const newViewportWidth = side === 'left' ?
-      this.wrapperWidth - newScalerWidth - parseInt(this.nodes.rightZone.style.width, 10) :
-      this.wrapperWidth - parseInt(this.nodes.leftZone.style.width, 10) - newScalerWidth;
+      this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
+      this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
 
     const scaling = this.viewportWidthInitial / newViewportWidth ;
 
-
     this.modules.chart.scale(scaling);
-    this.syncScrollWithChart(side === 'left' ? newScalerWidth : parseInt(this.nodes.leftZone.style.width));
-    
-    if (this.scaleDebounce){
-      clearTimeout(this.scaleDebounce);
-    }
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth);
 
-    this.scaleDebounce = setTimeout(() => {
-      this.modules.chart.fitToMax(true);
-    }, 30)
+    this.modules.chart.fitToMax();
   }
 
   /**
@@ -1485,7 +1529,12 @@ class chart_Chart {
    */
   scroll(position){
     let newLeft = position * -1;
-    this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
+    // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
+    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
+    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
+    this.graph.pathsList.forEach( path => {
+      path.setMatrix(this.scaling, 1, newLeft);
+    });
     this.scrollValue = newLeft;
     this.tooltip.hide();
     this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);
@@ -1496,7 +1545,7 @@ class chart_Chart {
    * @param {number} scaling
    */
   scale(scaling){
-    this.graph.scaleLines(scaling);
+    this.graph.scaleLines(scaling, this.scrollValue);
 
     this.scaling = scaling;
   }
@@ -1529,7 +1578,7 @@ class chart_Chart {
       return Math.max(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.scaleToMaxPoint(maxVisiblePoint, this.scaling, this.scrollValue);
   }
 
   /**

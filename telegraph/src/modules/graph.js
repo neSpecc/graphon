@@ -37,6 +37,14 @@ export default class Graph {
      * @type {object} name -> Path
      */
     this.paths = {};
+
+    /**
+     * Cache for canvas width and height values
+     * @type {number}
+     * @private
+     */
+    this._width = 0;
+    this._height = 0;
   }
 
   static get CSS(){
@@ -68,14 +76,13 @@ export default class Graph {
     this.canvas = Dom.make('svg');
 
     if (!width){
-      this.setCanvasWidth();
+      this.computeInitialWidth();
     } else {
-      this.canvas.style.width = width + 'px';
-      this.initialWidth = width;
+      this.width = this.initialWidth = width;
     }
 
     if (height){
-      this.canvas.style.height = height + 'px';
+      this.height = height;
     }
 
     this.computeSteps();
@@ -86,9 +93,9 @@ export default class Graph {
   /**
    * Compute and set initial canvas width
    */
-  setCanvasWidth(){
+  computeInitialWidth(){
     this.initialWidth = this.state.daysCount * this.stepX;
-    this.canvas.style.width = this.initialWidth + 'px';
+    this.width = this.initialWidth;
   }
 
   /**
@@ -96,7 +103,16 @@ export default class Graph {
    * @return {number}
    */
   get width(){
-    return parseInt(this.canvas.style.width, 10);
+    return this._width;
+  }
+
+  /**
+   * Set canvas width
+   * @param {number} val
+   */
+  set width(val){
+    this._width = val;
+    this.canvas.style.width = val + 'px';
   }
 
   /**
@@ -104,14 +120,23 @@ export default class Graph {
    * @return {number}
    */
   get height(){
-    return parseInt(this.canvas.style.height, 10);
+    return this._height;
+  }
+
+  /**
+   * Set canvas height
+   * @param {number} val
+   */
+  set height(val){
+    this._height = val;
+    this.canvas.style.height = val + 'px';
   }
 
   /**
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = parseInt(this.canvas.style.width, 10) / this.state.daysCount;
+    this.stepX = this.width / this.state.daysCount;
 
     /**
      * All lines maximum value
@@ -194,7 +219,6 @@ export default class Graph {
 
     let stepY = this.stepY;
     const height = this.height;
-    const width = this.width;
     const max = forceMax || this.maxPoint;
     const kY = height / max;
 
@@ -278,7 +302,7 @@ export default class Graph {
     });
 
     const newWidth = this.initialWidth * scaling;
-    this.canvas.style.width = newWidth + 'px';
+    this.width = newWidth;
 
     const canFit = Math.round(newWidth / this.stepX);
     const nowFit = Math.round(this.initialWidth / this.stepX);
@@ -304,10 +328,11 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax){
+  scaleToMaxPoint(newMax, scaleX, scroll){
     let scaling = this.maxPoint / newMax * 0.8;
 
     this.pathsList.forEach( path => {
+      // path.setMatrix(scaleX, scaling, scroll);
       path.scaleY(scaling);
     });
 
