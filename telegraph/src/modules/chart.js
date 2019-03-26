@@ -245,18 +245,20 @@ export default class Chart {
   mouseMove(event){
     let x = Event.getPageX(event);
     let viewportX = x - this.wrapperLeftCoord ;
-    let scrollOffset = this.scrollValue % this.graph.stepX;
+
+    let stepXWithScale = this.graph.stepX * this.scaling;
+    let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
+    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (this.graph.stepX / 2) ){
       pointIndex = pointIndex + 1;
     }
 
-    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
-    let newLeft = (pointIndex * this.graph.stepX + scrollOffset) * this.scaling;
+    let newLeft = pointIndex * stepXWithScale + scrollOffset;
 
-    // console.log('scroll offset %o | step %o | index %o | x %o | drawn at %o | first step offset %o | left index %o', scrollOffset, this.graph.stepX, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
+    // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
 
