@@ -333,7 +333,7 @@ class path_Path {
       scaleX: 1,
       scaleY: 1,
       translateX: 0
-    }
+    };
 
     /**
      * Debounce for transition removing
@@ -348,7 +348,7 @@ class path_Path {
    */
   static get CSS(){
     return {
-      graphHidden: 'tg-graph--hidden'
+      graphHidden: 'tg-graph--hidden',
     }
   }
 
@@ -528,7 +528,16 @@ class graph_Graph {
     this.gridLines = [];
 
 
-    this.group = undefined;
+    /**
+     * Transformations on OY
+     */
+    this.oyGroup = undefined;
+
+    /**
+     * Transformations on OX
+     */
+    this.oxGroup = undefined;
+
     this.stepX = dateLabelWidth;
     this.stepY = 10;
     this.strokeWidth = stroke;
@@ -554,7 +563,9 @@ class graph_Graph {
     return {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
-      gridSectionHidden: 'tg-grid__section--hidden'
+      gridSectionHidden: 'tg-grid__section--hidden',
+      oxGroup: 'ox-group',
+      oyGroup: 'oy-group',
     }
   }
 
@@ -577,7 +588,11 @@ class graph_Graph {
    */
   renderCanvas({width, height} = {}){
     this.canvas = make('svg');
-    this.group = make('g');
+    this.oxGroup = make('g');
+    this.oyGroup = make('g');
+
+    this.oxGroup.setAttribute('class', graph_Graph.CSS.oxGroup);
+    this.oyGroup.setAttribute('class', graph_Graph.CSS.oyGroup);
 
     if (!width){
       this.computeInitialWidth();
@@ -591,7 +606,8 @@ class graph_Graph {
 
     this.computeSteps();
 
-    this.canvas.appendChild(this.group);
+    this.oyGroup.appendChild(this.oxGroup);
+    this.canvas.appendChild(this.oyGroup);
 
     return this.canvas;
   }
@@ -685,7 +701,7 @@ class graph_Graph {
      */
     const path = new path_Path({
       svg: this.canvas,
-      g: this.group,
+      g: this.oxGroup,
       color,
       max: this.maxPoint,
       stroke: this.strokeWidth,
@@ -804,9 +820,10 @@ class graph_Graph {
    * @param {number} scaling
    */
   scaleLines(scaling){
-    this.pathsList.forEach( path => {
-      path.scaleX(scaling);
-    });
+    this.oxGroup.style.transform = `scaleX(${scaling})`;
+    // this.pathsList.forEach( path => {
+    //   path.scaleX(scaling);
+    // });
 
     const newWidth = this.initialWidth * scaling;
     this.width = newWidth;
@@ -841,7 +858,7 @@ class graph_Graph {
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
       // path.scaleY(scaling);
-      this.group.style.transform = `scaleY(${scaling})`;
+      this.oyGroup.style.transform = `scaleY(${scaling})`;
     });
 
     /**
@@ -1549,10 +1566,13 @@ class chart_Chart {
     let newLeft = position * -1;
     // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-    this.graph.pathsList.forEach( path => {
-      path.setMatrix(this.scaling, 1, newLeft);
-    });
+
+    this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
+
+
+    // this.graph.pathsList.forEach( path => {
+    //   path.setMatrix(this.scaling, 1, newLeft);
+    // });
     this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();

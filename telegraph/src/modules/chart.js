@@ -157,10 +157,13 @@ export default class Chart {
     let newLeft = position * -1;
     // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-    this.graph.pathsList.forEach( path => {
-      path.setMatrix(this.scaling, 1, newLeft);
-    });
+
+    this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
+
+
+    // this.graph.pathsList.forEach( path => {
+    //   path.setMatrix(this.scaling, 1, newLeft);
+    // });
     this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();

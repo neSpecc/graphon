@@ -32,7 +32,7 @@ export default class Path {
       scaleX: 1,
       scaleY: 1,
       translateX: 0
-    }
+    };
 
     /**
      * Debounce for transition removing
@@ -47,7 +47,7 @@ export default class Path {
    */
   static get CSS(){
     return {
-      graphHidden: 'tg-graph--hidden'
+      graphHidden: 'tg-graph--hidden',
     }
   }
 

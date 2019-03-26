@@ -26,7 +26,16 @@ export default class Graph {
     this.gridLines = [];
 
 
-    this.group = undefined;
+    /**
+     * Transformations on OY
+     */
+    this.oyGroup = undefined;
+
+    /**
+     * Transformations on OX
+     */
+    this.oxGroup = undefined;
+
     this.stepX = dateLabelWidth;
     this.stepY = 10;
     this.strokeWidth = stroke;
@@ -52,7 +61,9 @@ export default class Graph {
     return {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
-      gridSectionHidden: 'tg-grid__section--hidden'
+      gridSectionHidden: 'tg-grid__section--hidden',
+      oxGroup: 'ox-group',
+      oyGroup: 'oy-group',
     }
   }
 
@@ -75,7 +86,11 @@ export default class Graph {
    */
   renderCanvas({width, height} = {}){
     this.canvas = Dom.make('svg');
-    this.group = Dom.make('g');
+    this.oxGroup = Dom.make('g');
+    this.oyGroup = Dom.make('g');
+
+    this.oxGroup.setAttribute('class', Graph.CSS.oxGroup);
+    this.oyGroup.setAttribute('class', Graph.CSS.oyGroup);
 
     if (!width){
       this.computeInitialWidth();
@@ -89,7 +104,8 @@ export default class Graph {
 
     this.computeSteps();
 
-    this.canvas.appendChild(this.group);
+    this.oyGroup.appendChild(this.oxGroup);
+    this.canvas.appendChild(this.oyGroup);
 
     return this.canvas;
   }
@@ -183,7 +199,7 @@ export default class Graph {
      */
     const path = new Path({
       svg: this.canvas,
-      g: this.group,
+      g: this.oxGroup,
       color,
       max: this.maxPoint,
       stroke: this.strokeWidth,
@@ -302,9 +318,10 @@ export default class Graph {
    * @param {number} scaling
    */
   scaleLines(scaling){
-    this.pathsList.forEach( path => {
-      path.scaleX(scaling);
-    });
+    this.oxGroup.style.transform = `scaleX(${scaling})`;
+    // this.pathsList.forEach( path => {
+    //   path.scaleX(scaling);
+    // });
 
     const newWidth = this.initialWidth * scaling;
     this.width = newWidth;
@@ -339,7 +356,7 @@ export default class Graph {
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
       // path.scaleY(scaling);
-      this.group.style.transform = `scaleY(${scaling})`;
+      this.oyGroup.style.transform = `scaleY(${scaling})`;
     });
 
     /**

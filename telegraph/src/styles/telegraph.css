@@ -30,6 +30,11 @@
 .tg-chart g,
 .tg-minimap g {
     transform-origin: bottom left;
+    will-change: transform;
+}
+
+.tg-chart .oy-group,
+.tg-minimap .oy-group {
     transition: transform 200ms ease;
     will-change: transform;
 }
