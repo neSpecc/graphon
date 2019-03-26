@@ -11,7 +11,7 @@
 .tg-chart {
     position: relative;
     margin-bottom: 25px;
-    overflow: hidden;
+    /*overflow: hidden;*/
     font-size: 14px;
     font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
 }
@@ -51,6 +51,11 @@
     opacity: 0;
 }
 
+
+/**
+ * Footer with dates
+ * ----------------------------
+ */
 .tg-chart footer {
     display: flex;
     padding: 15px 0;
@@ -69,19 +74,23 @@
     will-change: opacity;
 }
 
-.tg-chart time:first-of-type {
-    text-align: right;
+.tg-chart .tg-legend__date--hidden {
+    opacity: 0;
 }
 
-.tg-chart .skip-odd time:nth-of-type(2n),
-.tg-chart .skip-third time:nth-of-type(3n),
-.tg-chart .skip-fifth time:nth-of-type(5n),
-.tg-chart .skip-seventh time:nth-of-type(7n),
-.tg-chart .skip-ninth time:nth-of-type(9n),
-.tg-chart .skip-eleventh time:nth-of-type(11n) {
-    opacity: 0;
-    width: 0;
-}
+/*.tg-chart time:first-of-type {*/
+    /*text-align: right;*/
+/*}*/
+
+/*.tg-chart .skip-odd time:nth-of-type(2n),*/
+/*.tg-chart .skip-third time:nth-of-type(3n),*/
+/*.tg-chart .skip-fifth time:nth-of-type(5n),*/
+/*.tg-chart .skip-seventh time:nth-of-type(7n),*/
+/*.tg-chart .skip-ninth time:nth-of-type(9n),*/
+/*.tg-chart .skip-eleventh time:nth-of-type(11n) {*/
+    /*opacity: 0;*/
+    /*width: 0;*/
+/*}*/
 
 /*.tg-chart .skip-1 time:nth-of-type(2n),*/
 /*.tg-chart .skip-3 time:nth-of-type(3n),*/

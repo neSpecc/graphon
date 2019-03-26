@@ -524,8 +524,10 @@ class graph_Graph {
      */
     this.canvas = undefined;
     this.legend = undefined;
+    this.legendDates = [];
     this.grid = undefined;
     this.gridLines = [];
+
 
 
     /**
@@ -565,6 +567,7 @@ class graph_Graph {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
+      dateHidden: 'tg-legend__date--hidden',
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
@@ -810,7 +813,8 @@ class graph_Graph {
         month: 'short'
       });
 
-      this.legend.appendChild(dateEl)
+      this.legend.appendChild(dateEl);
+      this.legendDates.push(dateEl);
     });
 
     insertAfter(this.canvas, this.legend);
@@ -829,20 +833,46 @@ class graph_Graph {
     const newWidth = this.initialWidth * scaling;
     this.width = newWidth;
 
-    const canFit = Math.round(newWidth / this.stepX);
-    const nowFit = Math.round(this.initialWidth / this.stepX);
-    const fitability = Math.floor(nowFit / canFit + 0.9);
+    this.toggleDatesVisibility()
+  }
 
-    if (fitability % 2 === 1){
-      this.legend.classList.add(`skip-${fitability}`);
-    }
+  /**
+   * Hide dates corresponding to scale
+   */
+  toggleDatesVisibility(){
+    const shouldBeVisible = 6;
+    const dateElWidth = 60;
+    const canFit = Math.round(this.width / dateElWidth);
+    const nowFit = Math.round(this.initialWidth / dateElWidth);
 
-    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
-    this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
-    this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
-    this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
-    this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
+    console.log('can %o now %o', canFit, nowFit);
+
+    const skipEveryIndex = canFit;
+
+    this.legendDates.forEach( (el, index) => {
+      // console.log('index', index, skipEveryIndex, index % skipEveryIndex);
+      // if (index % skipEveryIndex === 0) {
+      //   el.classList.add(Graph.CSS.dateHidden);
+      // } else {
+      //   el.classList.remove(Graph.CSS.dateHidden);
+      // }
+    });
+
+
+
+    // const fitability = Math.floor(nowFit / canFit + 0.9);
+
+    // console.log('canFit', canFit, nowFit, fitability);
+    // if (fitability % 2 === 1){
+    //   this.legend.classList.add(`skip-${fitability}`);
+    // }
+    //
+    // this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
+    // this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
+    // this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
+    // this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
+    // this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
+    // this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
   }
 
   get step(){
@@ -1065,8 +1095,8 @@ class minimap_Minimap {
     const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
     this.width = this.wrapperWidth * chartToViewportRatio;
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
