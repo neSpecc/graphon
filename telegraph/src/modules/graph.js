@@ -9,7 +9,7 @@ export default class Graph {
   /**
    * @param {State} state
    */
-  constructor(state, {stroke}){
+  constructor(state, {stroke, animate}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
@@ -17,6 +17,7 @@ export default class Graph {
     const dateLabelWidth = 45;
 
     this.state = state;
+    this.animate = animate || false;
     /**
      * @todo move to this.nodes
      */
@@ -212,7 +213,7 @@ export default class Graph {
     values.forEach( (column, index )=> {
       if (index === 0){
         // path.dropText(column, true);
-        path.stepTo(column, true);
+        path.stepTo(column);
       } else {
         // path.dropText(column);
         path.stepTo(column);
@@ -220,7 +221,7 @@ export default class Graph {
 
     });
 
-    path.render();
+    path.render(this.animate);
 
     this.paths[name] = path;
   }

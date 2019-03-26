@@ -244,12 +244,12 @@ export default class Chart {
    */
   mouseMove(event){
     let x = Event.getPageX(event);
-    let viewportX = x - this.wrapperLeftCoord ;
+    let viewportX = x - this.wrapperLeftCoord;
 
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
-    let hoveredPointIndex = pointIndex + this.leftPointIndex;
+    let hoveredPointIndex = pointIndex + this.leftPointIndex - 1;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){

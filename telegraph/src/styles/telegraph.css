@@ -140,7 +140,7 @@
     margin-bottom: -5px;
     box-sizing: border-box;
     z-index: 2;
-    transition: transform 150ms ease-in;
+    transition: transform 100ms ease-in;
     will-change: transform;
 }
 

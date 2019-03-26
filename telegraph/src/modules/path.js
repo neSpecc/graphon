@@ -97,10 +97,13 @@ export default class Path {
   /**
    * Append a line
    */
-  render(){
+  render(withAnimate = false){
     this.path.setAttribute('d', this.pathData);
     this.group.appendChild(this.path);
-    this.animate();
+
+    if (withAnimate){
+      this.animate();
+    }
   }
 
   /**

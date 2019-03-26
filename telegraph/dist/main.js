@@ -398,10 +398,13 @@ class path_Path {
   /**
    * Append a line
    */
-  render(){
+  render(withAnimate = false){
     this.path.setAttribute('d', this.pathData);
     this.group.appendChild(this.path);
-    this.animate();
+
+    if (withAnimate){
+      this.animate();
+    }
   }
 
   /**
@@ -511,7 +514,7 @@ class graph_Graph {
   /**
    * @param {State} state
    */
-  constructor(state, {stroke}){
+  constructor(state, {stroke, animate}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
@@ -519,6 +522,7 @@ class graph_Graph {
     const dateLabelWidth = 45;
 
     this.state = state;
+    this.animate = animate || false;
     /**
      * @todo move to this.nodes
      */
@@ -714,7 +718,7 @@ class graph_Graph {
     values.forEach( (column, index )=> {
       if (index === 0){
         // path.dropText(column, true);
-        path.stepTo(column, true);
+        path.stepTo(column);
       } else {
         // path.dropText(column);
         path.stepTo(column);
@@ -722,7 +726,7 @@ class graph_Graph {
 
     });
 
-    path.render();
+    path.render(this.animate);
 
     this.paths[name] = path;
   }
@@ -956,7 +960,8 @@ class minimap_Minimap {
     this.rightZoneWidth = 0;
 
     this.graph = new graph_Graph(this.state, {
-      stroke: 1
+      stroke: 1,
+      animate: true
     });
   }
 
@@ -1064,9 +1069,10 @@ class minimap_Minimap {
 
     const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
     this.width = this.wrapperWidth * chartToViewportRatio;
+
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1730,12 +1736,12 @@ class chart_Chart {
    */
   mouseMove(event){
     let x = getPageX(event);
-    let viewportX = x - this.wrapperLeftCoord ;
+    let viewportX = x - this.wrapperLeftCoord;
 
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
-    let hoveredPointIndex = pointIndex + this.leftPointIndex;
+    let hoveredPointIndex = pointIndex + this.leftPointIndex - 1;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
