@@ -41,6 +41,7 @@ export default class Graph {
     this.strokeWidth = stroke;
     this.initialWidth = undefined;
     this.maxPoint = this.state.max * 1.2; // 20% for padding top
+    this.oyScaling = 1;
 
     /**
      * List of drawn lines
@@ -351,12 +352,12 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, scaleX, scroll){
-    let scaling = this.maxPoint / newMax * 0.8;
+    this.oyScaling = this.maxPoint / newMax * 0.8;
 
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
       // path.scaleY(scaling);
-      this.oyGroup.style.transform = `scaleY(${scaling})`;
+      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
     });
 
     /**

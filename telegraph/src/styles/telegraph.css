@@ -100,23 +100,48 @@
 
 
 /**
-* Line below the Tooltip
+* Pointer: a line below the Tooltip
 * --------------------------------
 */
-.tg-chart__cursor-line {
+.tg-pointer {
     position: absolute;
-    width: 1px;
-    background: rgba(170,181,191,0.33);
     top: 0;
+    left: 0;
     height: 400px;
-    left: 50%;
     opacity: 0;
     transition: opacity 150ms ease, left 150ms ease;
     will-change: opacity, left;
 }
 
-.tg-chart__cursor-line--showed {
+.tg-pointer--showed {
     opacity: 1;
+}
+
+.tg-pointer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(170,181,191,0.33);
+}
+
+.tg-pointer__pointer {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 3px solid #1f2938;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    left: -5px;
+    bottom: 0;
+    margin-bottom: -5px;
+    box-sizing: border-box;
+    z-index: 2;
+    transition: transform 150ms ease-in;
+    will-change: transform;
 }
 
 /**

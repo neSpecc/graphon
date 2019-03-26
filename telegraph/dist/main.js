@@ -543,6 +543,7 @@ class graph_Graph {
     this.strokeWidth = stroke;
     this.initialWidth = undefined;
     this.maxPoint = this.state.max * 1.2; // 20% for padding top
+    this.oyScaling = 1;
 
     /**
      * List of drawn lines
@@ -853,12 +854,12 @@ class graph_Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, scaleX, scroll){
-    let scaling = this.maxPoint / newMax * 0.8;
+    this.oyScaling = this.maxPoint / newMax * 0.8;
 
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
       // path.scaleY(scaling);
-      this.oyGroup.style.transform = `scaleY(${scaling})`;
+      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
     });
 
     /**
@@ -1406,7 +1407,84 @@ class tooltip_Tooltip {
     this.nodes.title.innerHTML = string;
   }
 }
+// CONCATENATED MODULE: ./src/modules/pointer.js
+
+
+/**
+ * Line with current values pointers
+ */
+class pointer_Pointer {
+  constructor(modules){
+    this.modules = modules;
+    this.nodes = {
+      wrapper: undefined,
+    }
+    this.pointers = [];
+  }
+
+  /**
+   * CSS map
+   * @return {{wrapper: string, showed: string, pointer: string}}
+   * @constructor
+   */
+  static get CSS(){
+    return {
+      wrapper: 'tg-pointer',
+      showed: 'tg-pointer--showed',
+      pointer: 'tg-pointer__pointer'
+    }
+  }
+
+  render(){
+    this.nodes.wrapper = make('div', pointer_Pointer.CSS.wrapper);
+    return this.nodes.wrapper;
+  }
+
+  show(){
+    this.nodes.wrapper.classList.add(pointer_Pointer.CSS.showed);
+  }
+
+  hide(){
+    this.nodes.wrapper.classList.remove(pointer_Pointer.CSS.showed);
+  }
+
+  move(leftPx){
+    this.show();
+    this.nodes.wrapper.style.left = `${leftPx}px`;
+  }
+
+  /**
+   * Show circles
+   * @param {{name: string, value: number}[]} values
+   */
+  showValues(values){
+    if (!this.pointers.length){
+      values.forEach( ({name}) => {
+        const item = make('div', pointer_Pointer.CSS.pointer);
+
+        item.style.borderColor = this.modules.state.colors[name];
+        this.nodes.wrapper.appendChild(item);
+        this.pointers.push(item);
+      })
+    }
+
+    /**
+     * @type {Graph}
+     */
+    const {graph} = this.modules.chart;
+
+    let kY = graph.height / graph.maxPoint * graph.oyScaling;
+
+    values.forEach( ({name, value}, index) => {
+      const item = this.pointers[index];
+
+      item.style.transform = `translateY(-${value * kY}px)`;
+    })
+
+  }
+}
 // CONCATENATED MODULE: ./src/modules/chart.js
+
 
 
 
@@ -1437,6 +1515,7 @@ class chart_Chart {
     };
 
     this.tooltip = new tooltip_Tooltip(this.modules);
+    this.pointer = new pointer_Pointer(this.modules);
     this.graph = new graph_Graph(this.state, {
       stroke: 2.5
     });
@@ -1460,8 +1539,6 @@ class chart_Chart {
     return {
       wrapper: 'tg-chart',
       viewport: 'tg-chart__viewport',
-      cursorLine: 'tg-chart__cursor-line',
-      cursorLineShowed: 'tg-chart__cursor-line--showed',
     }
   }
 
@@ -1488,7 +1565,7 @@ class chart_Chart {
   renderUi(){
     this.nodes.wrapper = make('div', chart_Chart.CSS.wrapper);
     this.nodes.viewport = make('div', chart_Chart.CSS.viewport);
-    this.nodes.cursorLine = make('div', chart_Chart.CSS.cursorLine);
+    this.nodes.cursorLine = this.pointer.render();
 
     this.nodes.wrapper.appendChild(this.nodes.viewport);
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
@@ -1576,7 +1653,7 @@ class chart_Chart {
     this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
-    this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);
+    this.pointer.hide();
   }
 
   /**
@@ -1661,7 +1738,7 @@ class chart_Chart {
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
-    if (Math.abs(scrollOffset) > (this.graph.stepX / 2) ){
+    if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
       pointIndex = pointIndex + 1;
     }
 
@@ -1670,9 +1747,7 @@ class chart_Chart {
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
-
-    this.nodes.cursorLine.style.left = `${newLeft}px`;
-    this.nodes.cursorLine.classList.add(chart_Chart.CSS.cursorLineShowed);
+    this.pointer.move(newLeft);
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
@@ -1680,6 +1755,11 @@ class chart_Chart {
         value: this.state.getLinePoints(line)[hoveredPointIndex]
       }
     });
+
+    /**
+     * Show circles
+     */
+    this.pointer.showValues(values);
 
     const date = this.state.dates[hoveredPointIndex];
 
@@ -1701,7 +1781,7 @@ class chart_Chart {
 
   mouseLeave(){
     this.tooltip.hide();
-    this.nodes.cursorLine.classList.remove(chart_Chart.CSS.cursorLineShowed);
+    this.pointer.hide();
   }
 
   /**

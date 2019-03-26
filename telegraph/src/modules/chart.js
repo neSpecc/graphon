@@ -1,6 +1,7 @@
 import * as Dom from '../utils/dom.js';
 import Graph from './graph.js';
 import Tooltip from "./tooltip";
+import Pointer from "./pointer";
 import * as Event from '../utils/event.js';
 
 /**
@@ -28,6 +29,7 @@ export default class Chart {
     };
 
     this.tooltip = new Tooltip(this.modules);
+    this.pointer = new Pointer(this.modules);
     this.graph = new Graph(this.state, {
       stroke: 2.5
     });
@@ -51,8 +53,6 @@ export default class Chart {
     return {
       wrapper: 'tg-chart',
       viewport: 'tg-chart__viewport',
-      cursorLine: 'tg-chart__cursor-line',
-      cursorLineShowed: 'tg-chart__cursor-line--showed',
     }
   }
 
@@ -79,7 +79,7 @@ export default class Chart {
   renderUi(){
     this.nodes.wrapper = Dom.make('div', Chart.CSS.wrapper);
     this.nodes.viewport = Dom.make('div', Chart.CSS.viewport);
-    this.nodes.cursorLine = Dom.make('div', Chart.CSS.cursorLine);
+    this.nodes.cursorLine = this.pointer.render();
 
     this.nodes.wrapper.appendChild(this.nodes.viewport);
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
@@ -167,7 +167,7 @@ export default class Chart {
     this.graph.legend.style.transform = `translateX(${newLeft}px)`;
     this.scrollValue = newLeft;
     this.tooltip.hide();
-    this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
+    this.pointer.hide();
   }
 
   /**
@@ -252,7 +252,7 @@ export default class Chart {
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
-    if (Math.abs(scrollOffset) > (this.graph.stepX / 2) ){
+    if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
       pointIndex = pointIndex + 1;
     }
 
@@ -261,9 +261,7 @@ export default class Chart {
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
-
-    this.nodes.cursorLine.style.left = `${newLeft}px`;
-    this.nodes.cursorLine.classList.add(Chart.CSS.cursorLineShowed);
+    this.pointer.move(newLeft);
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
@@ -271,6 +269,11 @@ export default class Chart {
         value: this.state.getLinePoints(line)[hoveredPointIndex]
       }
     });
+
+    /**
+     * Show circles
+     */
+    this.pointer.showValues(values);
 
     const date = this.state.dates[hoveredPointIndex];
 
@@ -292,7 +295,7 @@ export default class Chart {
 
   mouseLeave(){
     this.tooltip.hide();
-    this.nodes.cursorLine.classList.remove(Chart.CSS.cursorLineShowed);
+    this.pointer.hide();
   }
 
   /**
