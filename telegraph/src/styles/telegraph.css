@@ -30,6 +30,7 @@
 .tg-chart g {
     transform-origin: bottom left;
     transition: transform 200ms ease;
+    will-change: transform;
 }
 
 .tg-chart path,
