@@ -209,7 +209,7 @@ class State {
  */
 function make(tagName, classNames = undefined, attributes = {}) {
   const svgNamespace = 'http://www.w3.org/2000/svg';
-  const svgElements = ['svg', 'path', 'rect', 'circle', 'text'];
+  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g'];
   const isSvg = svgElements.includes(tagName);
   const el = !isSvg ? document.createElement(tagName) : document.createElementNS(svgNamespace, tagName);
 
@@ -305,8 +305,9 @@ function beautify(number) {
  * Helper for creating an SVG path
  */
 class path_Path {
-  constructor({color, svg, max, stroke, stepX, opacity = 1}){
+  constructor({color, svg, max, stroke, stepX, opacity = 1, g}){
     this.svg = svg;
+    this.group = g;
     this.canvasHeight = parseInt(this.svg.style.height, 10);
     this.kY = max !== 0 ? this.canvasHeight / max : 1;
     this.stepX = stepX;
@@ -399,7 +400,7 @@ class path_Path {
    */
   render(){
     this.path.setAttribute('d', this.pathData);
-    this.svg.appendChild(this.path);
+    this.group.appendChild(this.path);
     this.animate();
   }
 
@@ -468,7 +469,8 @@ class path_Path {
   }
 
   scaleY(scaleY){
-    // this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    // this.matrix.scaleY = scaleY;
+    this.path.style.transition = 'transform 250ms ease, opacity 150ms ease';
     // this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
     let oldTransform = this.path.style.transform;
@@ -480,13 +482,13 @@ class path_Path {
     }
 
 
-    // if (this.debounce){
-    //   clearTimeout(this.debounce);
-    // }
-    //
-    // this.debounce = setTimeout(() => {
-    //   this.path.style.transition = 'opacity 150ms ease';
-    // }, 300)
+    if (this.debounce){
+      clearTimeout(this.debounce);
+    }
+
+    this.debounce = setTimeout(() => {
+      this.path.style.transition = 'opacity 150ms ease';
+    }, 270)
   }
 
   get isHidden(){
@@ -526,6 +528,7 @@ class graph_Graph {
     this.gridLines = [];
 
 
+    this.group = undefined;
     this.stepX = dateLabelWidth;
     this.stepY = 10;
     this.strokeWidth = stroke;
@@ -574,6 +577,7 @@ class graph_Graph {
    */
   renderCanvas({width, height} = {}){
     this.canvas = make('svg');
+    this.group = make('g');
 
     if (!width){
       this.computeInitialWidth();
@@ -586,6 +590,8 @@ class graph_Graph {
     }
 
     this.computeSteps();
+
+    this.canvas.appendChild(this.group);
 
     return this.canvas;
   }
@@ -679,6 +685,7 @@ class graph_Graph {
      */
     const path = new path_Path({
       svg: this.canvas,
+      g: this.group,
       color,
       max: this.maxPoint,
       stroke: this.strokeWidth,
@@ -833,7 +840,8 @@ class graph_Graph {
 
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
-      path.scaleY(scaling);
+      // path.scaleY(scaling);
+      this.group.style.transform = `scaleY(${scaling})`;
     });
 
     /**

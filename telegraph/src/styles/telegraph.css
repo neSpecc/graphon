@@ -27,6 +27,11 @@
     height: 100%;
 }
 
+.tg-chart g {
+    transform-origin: bottom left;
+    transition: transform 200ms ease;
+}
+
 .tg-chart path,
 .tg-minimap path {
     transform-origin: bottom left;

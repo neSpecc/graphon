@@ -26,6 +26,7 @@ export default class Graph {
     this.gridLines = [];
 
 
+    this.group = undefined;
     this.stepX = dateLabelWidth;
     this.stepY = 10;
     this.strokeWidth = stroke;
@@ -74,6 +75,7 @@ export default class Graph {
    */
   renderCanvas({width, height} = {}){
     this.canvas = Dom.make('svg');
+    this.group = Dom.make('g');
 
     if (!width){
       this.computeInitialWidth();
@@ -86,6 +88,8 @@ export default class Graph {
     }
 
     this.computeSteps();
+
+    this.canvas.appendChild(this.group);
 
     return this.canvas;
   }
@@ -179,6 +183,7 @@ export default class Graph {
      */
     const path = new Path({
       svg: this.canvas,
+      g: this.group,
       color,
       max: this.maxPoint,
       stroke: this.strokeWidth,
@@ -333,7 +338,8 @@ export default class Graph {
 
     this.pathsList.forEach( path => {
       // path.setMatrix(scaleX, scaling, scroll);
-      path.scaleY(scaling);
+      // path.scaleY(scaling);
+      this.group.style.transform = `scaleY(${scaling})`;
     });
 
     /**

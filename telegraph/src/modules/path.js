@@ -4,8 +4,9 @@ import * as Dom from "../utils/dom";
  * Helper for creating an SVG path
  */
 export default class Path {
-  constructor({color, svg, max, stroke, stepX, opacity = 1}){
+  constructor({color, svg, max, stroke, stepX, opacity = 1, g}){
     this.svg = svg;
+    this.group = g;
     this.canvasHeight = parseInt(this.svg.style.height, 10);
     this.kY = max !== 0 ? this.canvasHeight / max : 1;
     this.stepX = stepX;
@@ -98,7 +99,7 @@ export default class Path {
    */
   render(){
     this.path.setAttribute('d', this.pathData);
-    this.svg.appendChild(this.path);
+    this.group.appendChild(this.path);
     this.animate();
   }
 
@@ -167,7 +168,8 @@ export default class Path {
   }
 
   scaleY(scaleY){
-    // this.path.style.transition = 'transform 150ms ease, opacity 150ms ease';
+    // this.matrix.scaleY = scaleY;
+    this.path.style.transition = 'transform 250ms ease, opacity 150ms ease';
     // this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
 
     let oldTransform = this.path.style.transform;
@@ -179,13 +181,13 @@ export default class Path {
     }
 
 
-    // if (this.debounce){
-    //   clearTimeout(this.debounce);
-    // }
-    //
-    // this.debounce = setTimeout(() => {
-    //   this.path.style.transition = 'opacity 150ms ease';
-    // }, 300)
+    if (this.debounce){
+      clearTimeout(this.debounce);
+    }
+
+    this.debounce = setTimeout(() => {
+      this.path.style.transition = 'opacity 150ms ease';
+    }, 270)
   }
 
   get isHidden(){
