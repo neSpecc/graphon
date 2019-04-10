@@ -4,6 +4,8 @@ import Tooltip from "./tooltip";
 import Pointer from "./pointer";
 import * as Event from '../utils/event.js';
 
+import log from '../utils/log.js';
+
 /**
  * Module for working with main Chart zone
  * - Render UI
@@ -30,8 +32,8 @@ export default class Chart {
 
     this.tooltip = new Tooltip(this.modules);
     this.pointer = new Pointer(this.modules);
-    this.graph = new Graph(this.state, {
-      stroke: 2.6
+    this.graph = new Graph(this.modules, {
+      stroke: 2
     });
 
     this.wrapperLeftCoord = undefined;
@@ -43,6 +45,35 @@ export default class Chart {
      * @type {{}}
      */
     this.cache = {};
+
+    this._initialScale = undefined;
+    this._initialStep = undefined;
+  }
+
+  get initialStep(){
+    if (!this._initialStep){
+      this._initialStep = this.width / (this.state.daysCount - 1);
+    }
+    return this._initialStep;
+  }
+
+  get minimalMapWidth(){
+    return 2 * this.initialStep;
+  }
+
+  get initialScale(){
+    if (!this._initialScale){
+      const chartToViewportRatio = this.viewportWidth / this.width;
+      console.log('chartToViewportRatio', chartToViewportRatio);
+      this._initialScale = this.viewportWidth * chartToViewportRatio / this.minimalMapWidth
+    }
+
+    return this._initialScale;
+  }
+
+  set initialScale(value){
+    this._initialScale = value;
+    this.scale(value);
   }
 
   /**
@@ -105,6 +136,20 @@ export default class Chart {
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
+    // this.scaling = this.initialScale;
+    /**
+     * Compute initial step
+     */
+    let step = this.initialStep;
+
+    log({scaling: this.scaling});
+
+    console.log('was', this.scaling, this.initialScale);
+    // this.scale(this.initialScale, 'right', true);
+
+    console.log('now', this.scaling);
+
+
     const dates = this.state.dates;
 
     this.state.linesAvailable.forEach( name => {
@@ -153,19 +198,21 @@ export default class Chart {
    * Perform scroll
    * @param position
    */
-  scroll(position){
-    let newLeft = position * -1;
+  scroll(position, fromScale = false){
     // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
 
-    this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
+    // this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
 
 
     // this.graph.pathsList.forEach( path => {
     //   path.setMatrix(this.scaling, 1, newLeft);
     // });
-    this.graph.legend.style.transform = `translateX(${newLeft}px)`;
-    this.scrollValue = newLeft;
+    // this.graph.legend.style.transform = `translateX(${newLeft}px)`;
+
+    this.scrollValue = position * -1;
+    console.log('SCROLL');
+    this.graph.scroll(this.scrollValue, fromScale);
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -174,10 +221,18 @@ export default class Chart {
    * Perform scaling
    * @param {number} scaling
    */
-  scale(scaling){
-    this.graph.scaleLines(scaling, this.scrollValue);
+  scale(scaling, direction, dontRemember = false){
+    this.graph.scaleLines(scaling, direction);
 
-    this.scaling = scaling;
+    console.log('SCALE', scaling);
+
+    log({scaling});
+
+    // if (!dontRemember){
+      this.scaling = scaling;
+    // }
+
+    // this.graph.addOnscreenDates(true);
   }
 
   /**
@@ -249,7 +304,7 @@ export default class Chart {
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
-    let hoveredPointIndex = pointIndex + this.leftPointIndex - 1;
+    let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){

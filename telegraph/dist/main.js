@@ -106,6 +106,11 @@ class State {
     this.colors = chartsData.colors;
     this.names = chartsData.names;
     this.types = chartsData.types;
+
+    /**
+     * Cache
+     */
+    this._dates = this.columns[0].slice(1);
   }
 
   /**
@@ -114,7 +119,7 @@ class State {
    * @return {number[]} - array of dates in milliseconds
    */
   get dates(){
-    return this.columns[0].slice(1);
+    return this._dates;
   }
 
   /**
@@ -512,16 +517,17 @@ class path_Path {
  */
 class graph_Graph {
   /**
-   * @param {State} state
+   * @param {Telegraph} modules
    */
-  constructor(state, {stroke, animate}){
+  constructor(modules, {stroke, animate}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
      */
     const dateLabelWidth = 45;
 
-    this.state = state;
+    this.modules = modules;
+    this.state = modules.state;
     this.animate = animate || false;
     /**
      * @todo move to this.nodes
@@ -529,8 +535,18 @@ class graph_Graph {
     this.canvas = undefined;
     this.legend = undefined;
     this.legendDates = [];
+    this.legendDatesVisible = 0;
+    this.lenendDateWidth = 38;
     this.grid = undefined;
     this.gridLines = [];
+
+
+    /**
+     * Set will be store indexes of visible dates
+     * @type {Set<number>}
+     */
+    this.onscreenDates = new Set();
+    this.onscreenDatesElements = {}; // origin index -> element mappind
 
 
 
@@ -601,6 +617,8 @@ class graph_Graph {
 
     this.oxGroup.setAttribute('class', graph_Graph.CSS.oxGroup);
     this.oyGroup.setAttribute('class', graph_Graph.CSS.oyGroup);
+    this.oyGroup.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.oxGroup.setAttribute('vector-effect', 'non-scaling-stroke');
 
     if (!width){
       this.computeInitialWidth();
@@ -614,6 +632,8 @@ class graph_Graph {
 
     this.computeSteps();
 
+    this.legendDatesVisible = this.initialWidth / this.stepX;
+
     this.oyGroup.appendChild(this.oxGroup);
     this.canvas.appendChild(this.oyGroup);
 
@@ -624,7 +644,7 @@ class graph_Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = this.state.daysCount * this.stepX;
+    this.initialWidth = (this.state.daysCount - 1) * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -666,7 +686,7 @@ class graph_Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / this.state.daysCount;
+    this.stepX = this.width / (this.state.daysCount - 1);
 
     /**
      * All lines maximum value
@@ -721,7 +741,7 @@ class graph_Graph {
     values.forEach( (column, index )=> {
       if (index === 0){
         // path.dropText(column, true);
-        path.stepTo(column);
+        path.stepTo(column, true);
       } else {
         // path.dropText(column);
         path.stepTo(column);
@@ -796,31 +816,190 @@ class graph_Graph {
   }
 
   /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return parseInt(Math.floor(this.modules.chart.scrollValue * -1/ this.step / this.modules.chart.scaling));
+  }
+
+  /**
+   * Right visible point
+   * @return {number}
+   */
+  get rightPointIndex(){
+    let onscreen = Math.floor(this.modules.chart.viewportWidth / this.step / this.modules.chart.scaling);
+    return this.leftPointIndex + onscreen;
+  }
+
+  get stepScaled(){
+    return this.stepX * this.modules.chart.scaling
+  }
+
+  /**
+   * @todo add cache
+   */
+  get datesPerScreen(){
+      return Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth ));
+  }
+
+  scroll(newLeft, fromScale){
+    this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
+    this.legend.style.transform = `translateX(${newLeft}px)`;
+    this.addOnscreenDates(fromScale);
+  }
+
+  pushDate(date, originIndex){
+    let centering = 'translateX(-50%)';
+
+    if (originIndex === 0){
+      centering = '';
+    }
+
+    if (this.onscreenDates.has(originIndex)){
+      // console.log('presented', originIndex, this.stepScaled );
+      this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      return
+    }
+
+    if (originIndex % this.datesPerScreen !== 0){
+      // console.log('skipped', originIndex, this.datesPerScreen, originIndex % this.datesPerScreen );
+      return;
+    }
+
+    const dt = new Date(date);
+    const dateEl = make('time');
+    // dateEl.textContent = dt.toLocaleDateString('en-US', {
+    //   day: 'numeric',
+    //   month: 'short'
+    // });
+
+    dateEl.textContent = originIndex;
+
+
+    // console.log('index %o, need hide? %o', index, index * this.step * this.modules.chart.scaling);
+
+    // console.log('originIndex * this.stepScaled', originIndex, this.stepScaled, originIndex * this.stepScaled);
+
+    // console.log('step scaled',  this.stepScaled );
+    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+    this.legend.appendChild(dateEl);
+    this.legendDates.push(dateEl);
+    this.onscreenDates.add(originIndex);
+    this.onscreenDatesElements[originIndex] = dateEl;
+  }
+
+  addOnscreenDates(dontRemove){
+    // console.log('addOnscreenDates', dontRemove);
+    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenIndexes = new Set();
+
+    // console.log('this.state.dates', this.state.dates.map( dt => new Date(dt)));
+
+    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    //
+    // console.log('l %o (%o) r %o (%o)',
+    //   this.leftPointIndex,
+    //   leftDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    //   this.rightPointIndex,
+    //   rightDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    // );
+
+    // console.log('left %o right %o', new Date(this.state.dates[this.leftPointIndex]).getDate(), new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]).getDate());
+
+    datesOnScreen.forEach((date, index) => {
+      const originIndex = this.leftPointIndex + index;
+
+      datesOnScreenIndexes.add(originIndex);
+      this.pushDate(date, originIndex);
+    });
+
+    if (dontRemove){
+      return;
+    }
+
+
+    this.onscreenDates.forEach((index) => {
+      if (!datesOnScreenIndexes.has(index)) {
+        this.onscreenDatesElements[index].remove();
+        this.onscreenDates.delete(index);
+        delete this.onscreenDatesElements[index];
+      }
+    });
+
+    // this.prevLeftDateIndex = this.leftPointIndex;
+    // this.prevRightDateIndex = this.leftPointIndex + this.rightPointIndex + 1;
+  }
+
+  /**
    * Renders a legend with dates
    * @param {number[]} dates
    */
   renderLegend(dates){
     this.legend = make('footer');
 
+    this.addOnscreenDates();
+
+    insertAfter(this.canvas, this.legend);
+
+    return;
+
+
+    let datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 20));
+
+    console.log('total %o , each %o , so fit %o', this.modules.chart.viewportWidth , this.lenendDateWidth, datesPerScreen);
+    // let spaceBetween = (this.modules.chart.viewportWidth - ((datesPerScreen + 1) * this.lenendDateWidth)) / datesPerScreen;
+
+    let canFit = this.fitableDatesCount;
+    let spaceBetween = this.width / this.legendDatesVisible;
+
+    console.log('canFit', canFit);
+
+    let datesCount = dates.length;
+
+
+
+
+    let skipEvery = Math.ceil(datesCount / canFit);
+
+    let prevTraslateRight = this.lenendDateWidth;
+
     dates.forEach((date, index) => {
       /**
        * Skip every second
        */
-      if (index % 2 === 1){
-        return;
-      }
+      // if ((index + 1) % skipEvery === 1){
+      //   return;
+      // }
 
-      const dt = new Date(date);
-      const dateEl = make('time');
-      dateEl.textContent = dt.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short'
-      });
-
-      this.legend.appendChild(dateEl);
-      this.legendDates.push(dateEl);
+      // this.pushDate(date, index);
     });
 
+    // this.legendDates.forEach( (el, index) => {
+      // let left = spaceBetween * index;
+      // let indexFromRight = datesCount - index;
+
+
+      // let left = prevTraslateRight + (spaceBetween + this.lenendDateWidth) * -1;
+
+      // el.style.left = spaceBetween * index + 'px';
+      // dateEl.style.transform = `translateX(${this.width + left}px)`;
+      // el.style.transform = `translateX(${left}px)`;
+      // dateEl.dataset.left = left;
+
+      // prevTraslateRight = left + 0;
+    // })
+
+    // this.skipIntersectedDates();
+
+    // this.skipDatesEvery(2);
     insertAfter(this.canvas, this.legend);
   }
 
@@ -828,40 +1007,136 @@ class graph_Graph {
    * Scale left legend
    * @param {number} scaling
    */
-  scaleLines(scaling){
+  scaleLines(scaling, direction){
     this.oxGroup.style.transform = `scaleX(${scaling})`;
     // this.pathsList.forEach( path => {
     //   path.scaleX(scaling);
     // });
 
     const newWidth = this.initialWidth * scaling;
+    console.log('newWidth', newWidth , this.initialWidth);
     this.width = newWidth;
 
-    this.toggleDatesVisibility()
+    // this.addOnscreenDates();
+
+    // this.moveDates(scaling)
+  }
+
+  get fitableDatesCount(){
+    const margins = 20;
+    // return Math.floor(this.width / (this.lenendDateWidth + margins));
+    return Math.floor(this.width / (this.stepX + margins));
+  }
+
+  skipIntersectedDates(scaling = 1){
+    // const stepXScaled = this.fitableDatesCount;
+    const stepXScaled = this.stepX * scaling;
+
+    console.log('step', stepXScaled, this.legendDatesVisible, this.legendDates.length - 1 , scaling);
+    const dtElWidth = 55 + 10;
+
+    this.prevRightSide = 0;
+
+    this.legendDates.forEach((el, index) => {
+      let leftSideCoord = index * stepXScaled;
+      let rightSideCoord = leftSideCoord + dtElWidth;
+      // let real = (index - 1) * dtElWidth;
+      // console.log('index %o | left %o | right  %o | prev %o', index, leftSideCoord, rightSideCoord, '-');
+      // console.log('index %o | left %o | real %o | prev %o', index, index * stepXScaled, '-', this.prevLeft, this.prevLeft > index * stepXScaled ? '   <- hided' : '');
+      if (leftSideCoord < this.prevRightSide){
+        if (!el.classList.contains(graph_Graph.CSS.dateHidden)){
+          el.classList.add(graph_Graph.CSS.dateHidden);
+          this.legendDatesVisible--;
+        }
+      } else {
+        if (el.classList.contains(graph_Graph.CSS.dateHidden)){
+          // el.classList.remove(Graph.CSS.dateHidden);
+          // this.legendDatesVisible++;
+        }
+        this.prevRightSide = rightSideCoord;
+      }
+    })
+  }
+
+  moveDates(scaling){
+    const dtElWidth = 55;
+    const canFit = this.fitableDatesCount;
+    const spaceBetween = this.width / canFit;
+    // const newStepX = this.stepX * scaling;
+
+    console.log('new can fit:', canFit);
+
+    // let left = spaceBetween * index;
+    let datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (55 + 20));
+    let spaceBetweenGood = (this.modules.chart.viewportWidth - ((datesPerScreen + 1) * 55)) / datesPerScreen;
+    // let left = ((spaceBetweenGood + 55) * index) * -1;
+
+    const newStepX = (spaceBetweenGood * scaling + 55);
+    const pointsOnViewport = Math.round(this.modules.chart.viewportWidth / (this.stepX * scaling));
+
+    // console.log('pointsOnViewport', pointsOnViewport);
+
+    let right = Math.round(this.modules.chart.scrollValue * -1 / spaceBetweenGood / scaling) + pointsOnViewport;
+
+    let allDatesCount = this.legendDates.length;
+
+    if (right > allDatesCount - 1){
+      right = allDatesCount - 1;
+    }
+
+    console.log('right date', right, new Date(this.modules.state.dates[right]));
+
+
+    this.legendDates.forEach( (el, index) => {
+      let indexFromLeft = (allDatesCount - 1) - index;
+
+      if (indexFromLeft === right){
+        // console.warn('skipped', index, indexFromLeft);
+        return;
+      }
+
+      let newLeft = newStepX * index * -1;
+
+      if (index < 3){
+       console.log('%o | new %o', index, newLeft);
+      }
+
+      el.style.transform = `translateX(${newLeft}px)`;
+      // el.dataset.left = newLeft;
+
+      // this.prevLeft = newLeft;
+    })
+
+    // this.skipIntersectedDates(scaling);
   }
 
   /**
    * Hide dates corresponding to scale
    */
-  toggleDatesVisibility(){
-    const shouldBeVisible = 6;
-    const dateElWidth = 60;
-    const canFit = Math.round(this.width / dateElWidth);
-    const nowFit = Math.round(this.initialWidth / dateElWidth);
+  _toggleDatesVisibility(direction = 'left'){
+    const canFit = this.fitableDatesCount;
+    const nowFit = this.legendDatesVisible;
+    const skipEveryIndex = Math.floor(nowFit / canFit);
+    let showEveryIndex = Math.floor(canFit / nowFit);
+    console.log('can %o now %o (%o)', canFit, nowFit, this.legend.querySelectorAll(`time:not(.${graph_Graph.CSS.dateHidden})`).length ,'skip every', skipEveryIndex, showEveryIndex, Math.floor(canFit / nowFit));
 
-    console.log('can %o now %o', canFit, nowFit);
 
-    const skipEveryIndex = canFit;
+    if (canFit > nowFit && Math.floor(canFit / nowFit) > 1 && direction === 'right'){
+      console.warn('will be shown every', showEveryIndex + 1);
 
-    this.legendDates.forEach( (el, index) => {
-      // console.log('index', index, skipEveryIndex, index % skipEveryIndex);
-      // if (index % skipEveryIndex === 0) {
-      //   el.classList.add(Graph.CSS.dateHidden);
-      // } else {
-      //   el.classList.remove(Graph.CSS.dateHidden);
-      // }
-    });
+      this.showDatesEvery(showEveryIndex + 1);
+      return;
+    }
 
+    if (skipEveryIndex < 1){
+      return;
+    }
+
+    let visibleIndex = 0;
+
+
+    console.warn('SKIP!');
+    this.skipDatesEvery(skipEveryIndex + 1);
 
 
     // const fitability = Math.floor(nowFit / canFit + 0.9);
@@ -877,6 +1152,24 @@ class graph_Graph {
     // this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
     // this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
     // this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
+  }
+
+  skipDatesEvery(skipEveryIndex){
+    this.legendDates.filter(el => !el.classList.contains(graph_Graph.CSS.dateHidden)).forEach( (el, index) => {
+      if (index % skipEveryIndex === 0) {
+        el.classList.add(graph_Graph.CSS.dateHidden);
+        this.legendDatesVisible--;
+      }
+    });
+  }
+
+  showDatesEvery(showEveryIndex){
+    this.legendDates.filter(el => el.classList.contains(graph_Graph.CSS.dateHidden)).forEach( (el, index) => {
+      if (index % showEveryIndex === 0) {
+        el.classList.remove(graph_Graph.CSS.dateHidden);
+        this.legendDatesVisible++;
+      }
+    });
   }
 
   get step(){
@@ -927,6 +1220,10 @@ class graph_Graph {
  * - Scrolling
  */
 class minimap_Minimap {
+  /**
+   * Telegraph
+   * @param modules
+   */
   constructor(modules){
     this.modules = modules;
     /**
@@ -989,7 +1286,9 @@ class minimap_Minimap {
     this.leftZoneWidth = 0;
     this.rightZoneWidth = 0;
 
-    this.graph = new graph_Graph(this.state, {
+    this.prevX = 0;
+
+    this.graph = new graph_Graph(this.modules, {
       stroke: 1,
       animate: true
     });
@@ -1098,11 +1397,32 @@ class minimap_Minimap {
     this.wrapperLeftCoord = rect.left;
 
     const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
-    this.width = this.wrapperWidth * chartToViewportRatio;
 
+    /**
+     * Width of viewport when chart is not scaled
+     * @type {number}
+     */
+    const originalWidth = this.wrapperWidth * chartToViewportRatio;
+    const scaledViewportRation = this.modules.chart.minimalMapWidth / originalWidth;
+    const originalScalingChange = this.modules.chart.scaling / scaledViewportRation;
+
+    this.width = this.modules.chart.minimalMapWidth;
+
+
+    this.modules.chart.initialScale = originalScalingChange;
+    // this.modules.chart.scale(originalScalingChange);
+    // console.log('this.modules.chart.minimalMapWidth', this.modules.chart.minimalMapWidth);
+
+    // let scale = (this.wrapperWidth * chartToViewportRatio) / this.width;
+    // console.log('scale', scale, this.modules.chart.initialScale);
+    // console.log('this.modules.chart.initialScale', this.modules.chart.initialScale);
+    // this.modules.chart.scale(1, 'right');
+
+    // this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    // this.viewportOffsetLeft = 0;
+    // console.log('viewportWidthInitial', this.viewportWidthInitial);
+    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1271,7 +1591,7 @@ class minimap_Minimap {
    * Sync scroll between minimap and chart
    * @param {number} [newScroll] - pass scroll if you have
    */
-  syncScrollWithChart(newScroll = null){
+  syncScrollWithChart(newScroll = null, fromScale = false, scaling = 1){
     /**
      * How many percents of mini-map is scrolled
      */
@@ -1279,7 +1599,7 @@ class minimap_Minimap {
     const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
-    this.modules.chart.scroll(chartScroll);
+    this.modules.chart.scroll(chartScroll * scaling, fromScale);
   }
 
   /**
@@ -1291,9 +1611,13 @@ class minimap_Minimap {
     let pageX = getPageX(event);
     let delta = pageX - this.moveStartX;
 
-    if (!delta){
+    let direction = this.prevX < pageX ? 'right' : 'left';
+
+    if (!delta || this.prevX === pageX){
       return;
     }
+
+    this.prevX = pageX + 0;
 
     let newScalerWidth;
 
@@ -1321,11 +1645,10 @@ class minimap_Minimap {
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
       this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
 
-    const scaling = this.viewportWidthInitial / newViewportWidth ;
+    const scaling = this.viewportWidthInitial / newViewportWidth * this.modules.chart.initialScale;
 
-    this.modules.chart.scale(scaling);
-    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth);
-
+    this.modules.chart.scale(scaling, direction);
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth, true);
     this.modules.chart.fitToMax();
   }
 
@@ -1519,7 +1842,21 @@ class pointer_Pointer {
 
   }
 }
+// CONCATENATED MODULE: ./src/utils/log.js
+let prevValues = {};
+
+
+function log(obj){
+  let el = document.getElementById('log');
+   Object.assign(prevValues, obj);
+
+   Object.entries(prevValues).forEach(([key, value]) => {
+      el.innerHTML = `${key} ${value.toFixed(3)}   `
+   })
+}
 // CONCATENATED MODULE: ./src/modules/chart.js
+
+
 
 
 
@@ -1552,8 +1889,8 @@ class chart_Chart {
 
     this.tooltip = new tooltip_Tooltip(this.modules);
     this.pointer = new pointer_Pointer(this.modules);
-    this.graph = new graph_Graph(this.state, {
-      stroke: 2.6
+    this.graph = new graph_Graph(this.modules, {
+      stroke: 2
     });
 
     this.wrapperLeftCoord = undefined;
@@ -1565,6 +1902,35 @@ class chart_Chart {
      * @type {{}}
      */
     this.cache = {};
+
+    this._initialScale = undefined;
+    this._initialStep = undefined;
+  }
+
+  get initialStep(){
+    if (!this._initialStep){
+      this._initialStep = this.width / (this.state.daysCount - 1);
+    }
+    return this._initialStep;
+  }
+
+  get minimalMapWidth(){
+    return 2 * this.initialStep;
+  }
+
+  get initialScale(){
+    if (!this._initialScale){
+      const chartToViewportRatio = this.viewportWidth / this.width;
+      console.log('chartToViewportRatio', chartToViewportRatio);
+      this._initialScale = this.viewportWidth * chartToViewportRatio / this.minimalMapWidth
+    }
+
+    return this._initialScale;
+  }
+
+  set initialScale(value){
+    this._initialScale = value;
+    this.scale(value);
   }
 
   /**
@@ -1627,6 +1993,20 @@ class chart_Chart {
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
+    // this.scaling = this.initialScale;
+    /**
+     * Compute initial step
+     */
+    let step = this.initialStep;
+
+    log({scaling: this.scaling});
+
+    console.log('was', this.scaling, this.initialScale);
+    // this.scale(this.initialScale, 'right', true);
+
+    console.log('now', this.scaling);
+
+
     const dates = this.state.dates;
 
     this.state.linesAvailable.forEach( name => {
@@ -1675,19 +2055,21 @@ class chart_Chart {
    * Perform scroll
    * @param position
    */
-  scroll(position){
-    let newLeft = position * -1;
+  scroll(position, fromScale = false){
     // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
     // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
 
-    this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
+    // this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
 
 
     // this.graph.pathsList.forEach( path => {
     //   path.setMatrix(this.scaling, 1, newLeft);
     // });
-    this.graph.legend.style.transform = `translateX(${newLeft}px)`;
-    this.scrollValue = newLeft;
+    // this.graph.legend.style.transform = `translateX(${newLeft}px)`;
+
+    this.scrollValue = position * -1;
+    console.log('SCROLL');
+    this.graph.scroll(this.scrollValue, fromScale);
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -1696,10 +2078,18 @@ class chart_Chart {
    * Perform scaling
    * @param {number} scaling
    */
-  scale(scaling){
-    this.graph.scaleLines(scaling, this.scrollValue);
+  scale(scaling, direction, dontRemember = false){
+    this.graph.scaleLines(scaling, direction);
 
-    this.scaling = scaling;
+    console.log('SCALE', scaling);
+
+    log({scaling});
+
+    // if (!dontRemember){
+      this.scaling = scaling;
+    // }
+
+    // this.graph.addOnscreenDates(true);
   }
 
   /**
@@ -1771,7 +2161,7 @@ class chart_Chart {
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
-    let hoveredPointIndex = pointIndex + this.leftPointIndex - 1;
+    let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
@@ -1972,7 +2362,7 @@ class telegraph_Telegraph {
      * Render chart and minimap
      */
     this.chart.renderCharts();
-    this.minimap.renderMap()
+    this.minimap.renderMap();
   }
 
   /**

@@ -11,8 +11,8 @@
 .tg-chart {
     position: relative;
     margin-bottom: 25px;
-    /*overflow: hidden;*/
     font-size: 14px;
+    overflow: hidden;
     font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
 }
 
@@ -57,25 +57,39 @@
  * ----------------------------
  */
 .tg-chart footer {
-    display: flex;
     padding: 15px 0;
     color: #939CA1;
-    font-size: 14px;
-    font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
-    justify-content: space-between;
+    font-size: 12px;
+    font-family: Roboto, 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+    /*display: flex;*/
+    /*justify-content: space-between;*/
+    position: relative;
+    /*margin-left: -26px;*/
 }
 
 .tg-chart time {
     white-space: nowrap;
-    display: inline-block;
-    /*width: 45px;*/
-    text-align: center;
-    transition: opacity 250ms ease;
-    will-change: opacity;
+    display: block;
+    /*text-align: center;*/
+    /*transition: opacity 100ms ease;*/
+    /*will-change: opacity, width;*/
+    /*flex-grow: 1;*/
+    position: absolute;
+    /*right: 0;*/
+    /*min-width: 55px;*/
+    /*transform: translateX(-50%);*/
+    /*background: #eee;*/
+    /*margin-left: -26px;*/
+}
+
+.tg-chart time:not(.tg-legend__date--hidden):first-of-type {
+    margin-left: 0;
 }
 
 .tg-chart .tg-legend__date--hidden {
     opacity: 0;
+    /*flex-grow: 0;*/
+    /*width: 0;*/
 }
 
 /*.tg-chart time:first-of-type {*/
@@ -251,7 +265,7 @@
     right: 0;
     padding-bottom: 5px;
     border-bottom: 1px solid rgba(170,181,191, 0.3);
-    transition: bottom 100ms ease, opacity 150ms ease, transform 150ms ease;
+    transition: bottom 200ms ease, opacity 300ms ease, transform 200ms ease;
     will-change: bottom, opacity;
 }
 

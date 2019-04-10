@@ -55,7 +55,7 @@ export default class Telegraph {
      * Render chart and minimap
      */
     this.chart.renderCharts();
-    this.minimap.renderMap()
+    this.minimap.renderMap();
   }
 
   /**
