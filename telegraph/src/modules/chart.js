@@ -62,15 +62,27 @@ export default class Chart {
   }
 
   get initialScale(){
-    if (!this._initialScale){
-      const chartToViewportRatio = this.viewportWidth / this.width;
-      console.log('chartToViewportRatio', chartToViewportRatio);
-      this._initialScale = this.viewportWidth * chartToViewportRatio / this.minimalMapWidth
-    }
-
     return this._initialScale;
   }
 
+  /**
+   * Get initial scaling corresponded with minimal minimap width
+   */
+  calculateInitialValues(){
+    /**
+     * Width of viewport when chart is not scaled
+     * @type {number}
+     */
+    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    const originalWidth = this.viewportWidth * chartToViewportRatio;
+    const scaledViewportRatio = this.minimalMapWidth / originalWidth;
+
+    const originalScalingChange = this.modules.chart.scaling / scaledViewportRatio;
+
+    this.initialScale = originalScalingChange;
+
+    log({scaling: this.scaling});
+  }
   set initialScale(value){
     this._initialScale = value;
     this.scale(value);
@@ -93,14 +105,6 @@ export default class Chart {
    */
   get scrollDistance() {
     return this.scrollValue * this.scaling;
-  }
-
-  /**
-   * Return current scaling value
-   * @return {number|*}
-   */
-  get scalingValue(){
-    return this.scaling;
   }
 
   /**
@@ -136,28 +140,19 @@ export default class Chart {
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
-    // this.scaling = this.initialScale;
     /**
-     * Compute initial step
+     * Get initial scale
      */
-    let step = this.initialStep;
-
-    log({scaling: this.scaling});
-
-    console.log('was', this.scaling, this.initialScale);
-    // this.scale(this.initialScale, 'right', true);
-
-    console.log('now', this.scaling);
+    this.calculateInitialValues();
 
 
-    const dates = this.state.dates;
 
     this.state.linesAvailable.forEach( name => {
       this.graph.renderLine(name);
     });
 
     this.graph.renderGrid();
-    this.graph.renderLegend(dates);
+    this.graph.renderLegend();
   }
 
   /**
@@ -198,21 +193,9 @@ export default class Chart {
    * Perform scroll
    * @param position
    */
-  scroll(position, fromScale = false){
-    // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
-    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-
-    // this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
-
-
-    // this.graph.pathsList.forEach( path => {
-    //   path.setMatrix(this.scaling, 1, newLeft);
-    // });
-    // this.graph.legend.style.transform = `translateX(${newLeft}px)`;
-
+  scroll(position){
     this.scrollValue = position * -1;
-    console.log('SCROLL');
-    this.graph.scroll(this.scrollValue, fromScale);
+    this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -221,18 +204,12 @@ export default class Chart {
    * Perform scaling
    * @param {number} scaling
    */
-  scale(scaling, direction, dontRemember = false){
+  scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
-
-    console.log('SCALE', scaling);
 
     log({scaling});
 
-    // if (!dontRemember){
-      this.scaling = scaling;
-    // }
-
-    // this.graph.addOnscreenDates(true);
+    this.scaling = scaling;
   }
 
   /**

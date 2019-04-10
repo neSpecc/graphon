@@ -68,13 +68,13 @@
 }
 
 .tg-chart time {
-    white-space: nowrap;
-    display: block;
-    /*text-align: center;*/
-    /*transition: opacity 100ms ease;*/
-    /*will-change: opacity, width;*/
-    /*flex-grow: 1;*/
     position: absolute;
+    display: block;
+    white-space: nowrap;
+    /*text-align: center;*/
+    transition: opacity 200ms ease;
+    will-change: opacity;
+    /*flex-grow: 1;*/
     /*right: 0;*/
     /*min-width: 55px;*/
     /*transform: translateX(-50%);*/
@@ -82,14 +82,8 @@
     /*margin-left: -26px;*/
 }
 
-.tg-chart time:not(.tg-legend__date--hidden):first-of-type {
-    margin-left: 0;
-}
-
-.tg-chart .tg-legend__date--hidden {
+.tg-chart time.hided {
     opacity: 0;
-    /*flex-grow: 0;*/
-    /*width: 0;*/
 }
 
 /*.tg-chart time:first-of-type {*/

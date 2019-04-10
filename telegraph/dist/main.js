@@ -507,7 +507,26 @@ class path_Path {
     this.path.classList.toggle(path_Path.CSS.graphHidden);
   }
 }
+// CONCATENATED MODULE: ./src/utils/log.js
+let prevValues = {};
+
+
+function log(obj){
+  let el = document.getElementById('log');
+   Object.assign(prevValues, obj);
+
+   let content = '';
+
+   Object.entries(prevValues).forEach(([key, value]) => {
+     content += `${key} ${value.toFixed(3)}   `
+   })
+
+  el.innerHTML = content;
+}
 // CONCATENATED MODULE: ./src/modules/graph.js
+
+
+
 
 
 
@@ -547,7 +566,7 @@ class graph_Graph {
      */
     this.onscreenDates = new Set();
     this.onscreenDatesElements = {}; // origin index -> element mappind
-
+    this._datesPerScreen = undefined;
 
 
     /**
@@ -631,8 +650,6 @@ class graph_Graph {
     }
 
     this.computeSteps();
-
-    this.legendDatesVisible = this.initialWidth / this.stepX;
 
     this.oyGroup.appendChild(this.oxGroup);
     this.canvas.appendChild(this.oyGroup);
@@ -840,13 +857,16 @@ class graph_Graph {
    * @todo add cache
    */
   get datesPerScreen(){
-      return Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth ));
+    if (!this._datesPerScreen){
+      this._datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 40));
+    }
+    return this._datesPerScreen;
   }
 
-  scroll(newLeft, fromScale){
+  scroll(newLeft){
     this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
     this.legend.style.transform = `translateX(${newLeft}px)`;
-    this.addOnscreenDates(fromScale);
+    this.addOnscreenDates();
   }
 
   pushDate(date, originIndex){
@@ -856,32 +876,46 @@ class graph_Graph {
       centering = '';
     }
 
+
+    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
+
+    log({
+      'points on screen': pointsOnScreen,
+      'vlezet': this.datesPerScreen,
+      showEvery
+    });
+
+
+    /**
+     * If point already showed, move it or hide
+     */
     if (this.onscreenDates.has(originIndex)){
-      // console.log('presented', originIndex, this.stepScaled );
-      this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      if (originIndex % showEvery !== 0){
+          this.onscreenDatesElements[originIndex].remove();
+          this.onscreenDates.delete(originIndex );
+          delete this.onscreenDatesElements[originIndex];
+      } else {
+        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      }
+
+
       return
     }
 
-    if (originIndex % this.datesPerScreen !== 0){
-      // console.log('skipped', originIndex, this.datesPerScreen, originIndex % this.datesPerScreen );
+
+
+    if (originIndex % showEvery !== 0){
       return;
     }
 
     const dt = new Date(date);
     const dateEl = make('time');
-    // dateEl.textContent = dt.toLocaleDateString('en-US', {
-    //   day: 'numeric',
-    //   month: 'short'
-    // });
+    dateEl.textContent = dt.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    });
 
-    dateEl.textContent = originIndex;
-
-
-    // console.log('index %o, need hide? %o', index, index * this.step * this.modules.chart.scaling);
-
-    // console.log('originIndex * this.stepScaled', originIndex, this.stepScaled, originIndex * this.stepScaled);
-
-    // console.log('step scaled',  this.stepScaled );
     dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
     this.legend.appendChild(dateEl);
     this.legendDates.push(dateEl);
@@ -889,8 +923,7 @@ class graph_Graph {
     this.onscreenDatesElements[originIndex] = dateEl;
   }
 
-  addOnscreenDates(dontRemove){
-    // console.log('addOnscreenDates', dontRemove);
+  addOnscreenDates(){
     let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
@@ -921,11 +954,6 @@ class graph_Graph {
       this.pushDate(date, originIndex);
     });
 
-    if (dontRemove){
-      return;
-    }
-
-
     this.onscreenDates.forEach((index) => {
       if (!datesOnScreenIndexes.has(index)) {
         this.onscreenDatesElements[index].remove();
@@ -933,73 +961,17 @@ class graph_Graph {
         delete this.onscreenDatesElements[index];
       }
     });
-
-    // this.prevLeftDateIndex = this.leftPointIndex;
-    // this.prevRightDateIndex = this.leftPointIndex + this.rightPointIndex + 1;
   }
 
   /**
    * Renders a legend with dates
    * @param {number[]} dates
    */
-  renderLegend(dates){
+  renderLegend(){
     this.legend = make('footer');
 
     this.addOnscreenDates();
 
-    insertAfter(this.canvas, this.legend);
-
-    return;
-
-
-    let datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 20));
-
-    console.log('total %o , each %o , so fit %o', this.modules.chart.viewportWidth , this.lenendDateWidth, datesPerScreen);
-    // let spaceBetween = (this.modules.chart.viewportWidth - ((datesPerScreen + 1) * this.lenendDateWidth)) / datesPerScreen;
-
-    let canFit = this.fitableDatesCount;
-    let spaceBetween = this.width / this.legendDatesVisible;
-
-    console.log('canFit', canFit);
-
-    let datesCount = dates.length;
-
-
-
-
-    let skipEvery = Math.ceil(datesCount / canFit);
-
-    let prevTraslateRight = this.lenendDateWidth;
-
-    dates.forEach((date, index) => {
-      /**
-       * Skip every second
-       */
-      // if ((index + 1) % skipEvery === 1){
-      //   return;
-      // }
-
-      // this.pushDate(date, index);
-    });
-
-    // this.legendDates.forEach( (el, index) => {
-      // let left = spaceBetween * index;
-      // let indexFromRight = datesCount - index;
-
-
-      // let left = prevTraslateRight + (spaceBetween + this.lenendDateWidth) * -1;
-
-      // el.style.left = spaceBetween * index + 'px';
-      // dateEl.style.transform = `translateX(${this.width + left}px)`;
-      // el.style.transform = `translateX(${left}px)`;
-      // dateEl.dataset.left = left;
-
-      // prevTraslateRight = left + 0;
-    // })
-
-    // this.skipIntersectedDates();
-
-    // this.skipDatesEvery(2);
     insertAfter(this.canvas, this.legend);
   }
 
@@ -1007,169 +979,9 @@ class graph_Graph {
    * Scale left legend
    * @param {number} scaling
    */
-  scaleLines(scaling, direction){
+  scaleLines(scaling){
     this.oxGroup.style.transform = `scaleX(${scaling})`;
-    // this.pathsList.forEach( path => {
-    //   path.scaleX(scaling);
-    // });
-
-    const newWidth = this.initialWidth * scaling;
-    console.log('newWidth', newWidth , this.initialWidth);
-    this.width = newWidth;
-
-    // this.addOnscreenDates();
-
-    // this.moveDates(scaling)
-  }
-
-  get fitableDatesCount(){
-    const margins = 20;
-    // return Math.floor(this.width / (this.lenendDateWidth + margins));
-    return Math.floor(this.width / (this.stepX + margins));
-  }
-
-  skipIntersectedDates(scaling = 1){
-    // const stepXScaled = this.fitableDatesCount;
-    const stepXScaled = this.stepX * scaling;
-
-    console.log('step', stepXScaled, this.legendDatesVisible, this.legendDates.length - 1 , scaling);
-    const dtElWidth = 55 + 10;
-
-    this.prevRightSide = 0;
-
-    this.legendDates.forEach((el, index) => {
-      let leftSideCoord = index * stepXScaled;
-      let rightSideCoord = leftSideCoord + dtElWidth;
-      // let real = (index - 1) * dtElWidth;
-      // console.log('index %o | left %o | right  %o | prev %o', index, leftSideCoord, rightSideCoord, '-');
-      // console.log('index %o | left %o | real %o | prev %o', index, index * stepXScaled, '-', this.prevLeft, this.prevLeft > index * stepXScaled ? '   <- hided' : '');
-      if (leftSideCoord < this.prevRightSide){
-        if (!el.classList.contains(graph_Graph.CSS.dateHidden)){
-          el.classList.add(graph_Graph.CSS.dateHidden);
-          this.legendDatesVisible--;
-        }
-      } else {
-        if (el.classList.contains(graph_Graph.CSS.dateHidden)){
-          // el.classList.remove(Graph.CSS.dateHidden);
-          // this.legendDatesVisible++;
-        }
-        this.prevRightSide = rightSideCoord;
-      }
-    })
-  }
-
-  moveDates(scaling){
-    const dtElWidth = 55;
-    const canFit = this.fitableDatesCount;
-    const spaceBetween = this.width / canFit;
-    // const newStepX = this.stepX * scaling;
-
-    console.log('new can fit:', canFit);
-
-    // let left = spaceBetween * index;
-    let datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (55 + 20));
-    let spaceBetweenGood = (this.modules.chart.viewportWidth - ((datesPerScreen + 1) * 55)) / datesPerScreen;
-    // let left = ((spaceBetweenGood + 55) * index) * -1;
-
-    const newStepX = (spaceBetweenGood * scaling + 55);
-    const pointsOnViewport = Math.round(this.modules.chart.viewportWidth / (this.stepX * scaling));
-
-    // console.log('pointsOnViewport', pointsOnViewport);
-
-    let right = Math.round(this.modules.chart.scrollValue * -1 / spaceBetweenGood / scaling) + pointsOnViewport;
-
-    let allDatesCount = this.legendDates.length;
-
-    if (right > allDatesCount - 1){
-      right = allDatesCount - 1;
-    }
-
-    console.log('right date', right, new Date(this.modules.state.dates[right]));
-
-
-    this.legendDates.forEach( (el, index) => {
-      let indexFromLeft = (allDatesCount - 1) - index;
-
-      if (indexFromLeft === right){
-        // console.warn('skipped', index, indexFromLeft);
-        return;
-      }
-
-      let newLeft = newStepX * index * -1;
-
-      if (index < 3){
-       console.log('%o | new %o', index, newLeft);
-      }
-
-      el.style.transform = `translateX(${newLeft}px)`;
-      // el.dataset.left = newLeft;
-
-      // this.prevLeft = newLeft;
-    })
-
-    // this.skipIntersectedDates(scaling);
-  }
-
-  /**
-   * Hide dates corresponding to scale
-   */
-  _toggleDatesVisibility(direction = 'left'){
-    const canFit = this.fitableDatesCount;
-    const nowFit = this.legendDatesVisible;
-    const skipEveryIndex = Math.floor(nowFit / canFit);
-    let showEveryIndex = Math.floor(canFit / nowFit);
-    console.log('can %o now %o (%o)', canFit, nowFit, this.legend.querySelectorAll(`time:not(.${graph_Graph.CSS.dateHidden})`).length ,'skip every', skipEveryIndex, showEveryIndex, Math.floor(canFit / nowFit));
-
-
-    if (canFit > nowFit && Math.floor(canFit / nowFit) > 1 && direction === 'right'){
-      console.warn('will be shown every', showEveryIndex + 1);
-
-      this.showDatesEvery(showEveryIndex + 1);
-      return;
-    }
-
-    if (skipEveryIndex < 1){
-      return;
-    }
-
-    let visibleIndex = 0;
-
-
-    console.warn('SKIP!');
-    this.skipDatesEvery(skipEveryIndex + 1);
-
-
-    // const fitability = Math.floor(nowFit / canFit + 0.9);
-
-    // console.log('canFit', canFit, nowFit, fitability);
-    // if (fitability % 2 === 1){
-    //   this.legend.classList.add(`skip-${fitability}`);
-    // }
-    //
-    // this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    // this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
-    // this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
-    // this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
-    // this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
-    // this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
-  }
-
-  skipDatesEvery(skipEveryIndex){
-    this.legendDates.filter(el => !el.classList.contains(graph_Graph.CSS.dateHidden)).forEach( (el, index) => {
-      if (index % skipEveryIndex === 0) {
-        el.classList.add(graph_Graph.CSS.dateHidden);
-        this.legendDatesVisible--;
-      }
-    });
-  }
-
-  showDatesEvery(showEveryIndex){
-    this.legendDates.filter(el => el.classList.contains(graph_Graph.CSS.dateHidden)).forEach( (el, index) => {
-      if (index % showEveryIndex === 0) {
-        el.classList.remove(graph_Graph.CSS.dateHidden);
-        this.legendDatesVisible++;
-      }
-    });
+    this.width = this.initialWidth * scaling;
   }
 
   get step(){
@@ -1396,33 +1208,10 @@ class minimap_Minimap {
     this.wrapperWidthCached = rect.width;
     this.wrapperLeftCoord = rect.left;
 
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
-
-    /**
-     * Width of viewport when chart is not scaled
-     * @type {number}
-     */
-    const originalWidth = this.wrapperWidth * chartToViewportRatio;
-    const scaledViewportRation = this.modules.chart.minimalMapWidth / originalWidth;
-    const originalScalingChange = this.modules.chart.scaling / scaledViewportRation;
-
     this.width = this.modules.chart.minimalMapWidth;
 
-
-    this.modules.chart.initialScale = originalScalingChange;
-    // this.modules.chart.scale(originalScalingChange);
-    // console.log('this.modules.chart.minimalMapWidth', this.modules.chart.minimalMapWidth);
-
-    // let scale = (this.wrapperWidth * chartToViewportRatio) / this.width;
-    // console.log('scale', scale, this.modules.chart.initialScale);
-    // console.log('this.modules.chart.initialScale', this.modules.chart.initialScale);
-    // this.modules.chart.scale(1, 'right');
-
-    // this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // console.log('viewportWidthInitial', this.viewportWidthInitial);
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1842,18 +1631,6 @@ class pointer_Pointer {
 
   }
 }
-// CONCATENATED MODULE: ./src/utils/log.js
-let prevValues = {};
-
-
-function log(obj){
-  let el = document.getElementById('log');
-   Object.assign(prevValues, obj);
-
-   Object.entries(prevValues).forEach(([key, value]) => {
-      el.innerHTML = `${key} ${value.toFixed(3)}   `
-   })
-}
 // CONCATENATED MODULE: ./src/modules/chart.js
 
 
@@ -1919,15 +1696,27 @@ class chart_Chart {
   }
 
   get initialScale(){
-    if (!this._initialScale){
-      const chartToViewportRatio = this.viewportWidth / this.width;
-      console.log('chartToViewportRatio', chartToViewportRatio);
-      this._initialScale = this.viewportWidth * chartToViewportRatio / this.minimalMapWidth
-    }
-
     return this._initialScale;
   }
 
+  /**
+   * Get initial scaling corresponded with minimal minimap width
+   */
+  calculateInitialValues(){
+    /**
+     * Width of viewport when chart is not scaled
+     * @type {number}
+     */
+    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    const originalWidth = this.viewportWidth * chartToViewportRatio;
+    const scaledViewportRatio = this.minimalMapWidth / originalWidth;
+
+    const originalScalingChange = this.modules.chart.scaling / scaledViewportRatio;
+
+    this.initialScale = originalScalingChange;
+
+    log({scaling: this.scaling});
+  }
   set initialScale(value){
     this._initialScale = value;
     this.scale(value);
@@ -1950,14 +1739,6 @@ class chart_Chart {
    */
   get scrollDistance() {
     return this.scrollValue * this.scaling;
-  }
-
-  /**
-   * Return current scaling value
-   * @return {number|*}
-   */
-  get scalingValue(){
-    return this.scaling;
   }
 
   /**
@@ -1993,28 +1774,19 @@ class chart_Chart {
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
-    // this.scaling = this.initialScale;
     /**
-     * Compute initial step
+     * Get initial scale
      */
-    let step = this.initialStep;
-
-    log({scaling: this.scaling});
-
-    console.log('was', this.scaling, this.initialScale);
-    // this.scale(this.initialScale, 'right', true);
-
-    console.log('now', this.scaling);
+    this.calculateInitialValues();
 
 
-    const dates = this.state.dates;
 
     this.state.linesAvailable.forEach( name => {
       this.graph.renderLine(name);
     });
 
     this.graph.renderGrid();
-    this.graph.renderLegend(dates);
+    this.graph.renderLegend();
   }
 
   /**
@@ -2055,21 +1827,9 @@ class chart_Chart {
    * Perform scroll
    * @param position
    */
-  scroll(position, fromScale = false){
-    // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
-    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-
-    // this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
-
-
-    // this.graph.pathsList.forEach( path => {
-    //   path.setMatrix(this.scaling, 1, newLeft);
-    // });
-    // this.graph.legend.style.transform = `translateX(${newLeft}px)`;
-
+  scroll(position){
     this.scrollValue = position * -1;
-    console.log('SCROLL');
-    this.graph.scroll(this.scrollValue, fromScale);
+    this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -2078,18 +1838,12 @@ class chart_Chart {
    * Perform scaling
    * @param {number} scaling
    */
-  scale(scaling, direction, dontRemember = false){
+  scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
-
-    console.log('SCALE', scaling);
 
     log({scaling});
 
-    // if (!dontRemember){
-      this.scaling = scaling;
-    // }
-
-    // this.graph.addOnscreenDates(true);
+    this.scaling = scaling;
   }
 
   /**

@@ -188,33 +188,10 @@ export default class Minimap {
     this.wrapperWidthCached = rect.width;
     this.wrapperLeftCoord = rect.left;
 
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
-
-    /**
-     * Width of viewport when chart is not scaled
-     * @type {number}
-     */
-    const originalWidth = this.wrapperWidth * chartToViewportRatio;
-    const scaledViewportRation = this.modules.chart.minimalMapWidth / originalWidth;
-    const originalScalingChange = this.modules.chart.scaling / scaledViewportRation;
-
     this.width = this.modules.chart.minimalMapWidth;
 
-
-    this.modules.chart.initialScale = originalScalingChange;
-    // this.modules.chart.scale(originalScalingChange);
-    // console.log('this.modules.chart.minimalMapWidth', this.modules.chart.minimalMapWidth);
-
-    // let scale = (this.wrapperWidth * chartToViewportRatio) / this.width;
-    // console.log('scale', scale, this.modules.chart.initialScale);
-    // console.log('this.modules.chart.initialScale', this.modules.chart.initialScale);
-    // this.modules.chart.scale(1, 'right');
-
-    // this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // console.log('viewportWidthInitial', this.viewportWidthInitial);
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
