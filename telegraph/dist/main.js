@@ -106,6 +106,11 @@ class State {
     this.colors = chartsData.colors;
     this.names = chartsData.names;
     this.types = chartsData.types;
+
+    /**
+     * Cache
+     */
+    this._dates = this.columns[0].slice(1);
   }
 
   /**
@@ -114,7 +119,7 @@ class State {
    * @return {number[]} - array of dates in milliseconds
    */
   get dates(){
-    return this.columns[0].slice(1);
+    return this._dates;
   }
 
   /**
@@ -502,7 +507,26 @@ class path_Path {
     this.path.classList.toggle(path_Path.CSS.graphHidden);
   }
 }
+// CONCATENATED MODULE: ./src/utils/log.js
+let prevValues = {};
+
+
+function log(obj){
+  let el = document.getElementById('log');
+   Object.assign(prevValues, obj);
+
+   let content = '';
+
+   Object.entries(prevValues).forEach(([key, value]) => {
+     content += `${key} ${value.toFixed(3)}   `
+   })
+
+  el.innerHTML = content;
+}
 // CONCATENATED MODULE: ./src/modules/graph.js
+
+
+
 
 
 
@@ -512,24 +536,37 @@ class path_Path {
  */
 class graph_Graph {
   /**
-   * @param {State} state
+   * @param {Telegraph} modules
    */
-  constructor(state, {stroke, animate}){
+  constructor(modules, {stroke, animate}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
      */
     const dateLabelWidth = 45;
 
-    this.state = state;
+    this.modules = modules;
+    this.state = modules.state;
     this.animate = animate || false;
     /**
      * @todo move to this.nodes
      */
     this.canvas = undefined;
     this.legend = undefined;
+    this.legendDates = [];
+    this.legendDatesVisible = 0;
+    this.lenendDateWidth = 38;
     this.grid = undefined;
     this.gridLines = [];
+
+
+    /**
+     * Set will be store indexes of visible dates
+     * @type {Set<number>}
+     */
+    this.onscreenDates = new Set();
+    this.onscreenDatesElements = {}; // origin index -> element mappind
+    this._datesPerScreen = undefined;
 
 
     /**
@@ -569,6 +606,7 @@ class graph_Graph {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
+      dateHidden: 'tg-legend__date--hidden',
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
@@ -598,6 +636,8 @@ class graph_Graph {
 
     this.oxGroup.setAttribute('class', graph_Graph.CSS.oxGroup);
     this.oyGroup.setAttribute('class', graph_Graph.CSS.oyGroup);
+    this.oyGroup.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.oxGroup.setAttribute('vector-effect', 'non-scaling-stroke');
 
     if (!width){
       this.computeInitialWidth();
@@ -621,7 +661,7 @@ class graph_Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = this.state.daysCount * this.stepX;
+    this.initialWidth = (this.state.daysCount - 1) * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -663,7 +703,7 @@ class graph_Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / this.state.daysCount;
+    this.stepX = this.width / (this.state.daysCount - 1);
 
     /**
      * All lines maximum value
@@ -718,7 +758,7 @@ class graph_Graph {
     values.forEach( (column, index )=> {
       if (index === 0){
         // path.dropText(column, true);
-        path.stepTo(column);
+        path.stepTo(column, true);
       } else {
         // path.dropText(column);
         path.stepTo(column);
@@ -793,29 +833,144 @@ class graph_Graph {
   }
 
   /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return parseInt(Math.floor(this.modules.chart.scrollValue * -1/ this.step / this.modules.chart.scaling));
+  }
+
+  /**
+   * Right visible point
+   * @return {number}
+   */
+  get rightPointIndex(){
+    let onscreen = Math.floor(this.modules.chart.viewportWidth / this.step / this.modules.chart.scaling);
+    return this.leftPointIndex + onscreen;
+  }
+
+  get stepScaled(){
+    return this.stepX * this.modules.chart.scaling
+  }
+
+  /**
+   * @todo add cache
+   */
+  get datesPerScreen(){
+    if (!this._datesPerScreen){
+      this._datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 40));
+    }
+    return this._datesPerScreen;
+  }
+
+  scroll(newLeft){
+    this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
+    this.legend.style.transform = `translateX(${newLeft}px)`;
+    this.addOnscreenDates();
+  }
+
+  pushDate(date, originIndex){
+    let centering = 'translateX(-50%)';
+
+    if (originIndex === 0){
+      centering = '';
+    }
+
+
+    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
+
+    log({
+      'points on screen': pointsOnScreen,
+      'vlezet': this.datesPerScreen,
+      showEvery
+    });
+
+
+    /**
+     * If point already showed, move it or hide
+     */
+    if (this.onscreenDates.has(originIndex)){
+      if (originIndex % showEvery !== 0){
+          this.onscreenDatesElements[originIndex].remove();
+          this.onscreenDates.delete(originIndex );
+          delete this.onscreenDatesElements[originIndex];
+      } else {
+        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      }
+
+
+      return
+    }
+
+
+
+    if (originIndex % showEvery !== 0){
+      return;
+    }
+
+    const dt = new Date(date);
+    const dateEl = make('time');
+    dateEl.textContent = dt.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    });
+
+    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+    this.legend.appendChild(dateEl);
+    this.legendDates.push(dateEl);
+    this.onscreenDates.add(originIndex);
+    this.onscreenDatesElements[originIndex] = dateEl;
+  }
+
+  addOnscreenDates(){
+    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenIndexes = new Set();
+
+    // console.log('this.state.dates', this.state.dates.map( dt => new Date(dt)));
+
+    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    //
+    // console.log('l %o (%o) r %o (%o)',
+    //   this.leftPointIndex,
+    //   leftDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    //   this.rightPointIndex,
+    //   rightDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    // );
+
+    // console.log('left %o right %o', new Date(this.state.dates[this.leftPointIndex]).getDate(), new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]).getDate());
+
+    datesOnScreen.forEach((date, index) => {
+      const originIndex = this.leftPointIndex + index;
+
+      datesOnScreenIndexes.add(originIndex);
+      this.pushDate(date, originIndex);
+    });
+
+    this.onscreenDates.forEach((index) => {
+      if (!datesOnScreenIndexes.has(index)) {
+        this.onscreenDatesElements[index].remove();
+        this.onscreenDates.delete(index);
+        delete this.onscreenDatesElements[index];
+      }
+    });
+  }
+
+  /**
    * Renders a legend with dates
    * @param {number[]} dates
    */
-  renderLegend(dates){
+  renderLegend(){
     this.legend = make('footer');
 
-    dates.forEach((date, index) => {
-      /**
-       * Skip every second
-       */
-      if (index % 2 === 1){
-        return;
-      }
-
-      const dt = new Date(date);
-      const dateEl = make('time');
-      dateEl.textContent = dt.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short'
-      });
-
-      this.legend.appendChild(dateEl)
-    });
+    this.addOnscreenDates();
 
     insertAfter(this.canvas, this.legend);
   }
@@ -826,27 +981,7 @@ class graph_Graph {
    */
   scaleLines(scaling){
     this.oxGroup.style.transform = `scaleX(${scaling})`;
-    // this.pathsList.forEach( path => {
-    //   path.scaleX(scaling);
-    // });
-
-    const newWidth = this.initialWidth * scaling;
-    this.width = newWidth;
-
-    const canFit = Math.round(newWidth / this.stepX);
-    const nowFit = Math.round(this.initialWidth / this.stepX);
-    const fitability = Math.floor(nowFit / canFit + 0.9);
-
-    if (fitability % 2 === 1){
-      this.legend.classList.add(`skip-${fitability}`);
-    }
-
-    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
-    this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
-    this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
-    this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
-    this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
+    this.width = this.initialWidth * scaling;
   }
 
   get step(){
@@ -897,6 +1032,10 @@ class graph_Graph {
  * - Scrolling
  */
 class minimap_Minimap {
+  /**
+   * Telegraph
+   * @param modules
+   */
   constructor(modules){
     this.modules = modules;
     /**
@@ -959,7 +1098,9 @@ class minimap_Minimap {
     this.leftZoneWidth = 0;
     this.rightZoneWidth = 0;
 
-    this.graph = new graph_Graph(this.state, {
+    this.prevX = 0;
+
+    this.graph = new graph_Graph(this.modules, {
       stroke: 1,
       animate: true
     });
@@ -1067,12 +1208,10 @@ class minimap_Minimap {
     this.wrapperWidthCached = rect.width;
     this.wrapperLeftCoord = rect.left;
 
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
-    this.width = this.wrapperWidth * chartToViewportRatio;
+    this.width = this.modules.chart.minimalMapWidth;
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1241,7 +1380,7 @@ class minimap_Minimap {
    * Sync scroll between minimap and chart
    * @param {number} [newScroll] - pass scroll if you have
    */
-  syncScrollWithChart(newScroll = null){
+  syncScrollWithChart(newScroll = null, fromScale = false, scaling = 1){
     /**
      * How many percents of mini-map is scrolled
      */
@@ -1249,7 +1388,7 @@ class minimap_Minimap {
     const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
-    this.modules.chart.scroll(chartScroll);
+    this.modules.chart.scroll(chartScroll * scaling, fromScale);
   }
 
   /**
@@ -1261,9 +1400,13 @@ class minimap_Minimap {
     let pageX = getPageX(event);
     let delta = pageX - this.moveStartX;
 
-    if (!delta){
+    let direction = this.prevX < pageX ? 'right' : 'left';
+
+    if (!delta || this.prevX === pageX){
       return;
     }
+
+    this.prevX = pageX + 0;
 
     let newScalerWidth;
 
@@ -1291,11 +1434,10 @@ class minimap_Minimap {
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
       this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
 
-    const scaling = this.viewportWidthInitial / newViewportWidth ;
+    const scaling = this.viewportWidthInitial / newViewportWidth * this.modules.chart.initialScale;
 
-    this.modules.chart.scale(scaling);
-    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth);
-
+    this.modules.chart.scale(scaling, direction);
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth, true);
     this.modules.chart.fitToMax();
   }
 
@@ -1496,6 +1638,8 @@ class pointer_Pointer {
 
 
 
+
+
 /**
  * Module for working with main Chart zone
  * - Render UI
@@ -1522,8 +1666,8 @@ class chart_Chart {
 
     this.tooltip = new tooltip_Tooltip(this.modules);
     this.pointer = new pointer_Pointer(this.modules);
-    this.graph = new graph_Graph(this.state, {
-      stroke: 2.6
+    this.graph = new graph_Graph(this.modules, {
+      stroke: 2
     });
 
     this.wrapperLeftCoord = undefined;
@@ -1535,6 +1679,47 @@ class chart_Chart {
      * @type {{}}
      */
     this.cache = {};
+
+    this._initialScale = undefined;
+    this._initialStep = undefined;
+  }
+
+  get initialStep(){
+    if (!this._initialStep){
+      this._initialStep = this.width / (this.state.daysCount - 1);
+    }
+    return this._initialStep;
+  }
+
+  get minimalMapWidth(){
+    return 2 * this.initialStep;
+  }
+
+  get initialScale(){
+    return this._initialScale;
+  }
+
+  /**
+   * Get initial scaling corresponded with minimal minimap width
+   */
+  calculateInitialValues(){
+    /**
+     * Width of viewport when chart is not scaled
+     * @type {number}
+     */
+    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    const originalWidth = this.viewportWidth * chartToViewportRatio;
+    const scaledViewportRatio = this.minimalMapWidth / originalWidth;
+
+    const originalScalingChange = this.modules.chart.scaling / scaledViewportRatio;
+
+    this.initialScale = originalScalingChange;
+
+    log({scaling: this.scaling});
+  }
+  set initialScale(value){
+    this._initialScale = value;
+    this.scale(value);
   }
 
   /**
@@ -1554,14 +1739,6 @@ class chart_Chart {
    */
   get scrollDistance() {
     return this.scrollValue * this.scaling;
-  }
-
-  /**
-   * Return current scaling value
-   * @return {number|*}
-   */
-  get scalingValue(){
-    return this.scaling;
   }
 
   /**
@@ -1597,14 +1774,19 @@ class chart_Chart {
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
-    const dates = this.state.dates;
+    /**
+     * Get initial scale
+     */
+    this.calculateInitialValues();
+
+
 
     this.state.linesAvailable.forEach( name => {
       this.graph.renderLine(name);
     });
 
     this.graph.renderGrid();
-    this.graph.renderLegend(dates);
+    this.graph.renderLegend();
   }
 
   /**
@@ -1646,18 +1828,8 @@ class chart_Chart {
    * @param position
    */
   scroll(position){
-    let newLeft = position * -1;
-    // this.nodes.viewport.style.transform = `translateX(${newLeft}px)`;
-    // this.nodes.viewport.style.transform = `matrix(1,0,0,1,${newLeft},0)`;
-
-    this.graph.oxGroup.style.transform = `matrix(${this.scaling},0,0,1,${newLeft},0)`;
-
-
-    // this.graph.pathsList.forEach( path => {
-    //   path.setMatrix(this.scaling, 1, newLeft);
-    // });
-    this.graph.legend.style.transform = `translateX(${newLeft}px)`;
-    this.scrollValue = newLeft;
+    this.scrollValue = position * -1;
+    this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -1666,8 +1838,10 @@ class chart_Chart {
    * Perform scaling
    * @param {number} scaling
    */
-  scale(scaling){
-    this.graph.scaleLines(scaling, this.scrollValue);
+  scale(scaling, direction){
+    this.graph.scaleLines(scaling, direction);
+
+    log({scaling});
 
     this.scaling = scaling;
   }
@@ -1741,7 +1915,7 @@ class chart_Chart {
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
-    let hoveredPointIndex = pointIndex + this.leftPointIndex - 1;
+    let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
@@ -1942,7 +2116,7 @@ class telegraph_Telegraph {
      * Render chart and minimap
      */
     this.chart.renderCharts();
-    this.minimap.renderMap()
+    this.minimap.renderMap();
   }
 
   /**

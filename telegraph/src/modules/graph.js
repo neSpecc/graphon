@@ -2,29 +2,45 @@ import * as Dom from '../utils/dom';
 import * as Numbers from '../utils/numbers';
 import Path from './path';
 
+import log from '../utils/log.js';
+
+
 /**
  * Working with svg paths for charts
  */
 export default class Graph {
   /**
-   * @param {State} state
+   * @param {Telegraph} modules
    */
-  constructor(state, {stroke, animate}){
+  constructor(modules, {stroke, animate}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
      */
     const dateLabelWidth = 45;
 
-    this.state = state;
+    this.modules = modules;
+    this.state = modules.state;
     this.animate = animate || false;
     /**
      * @todo move to this.nodes
      */
     this.canvas = undefined;
     this.legend = undefined;
+    this.legendDates = [];
+    this.legendDatesVisible = 0;
+    this.lenendDateWidth = 38;
     this.grid = undefined;
     this.gridLines = [];
+
+
+    /**
+     * Set will be store indexes of visible dates
+     * @type {Set<number>}
+     */
+    this.onscreenDates = new Set();
+    this.onscreenDatesElements = {}; // origin index -> element mappind
+    this._datesPerScreen = undefined;
 
 
     /**
@@ -64,6 +80,7 @@ export default class Graph {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
+      dateHidden: 'tg-legend__date--hidden',
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
@@ -93,6 +110,8 @@ export default class Graph {
 
     this.oxGroup.setAttribute('class', Graph.CSS.oxGroup);
     this.oyGroup.setAttribute('class', Graph.CSS.oyGroup);
+    this.oyGroup.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.oxGroup.setAttribute('vector-effect', 'non-scaling-stroke');
 
     if (!width){
       this.computeInitialWidth();
@@ -116,7 +135,7 @@ export default class Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = this.state.daysCount * this.stepX;
+    this.initialWidth = (this.state.daysCount - 1) * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -158,7 +177,7 @@ export default class Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / this.state.daysCount;
+    this.stepX = this.width / (this.state.daysCount - 1);
 
     /**
      * All lines maximum value
@@ -213,7 +232,7 @@ export default class Graph {
     values.forEach( (column, index )=> {
       if (index === 0){
         // path.dropText(column, true);
-        path.stepTo(column);
+        path.stepTo(column, true);
       } else {
         // path.dropText(column);
         path.stepTo(column);
@@ -288,29 +307,144 @@ export default class Graph {
   }
 
   /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return parseInt(Math.floor(this.modules.chart.scrollValue * -1/ this.step / this.modules.chart.scaling));
+  }
+
+  /**
+   * Right visible point
+   * @return {number}
+   */
+  get rightPointIndex(){
+    let onscreen = Math.floor(this.modules.chart.viewportWidth / this.step / this.modules.chart.scaling);
+    return this.leftPointIndex + onscreen;
+  }
+
+  get stepScaled(){
+    return this.stepX * this.modules.chart.scaling
+  }
+
+  /**
+   * @todo add cache
+   */
+  get datesPerScreen(){
+    if (!this._datesPerScreen){
+      this._datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 40));
+    }
+    return this._datesPerScreen;
+  }
+
+  scroll(newLeft){
+    this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
+    this.legend.style.transform = `translateX(${newLeft}px)`;
+    this.addOnscreenDates();
+  }
+
+  pushDate(date, originIndex){
+    let centering = 'translateX(-50%)';
+
+    if (originIndex === 0){
+      centering = '';
+    }
+
+
+    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
+
+    log({
+      'points on screen': pointsOnScreen,
+      'vlezet': this.datesPerScreen,
+      showEvery
+    });
+
+
+    /**
+     * If point already showed, move it or hide
+     */
+    if (this.onscreenDates.has(originIndex)){
+      if (originIndex % showEvery !== 0){
+          this.onscreenDatesElements[originIndex].remove();
+          this.onscreenDates.delete(originIndex );
+          delete this.onscreenDatesElements[originIndex];
+      } else {
+        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      }
+
+
+      return
+    }
+
+
+
+    if (originIndex % showEvery !== 0){
+      return;
+    }
+
+    const dt = new Date(date);
+    const dateEl = Dom.make('time');
+    dateEl.textContent = dt.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    });
+
+    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+    this.legend.appendChild(dateEl);
+    this.legendDates.push(dateEl);
+    this.onscreenDates.add(originIndex);
+    this.onscreenDatesElements[originIndex] = dateEl;
+  }
+
+  addOnscreenDates(){
+    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenIndexes = new Set();
+
+    // console.log('this.state.dates', this.state.dates.map( dt => new Date(dt)));
+
+    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    //
+    // console.log('l %o (%o) r %o (%o)',
+    //   this.leftPointIndex,
+    //   leftDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    //   this.rightPointIndex,
+    //   rightDate.toLocaleDateString('en-US', {
+    //     day: 'numeric',
+    //     month: 'short'
+    //   }),
+    // );
+
+    // console.log('left %o right %o', new Date(this.state.dates[this.leftPointIndex]).getDate(), new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]).getDate());
+
+    datesOnScreen.forEach((date, index) => {
+      const originIndex = this.leftPointIndex + index;
+
+      datesOnScreenIndexes.add(originIndex);
+      this.pushDate(date, originIndex);
+    });
+
+    this.onscreenDates.forEach((index) => {
+      if (!datesOnScreenIndexes.has(index)) {
+        this.onscreenDatesElements[index].remove();
+        this.onscreenDates.delete(index);
+        delete this.onscreenDatesElements[index];
+      }
+    });
+  }
+
+  /**
    * Renders a legend with dates
    * @param {number[]} dates
    */
-  renderLegend(dates){
+  renderLegend(){
     this.legend = Dom.make('footer');
 
-    dates.forEach((date, index) => {
-      /**
-       * Skip every second
-       */
-      if (index % 2 === 1){
-        return;
-      }
-
-      const dt = new Date(date);
-      const dateEl = Dom.make('time');
-      dateEl.textContent = dt.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short'
-      });
-
-      this.legend.appendChild(dateEl)
-    });
+    this.addOnscreenDates();
 
     Dom.insertAfter(this.canvas, this.legend);
   }
@@ -321,27 +455,7 @@ export default class Graph {
    */
   scaleLines(scaling){
     this.oxGroup.style.transform = `scaleX(${scaling})`;
-    // this.pathsList.forEach( path => {
-    //   path.scaleX(scaling);
-    // });
-
-    const newWidth = this.initialWidth * scaling;
-    this.width = newWidth;
-
-    const canFit = Math.round(newWidth / this.stepX);
-    const nowFit = Math.round(this.initialWidth / this.stepX);
-    const fitability = Math.floor(nowFit / canFit + 0.9);
-
-    if (fitability % 2 === 1){
-      this.legend.classList.add(`skip-${fitability}`);
-    }
-
-    this.legend.classList.toggle('skip-odd', nowFit / canFit > 1.7);
-    this.legend.classList.toggle('skip-third', nowFit / canFit > 3.2);
-    this.legend.classList.toggle('skip-fifth', nowFit / canFit > 5.5);
-    this.legend.classList.toggle('skip-seventh', nowFit / canFit > 7);
-    this.legend.classList.toggle('skip-ninth', nowFit / canFit > 9.2);
-    this.legend.classList.toggle('skip-eleventh', nowFit / canFit > 14);
+    this.width = this.initialWidth * scaling;
   }
 
   get step(){

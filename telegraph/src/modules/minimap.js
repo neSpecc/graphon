@@ -12,6 +12,10 @@ import Graph from './graph.js';
  * - Scrolling
  */
 export default class Minimap {
+  /**
+   * Telegraph
+   * @param modules
+   */
   constructor(modules){
     this.modules = modules;
     /**
@@ -74,7 +78,9 @@ export default class Minimap {
     this.leftZoneWidth = 0;
     this.rightZoneWidth = 0;
 
-    this.graph = new Graph(this.state, {
+    this.prevX = 0;
+
+    this.graph = new Graph(this.modules, {
       stroke: 1,
       animate: true
     });
@@ -182,12 +188,10 @@ export default class Minimap {
     this.wrapperWidthCached = rect.width;
     this.wrapperLeftCoord = rect.left;
 
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
-    this.width = this.wrapperWidth * chartToViewportRatio;
+    this.width = this.modules.chart.minimalMapWidth;
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -356,7 +360,7 @@ export default class Minimap {
    * Sync scroll between minimap and chart
    * @param {number} [newScroll] - pass scroll if you have
    */
-  syncScrollWithChart(newScroll = null){
+  syncScrollWithChart(newScroll = null, fromScale = false, scaling = 1){
     /**
      * How many percents of mini-map is scrolled
      */
@@ -364,7 +368,7 @@ export default class Minimap {
     const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
-    this.modules.chart.scroll(chartScroll);
+    this.modules.chart.scroll(chartScroll * scaling, fromScale);
   }
 
   /**
@@ -376,9 +380,13 @@ export default class Minimap {
     let pageX = Event.getPageX(event);
     let delta = pageX - this.moveStartX;
 
-    if (!delta){
+    let direction = this.prevX < pageX ? 'right' : 'left';
+
+    if (!delta || this.prevX === pageX){
       return;
     }
+
+    this.prevX = pageX + 0;
 
     let newScalerWidth;
 
@@ -406,11 +414,10 @@ export default class Minimap {
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
       this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
 
-    const scaling = this.viewportWidthInitial / newViewportWidth ;
+    const scaling = this.viewportWidthInitial / newViewportWidth * this.modules.chart.initialScale;
 
-    this.modules.chart.scale(scaling);
-    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth);
-
+    this.modules.chart.scale(scaling, direction);
+    this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth, true);
     this.modules.chart.fitToMax();
   }
 

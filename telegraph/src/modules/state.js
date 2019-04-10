@@ -11,6 +11,11 @@ export default class State {
     this.colors = chartsData.colors;
     this.names = chartsData.names;
     this.types = chartsData.types;
+
+    /**
+     * Cache
+     */
+    this._dates = this.columns[0].slice(1);
   }
 
   /**
@@ -19,7 +24,7 @@ export default class State {
    * @return {number[]} - array of dates in milliseconds
    */
   get dates(){
-    return this.columns[0].slice(1);
+    return this._dates;
   }
 
   /**
