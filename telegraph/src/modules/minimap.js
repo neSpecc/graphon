@@ -336,26 +336,26 @@ export default class Minimap {
     this.viewportOffsetLeft = this.scrolledValue;
 
 
-    let start = null;
+    // let start = null;
+    //
+    // // console.log('direction', direction);
+    //
+    // let step = (timestamp) => {
+    //   if (!start) start = timestamp;
+    //   var progress = timestamp - start;
+    //   let forTo = Math.min(progress / this.prevX, 500);
+    //
+    //   console.log('forTo', this.prevX, progress);
+    //
+    //   // console.log('progress', progress);
+    //   this.moveViewport(forTo * 5);
+    //   // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
+    //   if (progress < 100) {
+    //     window.requestAnimationFrame(step);
+    //   }
+    // }
 
-    // console.log('direction', direction);
-
-    let step = (timestamp) => {
-      if (!start) start = timestamp;
-      var progress = timestamp - start;
-      let forTo = Math.min(progress / this.prevX, 500);
-
-      console.log('forTo', this.prevX, progress);
-
-      // console.log('progress', progress);
-      this.moveViewport(forTo * 5);
-      // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
-      if (progress < 100) {
-        window.requestAnimationFrame(step);
-      }
-    }
-
-    window.requestAnimationFrame(step);
+    // window.requestAnimationFrame(step);
   }
 
   finishLeftScaling(){
@@ -374,28 +374,9 @@ export default class Minimap {
   viewportDragged(event){
     let delta = Event.getPageX(event) - this.moveStartX;
 
-    let direction = this.prevX < delta ? 'right' : 'left';
+    // let direction = this.prevX < delta ? 'right' : 'left';
 
-    this.prevX = delta + 0;
-
-    // let start = null;
-    //
-    // console.log('direction', direction);
-    //
-    // let step = (timestamp) => {
-    //     if (!start) start = timestamp;
-    //     var progress = timestamp - start;
-    //
-    //     // console.log('progress', progress);
-    //     this.moveViewport(Math.min(this.prevX / 10, 200));
-    //     // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
-    //     if (progress < 500) {
-    //       window.requestAnimationFrame(step);
-    //     }
-    // }
-    //
-    // window.requestAnimationFrame(step);
-
+    // this.prevX = delta + 0;
     this.moveViewport(delta);
     this.syncScrollWithChart();
 

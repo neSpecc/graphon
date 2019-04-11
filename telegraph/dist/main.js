@@ -552,22 +552,6 @@ class graph_Graph {
      * @todo move to this.nodes
      */
     this.canvas = undefined;
-    this.legend = undefined;
-    this.legendDates = [];
-    this.legendDatesVisible = 0;
-    this.lenendDateWidth = 38;
-    this.grid = undefined;
-    this.gridLines = [];
-
-
-    /**
-     * Set will be store indexes of visible dates
-     * @type {Set<number>}
-     */
-    this.onscreenDates = new Set();
-    this.onscreenDatesElements = {}; // origin index -> element mappind
-    this._datesPerScreen = undefined;
-
 
     /**
      * Transformations on OY
@@ -603,10 +587,6 @@ class graph_Graph {
 
   static get CSS(){
     return {
-      grid: 'tg-grid',
-      gridSection: 'tg-grid__section',
-      gridSectionHidden: 'tg-grid__section--hidden',
-      dateHidden: 'tg-legend__date--hidden',
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
@@ -771,208 +751,8 @@ class graph_Graph {
     this.paths[name] = path;
   }
 
-  /**
-   * Render or updates a grid
-   * @param {number} forceMax - new max value for updating
-   * @param {boolean} isUpdating - true for updating
-   */
-  renderGrid(forceMax, isUpdating = false){
-    if (!this.grid) {
-      this.grid = make('div', graph_Graph.CSS.grid);
-      this.gridLines = [];
-      insertBefore(this.canvas.parentNode, this.grid);
-    }
-
-
-
-    let stepY = this.stepY;
-    const height = this.height;
-    const max = forceMax || this.maxPoint;
-    const kY = height / max;
-
-    let linesCount = height / (stepY * kY) >> 0;
-
-    if (linesCount === 0){
-      stepY = stepY / 3;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 1){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (this.gridLines.length){
-      this.gridLines.forEach( line => {
-        line.classList.add(graph_Graph.CSS.gridSectionHidden);
-      })
-    }
-
-    // Drawing horizontal lines
-
-    for (let j = 0; j <= linesCount; j++) {
-      let y = j * stepY;
-      let line;
-
-      if (this.gridLines.length && this.gridLines[j]){
-        line = this.gridLines[j];
-      } else {
-        line = make('div', graph_Graph.CSS.gridSection);
-        this.grid.appendChild(line);
-        this.gridLines.push(line);
-      }
-
-      if (j === 0){
-        line.classList.add('no-animation');
-      }
-
-      line.classList.remove(graph_Graph.CSS.gridSectionHidden);
-      line.style.bottom = y * kY + 'px';
-      line.textContent = beautify(Math.round(y));
-    }
-  }
-
-  /**
-   * Left visible point
-   * @return {number}
-   */
-  get leftPointIndex(){
-    return parseInt(Math.floor(this.modules.chart.scrollValue * -1/ this.step / this.modules.chart.scaling));
-  }
-
-  /**
-   * Right visible point
-   * @return {number}
-   */
-  get rightPointIndex(){
-    let onscreen = Math.floor(this.modules.chart.viewportWidth / this.step / this.modules.chart.scaling);
-    return this.leftPointIndex + onscreen;
-  }
-
-  get stepScaled(){
-    return this.stepX * this.modules.chart.scaling
-  }
-
-  /**
-   * @todo add cache
-   */
-  get datesPerScreen(){
-    if (!this._datesPerScreen){
-      this._datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 40));
-    }
-    return this._datesPerScreen;
-  }
-
   scroll(newLeft){
     this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
-    this.legend.style.transform = `translateX(${newLeft}px)`;
-    this.addOnscreenDates();
-  }
-
-  pushDate(date, originIndex){
-    let centering = 'translateX(-50%)';
-
-    if (originIndex === 0){
-      centering = '';
-    }
-
-
-    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
-    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
-
-    log({
-      'points on screen': pointsOnScreen,
-      'vlezet': this.datesPerScreen,
-      showEvery
-    });
-
-
-    /**
-     * If point already showed, move it or hide
-     */
-    if (this.onscreenDates.has(originIndex)){
-      if (originIndex % showEvery !== 0){
-          this.onscreenDatesElements[originIndex].remove();
-          this.onscreenDates.delete(originIndex );
-          delete this.onscreenDatesElements[originIndex];
-      } else {
-        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
-      }
-
-
-      return
-    }
-
-
-
-    if (originIndex % showEvery !== 0){
-      return;
-    }
-
-    const dt = new Date(date);
-    const dateEl = make('time');
-    dateEl.textContent = dt.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short'
-    });
-
-    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
-    this.legend.appendChild(dateEl);
-    this.legendDates.push(dateEl);
-    this.onscreenDates.add(originIndex);
-    this.onscreenDatesElements[originIndex] = dateEl;
-  }
-
-  addOnscreenDates(){
-    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
-    let datesOnScreenIndexes = new Set();
-
-    // console.log('this.state.dates', this.state.dates.map( dt => new Date(dt)));
-
-    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
-    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
-    //
-    // console.log('l %o (%o) r %o (%o)',
-    //   this.leftPointIndex,
-    //   leftDate.toLocaleDateString('en-US', {
-    //     day: 'numeric',
-    //     month: 'short'
-    //   }),
-    //   this.rightPointIndex,
-    //   rightDate.toLocaleDateString('en-US', {
-    //     day: 'numeric',
-    //     month: 'short'
-    //   }),
-    // );
-
-    // console.log('left %o right %o', new Date(this.state.dates[this.leftPointIndex]).getDate(), new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]).getDate());
-
-    datesOnScreen.forEach((date, index) => {
-      const originIndex = this.leftPointIndex + index;
-
-      datesOnScreenIndexes.add(originIndex);
-      this.pushDate(date, originIndex);
-    });
-
-    this.onscreenDates.forEach((index) => {
-      if (!datesOnScreenIndexes.has(index)) {
-        this.onscreenDatesElements[index].remove();
-        this.onscreenDates.delete(index);
-        delete this.onscreenDatesElements[index];
-      }
-    });
-  }
-
-  /**
-   * Renders a legend with dates
-   * @param {number[]} dates
-   */
-  renderLegend(){
-    this.legend = make('footer');
-
-    this.addOnscreenDates();
-
-    insertAfter(this.canvas, this.legend);
   }
 
   /**
@@ -992,21 +772,9 @@ class graph_Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax, scaleX, scroll){
+  scaleToMaxPoint(newMax){
     this.oyScaling = this.maxPoint / newMax * 0.8;
-
-    this.pathsList.forEach( path => {
-      // path.setMatrix(scaleX, scaling, scroll);
-      // path.scaleY(scaling);
-      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
-    });
-
-    /**
-     * Rerender grid if it was rendered before
-     */
-    if (this.grid){
-      this.renderGrid(newMax * 1.2, true);
-    }
+    this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
   }
 
   checkPathVisibility(name){
@@ -1356,26 +1124,26 @@ class minimap_Minimap {
     this.viewportOffsetLeft = this.scrolledValue;
 
 
-    let start = null;
+    // let start = null;
+    //
+    // // console.log('direction', direction);
+    //
+    // let step = (timestamp) => {
+    //   if (!start) start = timestamp;
+    //   var progress = timestamp - start;
+    //   let forTo = Math.min(progress / this.prevX, 500);
+    //
+    //   console.log('forTo', this.prevX, progress);
+    //
+    //   // console.log('progress', progress);
+    //   this.moveViewport(forTo * 5);
+    //   // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
+    //   if (progress < 100) {
+    //     window.requestAnimationFrame(step);
+    //   }
+    // }
 
-    // console.log('direction', direction);
-
-    let step = (timestamp) => {
-      if (!start) start = timestamp;
-      var progress = timestamp - start;
-      let forTo = Math.min(progress / this.prevX, 500);
-
-      console.log('forTo', this.prevX, progress);
-
-      // console.log('progress', progress);
-      this.moveViewport(forTo * 5);
-      // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
-      if (progress < 100) {
-        window.requestAnimationFrame(step);
-      }
-    }
-
-    window.requestAnimationFrame(step);
+    // window.requestAnimationFrame(step);
   }
 
   finishLeftScaling(){
@@ -1394,28 +1162,9 @@ class minimap_Minimap {
   viewportDragged(event){
     let delta = getPageX(event) - this.moveStartX;
 
-    let direction = this.prevX < delta ? 'right' : 'left';
+    // let direction = this.prevX < delta ? 'right' : 'left';
 
-    this.prevX = delta + 0;
-
-    // let start = null;
-    //
-    // console.log('direction', direction);
-    //
-    // let step = (timestamp) => {
-    //     if (!start) start = timestamp;
-    //     var progress = timestamp - start;
-    //
-    //     // console.log('progress', progress);
-    //     this.moveViewport(Math.min(this.prevX / 10, 200));
-    //     // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
-    //     if (progress < 500) {
-    //       window.requestAnimationFrame(step);
-    //     }
-    // }
-    //
-    // window.requestAnimationFrame(step);
-
+    // this.prevX = delta + 0;
     this.moveViewport(delta);
     this.syncScrollWithChart();
 
@@ -1686,6 +1435,7 @@ class pointer_Pointer {
 
 
 
+
 /**
  * Module for working with main Chart zone
  * - Render UI
@@ -1708,6 +1458,10 @@ class chart_Chart {
       viewport: undefined,
       canvas: undefined,
       cursorLine: undefined,
+      grid: undefined,
+      gridLines: [],
+      legend: undefined,
+      legendDates: [],
     };
 
     this.tooltip = new tooltip_Tooltip(this.modules);
@@ -1719,6 +1473,23 @@ class chart_Chart {
     this.wrapperLeftCoord = undefined;
     this.scaling = 1;
     this.scrollValue = 0;
+
+
+
+    this.lenendDateWidth = 38;
+
+    /**
+     * Set will be store indexes of visible dates
+     * @type {Set<number>}
+     */
+    this.onscreenDates = new Set();
+    this.onscreenDatesElements = {}; // origin index -> element mapping
+    this._datesPerScreen = undefined;
+
+
+
+
+
 
     /**
      * Any properties can be cached here
@@ -1753,16 +1524,17 @@ class chart_Chart {
      * Width of viewport when chart is not scaled
      * @type {number}
      */
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    const chartToViewportRatio = this.viewportWidth / this.width;
     const originalWidth = this.viewportWidth * chartToViewportRatio;
     const scaledViewportRatio = this.minimalMapWidth / originalWidth;
 
-    const originalScalingChange = this.modules.chart.scaling / scaledViewportRatio;
+    const originalScalingChange = this.scaling / scaledViewportRatio;
 
     this.initialScale = originalScalingChange;
 
     log({scaling: this.scaling});
   }
+
   set initialScale(value){
     this._initialScale = value;
     this.scale(value);
@@ -1776,7 +1548,35 @@ class chart_Chart {
     return {
       wrapper: 'tg-chart',
       viewport: 'tg-chart__viewport',
+      grid: 'tg-grid',
+      gridSection: 'tg-grid__section',
+      gridSectionHidden: 'tg-grid__section--hidden',
+      dateHidden: 'tg-legend__date--hidden',
     }
+  }
+
+  get stepX(){
+    return this.graph.stepX;
+  }
+
+  get stepY(){
+    return this.graph.stepY;
+  }
+
+  get maxPoint(){
+    return this.graph.maxPoint;
+  }
+
+  get height(){
+    return this.graph.height;
+  }
+
+  /**
+   * Total chart width
+   * @return {number}
+   */
+  get width(){
+    return this.graph.width;
   }
 
   /**
@@ -1785,6 +1585,32 @@ class chart_Chart {
    */
   get scrollDistance() {
     return this.scrollValue * this.scaling;
+  }
+
+  /**
+   * Visible viewport width
+   * @return {number}
+   */
+  get viewportWidth(){
+    if (this.cache.viewportWidth){
+      return this.cache.viewportWidth;
+    }
+
+    this.cache.viewportWidth = this.nodes.wrapper.offsetWidth;
+    return this.cache.viewportWidth;
+  }
+
+  /**
+   * Visible viewport height
+   * @return {number}
+   */
+  get viewportHeight(){
+    if (this.cache.viewportHeight){
+      return this.cache.viewportHeight;
+    }
+
+    this.cache.viewportHeight = this.nodes.wrapper.offsetHeight;
+    return this.cache.viewportHeight;
   }
 
   /**
@@ -1816,7 +1642,7 @@ class chart_Chart {
      * @todo pass height through the initial settings
      */
     this.nodes.canvas = this.graph.renderCanvas({
-      height: 400
+      height: 350
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
@@ -1831,42 +1657,210 @@ class chart_Chart {
       this.graph.renderLine(name);
     });
 
-    this.graph.renderGrid();
-    this.graph.renderLegend();
+    this.renderGrid();
+    this.renderLegend();
   }
 
   /**
-   * Total chart width
-   * @return {number}
+   * Render or updates a grid
+   * @param {number} forceMax - new max value for updating
+   * @param {boolean} isUpdating - true for updating
    */
-  get width(){
-    return this.graph.width;
-  }
-
-  /**
-   * Visible viewport width
-   * @return {number}
-   */
-  get viewportWidth(){
-    if (this.cache.viewportWidth){
-      return this.cache.viewportWidth;
+  renderGrid(forceMax, isUpdating = false){
+    if (!this.nodes.grid) {
+      this.nodes.grid = make('div', chart_Chart.CSS.grid);
+      this.nodes.gridLines = [];
+      insertBefore(this.nodes.canvas, this.nodes.grid);
     }
 
-    this.cache.viewportWidth = this.nodes.wrapper.offsetWidth;
-    return this.cache.viewportWidth;
+
+
+    let stepY = this.stepY;
+    const height = this.height;
+    const max = forceMax || this.maxPoint;
+    const kY = height / max;
+
+    let linesCount = height / (stepY * kY) >> 0;
+
+    if (linesCount === 0){
+      stepY = stepY / 3;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 1){
+      stepY = stepY / 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 2){
+      stepY = stepY / 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount > 5){
+      stepY = stepY * 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (this.nodes.gridLines.length){
+      this.nodes.gridLines.forEach( line => {
+        line.classList.add(chart_Chart.CSS.gridSectionHidden);
+      })
+    }
+
+    // Drawing horizontal lines
+
+    for (let j = 0; j <= linesCount; j++) {
+      let y = j * stepY;
+      let line;
+
+      if (this.nodes.gridLines.length && this.nodes.gridLines[j]){
+        line = this.nodes.gridLines[j];
+      } else {
+        line = make('div', chart_Chart.CSS.gridSection);
+        this.nodes.grid.appendChild(line);
+        this.nodes.gridLines.push(line);
+      }
+
+      if (j === 0){
+        line.classList.add('no-animation');
+      }
+
+      /**
+       * To prevent overflow last line
+       */
+      if (y * kY > 325){
+        return;
+      }
+
+      line.classList.remove(chart_Chart.CSS.gridSectionHidden);
+      line.style.bottom = y * kY + 'px';
+      line.textContent = beautify(Math.round(y));
+    }
+  }
+
+
+  pushDate(date, originIndex){
+    let centering = 'translateX(-50%)';
+
+    if (originIndex === 0){
+      centering = '';
+    }
+
+
+    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
+
+    log({
+      'points on screen': pointsOnScreen,
+      'vlezet': this.datesPerScreen,
+      showEvery
+    });
+
+
+    /**
+     * If point already showed, move it or hide
+     */
+    if (this.onscreenDates.has(originIndex)){
+      if (originIndex % showEvery !== 0){
+        this.onscreenDatesElements[originIndex].remove();
+        this.onscreenDates.delete(originIndex );
+        delete this.onscreenDatesElements[originIndex];
+      } else {
+        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      }
+
+
+      return
+    }
+
+
+
+    if (originIndex % showEvery !== 0){
+      return;
+    }
+
+    const dt = new Date(date);
+    const dateEl = make('time');
+    dateEl.textContent = dt.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    });
+
+    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+    this.nodes.legend.appendChild(dateEl);
+    this.nodes.legendDates.push(dateEl);
+    this.onscreenDates.add(originIndex);
+    this.onscreenDatesElements[originIndex] = dateEl;
+  }
+
+
+
+  /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
   }
 
   /**
-   * Visible viewport height
+   * Right visible point
    * @return {number}
    */
-  get viewportHeight(){
-    if (this.cache.viewportHeight){
-      return this.cache.viewportHeight;
-    }
+  get rightPointIndex(){
+    let onscreen = Math.floor(this.viewportWidth / this.stepX / this.scaling);
+    return this.leftPointIndex + onscreen;
+  }
 
-    this.cache.viewportHeight = this.nodes.wrapper.offsetHeight;
-    return this.cache.viewportHeight;
+  /**
+   * @todo add cache
+   */
+  get datesPerScreen(){
+    if (!this._datesPerScreen){
+      this._datesPerScreen = Math.floor(this.viewportWidth / (this.lenendDateWidth + 40));
+    }
+    return this._datesPerScreen;
+  }
+
+  get stepScaled(){
+    return this.stepX * this.scaling
+  }
+
+  addOnscreenDates(){
+    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenIndexes = new Set();
+
+    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    // console.log('l %o (%o) r %o (%o)', this.leftPointIndex, leftDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }), this.rightPointIndex, rightDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+
+    datesOnScreen.forEach((date, index) => {
+      const originIndex = this.leftPointIndex + index;
+
+      datesOnScreenIndexes.add(originIndex);
+      this.pushDate(date, originIndex);
+    });
+
+    this.onscreenDates.forEach((index) => {
+      if (!datesOnScreenIndexes.has(index)) {
+        this.onscreenDatesElements[index].remove();
+        this.onscreenDates.delete(index);
+        delete this.onscreenDatesElements[index];
+      }
+    });
+  }
+
+  /**
+   * Renders a legend with dates
+   * @param {number[]} dates
+   */
+  renderLegend(){
+    this.nodes.legend = make('footer');
+
+    this.addOnscreenDates();
+
+    insertAfter(this.nodes.canvas, this.nodes.legend);
   }
 
   /**
@@ -1876,6 +1870,8 @@ class chart_Chart {
   scroll(position){
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
+    this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
+    this.addOnscreenDates();
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -1920,7 +1916,14 @@ class chart_Chart {
       return Math.max(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint, this.scaling, this.scrollValue);
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
+
+    /**
+     * Rerender grid if it was rendered before
+     */
+    if (this.nodes.grid){
+      this.renderGrid(maxVisiblePoint * 1.2, true);
+    }
   }
 
   /**

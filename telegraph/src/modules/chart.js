@@ -5,6 +5,7 @@ import Pointer from "./pointer";
 import * as Event from '../utils/event.js';
 
 import log from '../utils/log.js';
+import * as Numbers from "../utils/numbers";
 
 /**
  * Module for working with main Chart zone
@@ -28,6 +29,10 @@ export default class Chart {
       viewport: undefined,
       canvas: undefined,
       cursorLine: undefined,
+      grid: undefined,
+      gridLines: [],
+      legend: undefined,
+      legendDates: [],
     };
 
     this.tooltip = new Tooltip(this.modules);
@@ -39,6 +44,23 @@ export default class Chart {
     this.wrapperLeftCoord = undefined;
     this.scaling = 1;
     this.scrollValue = 0;
+
+
+
+    this.lenendDateWidth = 38;
+
+    /**
+     * Set will be store indexes of visible dates
+     * @type {Set<number>}
+     */
+    this.onscreenDates = new Set();
+    this.onscreenDatesElements = {}; // origin index -> element mapping
+    this._datesPerScreen = undefined;
+
+
+
+
+
 
     /**
      * Any properties can be cached here
@@ -73,16 +95,17 @@ export default class Chart {
      * Width of viewport when chart is not scaled
      * @type {number}
      */
-    const chartToViewportRatio = this.modules.chart.viewportWidth / this.modules.chart.width;
+    const chartToViewportRatio = this.viewportWidth / this.width;
     const originalWidth = this.viewportWidth * chartToViewportRatio;
     const scaledViewportRatio = this.minimalMapWidth / originalWidth;
 
-    const originalScalingChange = this.modules.chart.scaling / scaledViewportRatio;
+    const originalScalingChange = this.scaling / scaledViewportRatio;
 
     this.initialScale = originalScalingChange;
 
     log({scaling: this.scaling});
   }
+
   set initialScale(value){
     this._initialScale = value;
     this.scale(value);
@@ -96,7 +119,35 @@ export default class Chart {
     return {
       wrapper: 'tg-chart',
       viewport: 'tg-chart__viewport',
+      grid: 'tg-grid',
+      gridSection: 'tg-grid__section',
+      gridSectionHidden: 'tg-grid__section--hidden',
+      dateHidden: 'tg-legend__date--hidden',
     }
+  }
+
+  get stepX(){
+    return this.graph.stepX;
+  }
+
+  get stepY(){
+    return this.graph.stepY;
+  }
+
+  get maxPoint(){
+    return this.graph.maxPoint;
+  }
+
+  get height(){
+    return this.graph.height;
+  }
+
+  /**
+   * Total chart width
+   * @return {number}
+   */
+  get width(){
+    return this.graph.width;
   }
 
   /**
@@ -105,6 +156,32 @@ export default class Chart {
    */
   get scrollDistance() {
     return this.scrollValue * this.scaling;
+  }
+
+  /**
+   * Visible viewport width
+   * @return {number}
+   */
+  get viewportWidth(){
+    if (this.cache.viewportWidth){
+      return this.cache.viewportWidth;
+    }
+
+    this.cache.viewportWidth = this.nodes.wrapper.offsetWidth;
+    return this.cache.viewportWidth;
+  }
+
+  /**
+   * Visible viewport height
+   * @return {number}
+   */
+  get viewportHeight(){
+    if (this.cache.viewportHeight){
+      return this.cache.viewportHeight;
+    }
+
+    this.cache.viewportHeight = this.nodes.wrapper.offsetHeight;
+    return this.cache.viewportHeight;
   }
 
   /**
@@ -136,7 +213,7 @@ export default class Chart {
      * @todo pass height through the initial settings
      */
     this.nodes.canvas = this.graph.renderCanvas({
-      height: 400
+      height: 350
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
@@ -151,42 +228,210 @@ export default class Chart {
       this.graph.renderLine(name);
     });
 
-    this.graph.renderGrid();
-    this.graph.renderLegend();
+    this.renderGrid();
+    this.renderLegend();
   }
 
   /**
-   * Total chart width
-   * @return {number}
+   * Render or updates a grid
+   * @param {number} forceMax - new max value for updating
+   * @param {boolean} isUpdating - true for updating
    */
-  get width(){
-    return this.graph.width;
-  }
-
-  /**
-   * Visible viewport width
-   * @return {number}
-   */
-  get viewportWidth(){
-    if (this.cache.viewportWidth){
-      return this.cache.viewportWidth;
+  renderGrid(forceMax, isUpdating = false){
+    if (!this.nodes.grid) {
+      this.nodes.grid = Dom.make('div', Chart.CSS.grid);
+      this.nodes.gridLines = [];
+      Dom.insertBefore(this.nodes.canvas, this.nodes.grid);
     }
 
-    this.cache.viewportWidth = this.nodes.wrapper.offsetWidth;
-    return this.cache.viewportWidth;
+
+
+    let stepY = this.stepY;
+    const height = this.height;
+    const max = forceMax || this.maxPoint;
+    const kY = height / max;
+
+    let linesCount = height / (stepY * kY) >> 0;
+
+    if (linesCount === 0){
+      stepY = stepY / 3;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 1){
+      stepY = stepY / 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount === 2){
+      stepY = stepY / 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (linesCount > 5){
+      stepY = stepY * 2;
+      linesCount = height / (stepY * kY) >> 0;
+    }
+
+    if (this.nodes.gridLines.length){
+      this.nodes.gridLines.forEach( line => {
+        line.classList.add(Chart.CSS.gridSectionHidden);
+      })
+    }
+
+    // Drawing horizontal lines
+
+    for (let j = 0; j <= linesCount; j++) {
+      let y = j * stepY;
+      let line;
+
+      if (this.nodes.gridLines.length && this.nodes.gridLines[j]){
+        line = this.nodes.gridLines[j];
+      } else {
+        line = Dom.make('div', Chart.CSS.gridSection);
+        this.nodes.grid.appendChild(line);
+        this.nodes.gridLines.push(line);
+      }
+
+      if (j === 0){
+        line.classList.add('no-animation');
+      }
+
+      /**
+       * To prevent overflow last line
+       */
+      if (y * kY > 325){
+        return;
+      }
+
+      line.classList.remove(Chart.CSS.gridSectionHidden);
+      line.style.bottom = y * kY + 'px';
+      line.textContent = Numbers.beautify(Math.round(y));
+    }
+  }
+
+
+  pushDate(date, originIndex){
+    let centering = 'translateX(-50%)';
+
+    if (originIndex === 0){
+      centering = '';
+    }
+
+
+    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
+
+    log({
+      'points on screen': pointsOnScreen,
+      'vlezet': this.datesPerScreen,
+      showEvery
+    });
+
+
+    /**
+     * If point already showed, move it or hide
+     */
+    if (this.onscreenDates.has(originIndex)){
+      if (originIndex % showEvery !== 0){
+        this.onscreenDatesElements[originIndex].remove();
+        this.onscreenDates.delete(originIndex );
+        delete this.onscreenDatesElements[originIndex];
+      } else {
+        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+      }
+
+
+      return
+    }
+
+
+
+    if (originIndex % showEvery !== 0){
+      return;
+    }
+
+    const dt = new Date(date);
+    const dateEl = Dom.make('time');
+    dateEl.textContent = dt.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    });
+
+    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
+    this.nodes.legend.appendChild(dateEl);
+    this.nodes.legendDates.push(dateEl);
+    this.onscreenDates.add(originIndex);
+    this.onscreenDatesElements[originIndex] = dateEl;
+  }
+
+
+
+  /**
+   * Left visible point
+   * @return {number}
+   */
+  get leftPointIndex(){
+    return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
   }
 
   /**
-   * Visible viewport height
+   * Right visible point
    * @return {number}
    */
-  get viewportHeight(){
-    if (this.cache.viewportHeight){
-      return this.cache.viewportHeight;
-    }
+  get rightPointIndex(){
+    let onscreen = Math.floor(this.viewportWidth / this.stepX / this.scaling);
+    return this.leftPointIndex + onscreen;
+  }
 
-    this.cache.viewportHeight = this.nodes.wrapper.offsetHeight;
-    return this.cache.viewportHeight;
+  /**
+   * @todo add cache
+   */
+  get datesPerScreen(){
+    if (!this._datesPerScreen){
+      this._datesPerScreen = Math.floor(this.viewportWidth / (this.lenendDateWidth + 40));
+    }
+    return this._datesPerScreen;
+  }
+
+  get stepScaled(){
+    return this.stepX * this.scaling
+  }
+
+  addOnscreenDates(){
+    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenIndexes = new Set();
+
+    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    // console.log('l %o (%o) r %o (%o)', this.leftPointIndex, leftDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }), this.rightPointIndex, rightDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+
+    datesOnScreen.forEach((date, index) => {
+      const originIndex = this.leftPointIndex + index;
+
+      datesOnScreenIndexes.add(originIndex);
+      this.pushDate(date, originIndex);
+    });
+
+    this.onscreenDates.forEach((index) => {
+      if (!datesOnScreenIndexes.has(index)) {
+        this.onscreenDatesElements[index].remove();
+        this.onscreenDates.delete(index);
+        delete this.onscreenDatesElements[index];
+      }
+    });
+  }
+
+  /**
+   * Renders a legend with dates
+   * @param {number[]} dates
+   */
+  renderLegend(){
+    this.nodes.legend = Dom.make('footer');
+
+    this.addOnscreenDates();
+
+    Dom.insertAfter(this.nodes.canvas, this.nodes.legend);
   }
 
   /**
@@ -196,6 +441,8 @@ export default class Chart {
   scroll(position){
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
+    this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
+    this.addOnscreenDates();
     this.tooltip.hide();
     this.pointer.hide();
   }
@@ -240,7 +487,14 @@ export default class Chart {
       return Math.max(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint, this.scaling, this.scrollValue);
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
+
+    /**
+     * Rerender grid if it was rendered before
+     */
+    if (this.nodes.grid){
+      this.renderGrid(maxVisiblePoint * 1.2, true);
+    }
   }
 
   /**

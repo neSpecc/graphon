@@ -26,22 +26,6 @@ export default class Graph {
      * @todo move to this.nodes
      */
     this.canvas = undefined;
-    this.legend = undefined;
-    this.legendDates = [];
-    this.legendDatesVisible = 0;
-    this.lenendDateWidth = 38;
-    this.grid = undefined;
-    this.gridLines = [];
-
-
-    /**
-     * Set will be store indexes of visible dates
-     * @type {Set<number>}
-     */
-    this.onscreenDates = new Set();
-    this.onscreenDatesElements = {}; // origin index -> element mappind
-    this._datesPerScreen = undefined;
-
 
     /**
      * Transformations on OY
@@ -77,10 +61,6 @@ export default class Graph {
 
   static get CSS(){
     return {
-      grid: 'tg-grid',
-      gridSection: 'tg-grid__section',
-      gridSectionHidden: 'tg-grid__section--hidden',
-      dateHidden: 'tg-legend__date--hidden',
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
@@ -245,208 +225,8 @@ export default class Graph {
     this.paths[name] = path;
   }
 
-  /**
-   * Render or updates a grid
-   * @param {number} forceMax - new max value for updating
-   * @param {boolean} isUpdating - true for updating
-   */
-  renderGrid(forceMax, isUpdating = false){
-    if (!this.grid) {
-      this.grid = Dom.make('div', Graph.CSS.grid);
-      this.gridLines = [];
-      Dom.insertBefore(this.canvas.parentNode, this.grid);
-    }
-
-
-
-    let stepY = this.stepY;
-    const height = this.height;
-    const max = forceMax || this.maxPoint;
-    const kY = height / max;
-
-    let linesCount = height / (stepY * kY) >> 0;
-
-    if (linesCount === 0){
-      stepY = stepY / 3;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 1){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (this.gridLines.length){
-      this.gridLines.forEach( line => {
-        line.classList.add(Graph.CSS.gridSectionHidden);
-      })
-    }
-
-    // Drawing horizontal lines
-
-    for (let j = 0; j <= linesCount; j++) {
-      let y = j * stepY;
-      let line;
-
-      if (this.gridLines.length && this.gridLines[j]){
-        line = this.gridLines[j];
-      } else {
-        line = Dom.make('div', Graph.CSS.gridSection);
-        this.grid.appendChild(line);
-        this.gridLines.push(line);
-      }
-
-      if (j === 0){
-        line.classList.add('no-animation');
-      }
-
-      line.classList.remove(Graph.CSS.gridSectionHidden);
-      line.style.bottom = y * kY + 'px';
-      line.textContent = Numbers.beautify(Math.round(y));
-    }
-  }
-
-  /**
-   * Left visible point
-   * @return {number}
-   */
-  get leftPointIndex(){
-    return parseInt(Math.floor(this.modules.chart.scrollValue * -1/ this.step / this.modules.chart.scaling));
-  }
-
-  /**
-   * Right visible point
-   * @return {number}
-   */
-  get rightPointIndex(){
-    let onscreen = Math.floor(this.modules.chart.viewportWidth / this.step / this.modules.chart.scaling);
-    return this.leftPointIndex + onscreen;
-  }
-
-  get stepScaled(){
-    return this.stepX * this.modules.chart.scaling
-  }
-
-  /**
-   * @todo add cache
-   */
-  get datesPerScreen(){
-    if (!this._datesPerScreen){
-      this._datesPerScreen = Math.floor(this.modules.chart.viewportWidth / (this.lenendDateWidth + 40));
-    }
-    return this._datesPerScreen;
-  }
-
   scroll(newLeft){
     this.oxGroup.style.transform = `matrix(${this.modules.chart.scaling},0,0,1,${newLeft},0)`;
-    this.legend.style.transform = `translateX(${newLeft}px)`;
-    this.addOnscreenDates();
-  }
-
-  pushDate(date, originIndex){
-    let centering = 'translateX(-50%)';
-
-    if (originIndex === 0){
-      centering = '';
-    }
-
-
-    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
-    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
-
-    log({
-      'points on screen': pointsOnScreen,
-      'vlezet': this.datesPerScreen,
-      showEvery
-    });
-
-
-    /**
-     * If point already showed, move it or hide
-     */
-    if (this.onscreenDates.has(originIndex)){
-      if (originIndex % showEvery !== 0){
-          this.onscreenDatesElements[originIndex].remove();
-          this.onscreenDates.delete(originIndex );
-          delete this.onscreenDatesElements[originIndex];
-      } else {
-        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
-      }
-
-
-      return
-    }
-
-
-
-    if (originIndex % showEvery !== 0){
-      return;
-    }
-
-    const dt = new Date(date);
-    const dateEl = Dom.make('time');
-    dateEl.textContent = dt.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short'
-    });
-
-    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
-    this.legend.appendChild(dateEl);
-    this.legendDates.push(dateEl);
-    this.onscreenDates.add(originIndex);
-    this.onscreenDatesElements[originIndex] = dateEl;
-  }
-
-  addOnscreenDates(){
-    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
-    let datesOnScreenIndexes = new Set();
-
-    // console.log('this.state.dates', this.state.dates.map( dt => new Date(dt)));
-
-    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
-    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
-    //
-    // console.log('l %o (%o) r %o (%o)',
-    //   this.leftPointIndex,
-    //   leftDate.toLocaleDateString('en-US', {
-    //     day: 'numeric',
-    //     month: 'short'
-    //   }),
-    //   this.rightPointIndex,
-    //   rightDate.toLocaleDateString('en-US', {
-    //     day: 'numeric',
-    //     month: 'short'
-    //   }),
-    // );
-
-    // console.log('left %o right %o', new Date(this.state.dates[this.leftPointIndex]).getDate(), new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]).getDate());
-
-    datesOnScreen.forEach((date, index) => {
-      const originIndex = this.leftPointIndex + index;
-
-      datesOnScreenIndexes.add(originIndex);
-      this.pushDate(date, originIndex);
-    });
-
-    this.onscreenDates.forEach((index) => {
-      if (!datesOnScreenIndexes.has(index)) {
-        this.onscreenDatesElements[index].remove();
-        this.onscreenDates.delete(index);
-        delete this.onscreenDatesElements[index];
-      }
-    });
-  }
-
-  /**
-   * Renders a legend with dates
-   * @param {number[]} dates
-   */
-  renderLegend(){
-    this.legend = Dom.make('footer');
-
-    this.addOnscreenDates();
-
-    Dom.insertAfter(this.canvas, this.legend);
   }
 
   /**
@@ -466,21 +246,9 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax, scaleX, scroll){
+  scaleToMaxPoint(newMax){
     this.oyScaling = this.maxPoint / newMax * 0.8;
-
-    this.pathsList.forEach( path => {
-      // path.setMatrix(scaleX, scaling, scroll);
-      // path.scaleY(scaling);
-      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
-    });
-
-    /**
-     * Rerender grid if it was rendered before
-     */
-    if (this.grid){
-      this.renderGrid(newMax * 1.2, true);
-    }
+    this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
   }
 
   checkPathVisibility(name){
