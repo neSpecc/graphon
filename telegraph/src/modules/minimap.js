@@ -2,6 +2,7 @@ import * as Dom from '../utils/dom.js';
 import * as Event from '../utils/event.js';
 import debounce from '../utils/debounce.js';
 import Graph from './graph.js';
+import log from '../utils/log.js';
 
 
 /**
@@ -238,6 +239,7 @@ export default class Minimap {
    * @param {string} offsetLeft
    */
   moveViewport(offsetLeft){
+    log({offsetLeft})
     const width = this.width;
     const maxLeft = this.wrapperWidth - width;
     const minLeft = this.leftZoneMinimumWidth;
@@ -332,6 +334,28 @@ export default class Minimap {
   finishSliding(){
     this.viewportPressed = false;
     this.viewportOffsetLeft = this.scrolledValue;
+
+
+    let start = null;
+
+    // console.log('direction', direction);
+
+    let step = (timestamp) => {
+      if (!start) start = timestamp;
+      var progress = timestamp - start;
+      let forTo = Math.min(progress / this.prevX, 500);
+
+      console.log('forTo', this.prevX, progress);
+
+      // console.log('progress', progress);
+      this.moveViewport(forTo * 5);
+      // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
+      if (progress < 100) {
+        window.requestAnimationFrame(step);
+      }
+    }
+
+    window.requestAnimationFrame(step);
   }
 
   finishLeftScaling(){
@@ -349,6 +373,28 @@ export default class Minimap {
    */
   viewportDragged(event){
     let delta = Event.getPageX(event) - this.moveStartX;
+
+    let direction = this.prevX < delta ? 'right' : 'left';
+
+    this.prevX = delta + 0;
+
+    // let start = null;
+    //
+    // console.log('direction', direction);
+    //
+    // let step = (timestamp) => {
+    //     if (!start) start = timestamp;
+    //     var progress = timestamp - start;
+    //
+    //     // console.log('progress', progress);
+    //     this.moveViewport(Math.min(this.prevX / 10, 200));
+    //     // element.style.transform = 'translateX(' + Math.min(progress / 10, 200) + 'px)';
+    //     if (progress < 500) {
+    //       window.requestAnimationFrame(step);
+    //     }
+    // }
+    //
+    // window.requestAnimationFrame(step);
 
     this.moveViewport(delta);
     this.syncScrollWithChart();
