@@ -11,7 +11,9 @@ export default class Tooltip {
       wrapper:  undefined,
       title: undefined,
       values: undefined
-    }
+    };
+
+    this._width = 0;
   }
 
   /**
@@ -48,18 +50,27 @@ export default class Tooltip {
   }
 
   move(lineLeftCoord){
-    let offsetLeft = -25;
-    const tooltipWidth = this.nodes.wrapper.offsetWidth;
-
-    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
-      offsetLeft = -1.3 * tooltipWidth;
-    } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
-      offsetLeft = -0.8 * tooltipWidth;
-    } else if (lineLeftCoord < 45){
-      offsetLeft = 20;
+    if (!this._width){
+      this._width = this.nodes.wrapper.offsetWidth;
     }
 
-    this.nodes.wrapper.style.left = `${lineLeftCoord + offsetLeft}px`;
+    let offsetLeft = -25;
+    let left = lineLeftCoord + offsetLeft;
+
+    if (left + this._width > this.modules.chart.viewportWidth){
+      left = this.modules.chart.viewportWidth - this._width - 30;
+    }
+
+
+    // if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
+    //   offsetLeft = -1.3 * tooltipWidth;
+    // } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
+    //   offsetLeft = -0.8 * tooltipWidth;
+    // } else if (lineLeftCoord < 45){
+    //   offsetLeft = 20;
+    // }
+
+    this.nodes.wrapper.style.left = `${left}px`;
   }
 
   clear(){

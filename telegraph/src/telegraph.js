@@ -24,6 +24,7 @@ export default class Telegraph {
    * @param {ChartData} inputData - chart data
    */
   constructor({holderId, inputData}){
+    console.time('telegraph');
     this.holder = document.getElementById(holderId);
 
     /**
@@ -56,6 +57,8 @@ export default class Telegraph {
      */
     this.chart.renderCharts();
     this.minimap.renderMap();
+
+    console.timeEnd('telegraph');
   }
 
   /**

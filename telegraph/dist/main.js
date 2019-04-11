@@ -110,7 +110,14 @@ class State {
     /**
      * Cache
      */
-    this._dates = this.columns[0].slice(1);
+    this._cache = {
+      /**
+       * @todo maybe array copying worst than slice
+       */
+      getLinePoints: {},
+      dates: this.columns[0].slice(1),
+      daysCount: this.columns[0].slice(1).length
+    };
   }
 
   /**
@@ -119,7 +126,7 @@ class State {
    * @return {number[]} - array of dates in milliseconds
    */
   get dates(){
-    return this._dates;
+    return this._cache.dates;
   }
 
   /**
@@ -135,7 +142,7 @@ class State {
    * @return {number}
    */
   get daysCount(){
-    return this.columns[0].length - 1; // -1 because the first element is column type ("x")
+    return this._cache.daysCount;
   }
 
   /**
@@ -144,7 +151,14 @@ class State {
    * @return {number[]}
    */
   getLinePoints(lineName){
-    return this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+    if (this._cache.getLinePoints[lineName]){
+      return this._cache.getLinePoints[lineName];
+    }
+
+    this._cache.getLinePoints[lineName] = this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+
+
+    return this._cache.getLinePoints[lineName];
   }
 
   /**
@@ -174,6 +188,60 @@ class State {
    */
   getLineColor(lineName){
     return this.colors[lineName];
+  }
+
+  /**
+   * Returns chart type by name
+   * @param {string} chartName - "y0", "y1" etc
+   * @return {string} - "line", "bar", "area"
+   */
+  getChartType(chartName){
+    return this.types[chartName];
+  }
+
+  /**
+   * Detect type of charts
+   * @return {string}
+   */
+  getCommonChartsType(){
+    return Object.values(this.types)[0];
+  }
+
+  /**
+   * Return value of same point of previous chart
+   * @param currentChartNumber
+   * @param pointIndex
+   */
+  getPrevChartValueForPoint(currentChartNumber, pointIndex){
+    let prevChartKey = this.linesAvailable[currentChartNumber - 1];
+    return this.getLinePoints(prevChartKey)[pointIndex];
+  }
+
+  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount){
+    let max = 0;
+
+    for (let pointIndex = from; pointIndex < to; pointIndex++){
+      let stackValue = 0;
+
+      this.linesAvailable.forEach(line => {
+        stackValue += this.getLinePoints(line)[pointIndex];
+      });
+
+      if (max < stackValue){
+        max = stackValue;
+      }
+    }
+
+    return max;
+  }
+
+  /**
+   * Returns chart type by name
+   * @param {string} chartName - "y0", "y1" etc
+   * @return {string} - "line", "bar", "area"
+   */
+  getOhterTypes(chartName){
+    return Object.keys(this.types).filter(type => type !== chartName);
   }
 
   /**
@@ -282,27 +350,6 @@ function debounce(func, wait, immediate) {
     if (callNow) func.apply(context, args);
   };
 };
-// CONCATENATED MODULE: ./src/utils/numbers.js
-function beautify(number) {
-  if (number < 1000) {
-    return number
-  } else if (number < 10000){
-      let thousands = Math.floor(number / 1000);
-      let left = number - thousands * 1000;
-
-      if (left > 100){
-        return thousands + ' ' + left;
-      } else if (left > 10) {
-        return thousands + ' 0' + left;
-      } else {
-        return thousands + ' 00' + left;
-      }
-  } else if (number < 1000000) {
-      return Math.floor(number / 1000) + 'k';
-  } else {
-    return Math.floor(number / 1000000) + 'M';
-  }
-}
 // CONCATENATED MODULE: ./src/modules/path.js
 
 
@@ -329,22 +376,6 @@ class path_Path {
     });
 
     this.pathData = '';
-
-    /**
-     * Cache for CSS transform matrix
-     * @type {{scaleX: number, scaleY: number, translateX: number}}
-     */
-    this.matrix = {
-      scaleX: 1,
-      scaleY: 1,
-      translateX: 0
-    };
-
-    /**
-     * Debounce for transition removing
-     * @type {null}
-     */
-    this.debounce = null;
   }
 
   /**
@@ -392,111 +423,11 @@ class path_Path {
   }
 
   /**
-   * Create a new line with x and y
-   * @param {number} x
-   * @param {number} y
-   */
-  lineTo(x, y){
-    this.pathData += ` L ${this.x(x)} ${this.y(y)}`;
-  }
-
-  /**
    * Append a line
    */
-  render(withAnimate = false){
+  render(){
     this.path.setAttribute('d', this.pathData);
     this.group.appendChild(this.path);
-
-    if (withAnimate){
-      this.animate();
-    }
-  }
-
-  /**
-   * Drop text to passed point
-   * @param value
-   */
-  dropText(value, skipStepX = false){
-    let text = make('text', null, {
-      x: !skipStepX ? this.prevX + this.stepX: this.prevX,
-      y: this.y(value),
-      fill: '#cccccc',
-      textAnchor: 'left',
-      'dominant-baseline': 'use-script'
-    })
-
-    text.appendChild(document.createTextNode(value));
-    text.style.fontSize = 13 + 'px';
-
-    this.svg.appendChild(text);
-  }
-
-  animate(){
-    const speed = 2000;
-    const length = this.path.getTotalLength();
-
-    // Clear any previous transition
-    this.path.style.transition = this.path.style.WebkitTransition = 'none';
-
-    // Set up the starting position
-    this.path.style.strokeDasharray = length + ' ' + length;
-    this.path.style.strokeDashoffset = length;
-
-    // Trigger a Layout so styles are re-calculated
-    // A browser picks up the starting position before animating
-    this.path.getBoundingClientRect();
-
-    // Define our transition
-    this.path.style.transition = this.path.style.WebkitTransition = 'stroke-dashoffset ' + speed + 'ms' + ' ease-in';
-
-    // Go.
-    this.path.style.strokeDashoffset = '0';
-
-    setTimeout(() => {
-      this.path.style.removeProperty('transition');
-      this.path.style.removeProperty('stroke-dasharray');
-      this.path.style.removeProperty('stroke-dashoffset');
-    }, speed)
-  };
-
-  setMatrix(scaleX, scaleY, translateX){
-    this.path.style.transform = `matrix(${scaleX},0,0,${scaleY}, ${translateX},0)`;
-    this.matrix = {
-      scaleX, scaleY, translateX
-    }
-  }
-
-  scaleX(scaling){
-    let oldTransform = this.path.style.transform;
-
-    if (oldTransform.includes('scaleX')){
-      this.path.style.transform = oldTransform.replace(/(scaleX\(\S+\))/, `scaleX(${scaling})`)
-    } else {
-      this.path.style.transform = oldTransform + ` scaleX(${scaling})`;
-    }
-  }
-
-  scaleY(scaleY){
-    // this.matrix.scaleY = scaleY;
-    this.path.style.transition = 'transform 250ms ease, opacity 150ms ease';
-    // this.setMatrix(this.matrix.scaleX, scaleY, this.matrix.translateX);
-
-    let oldTransform = this.path.style.transform;
-
-    if (oldTransform.includes('scaleY')){
-      this.path.style.transform = oldTransform.replace(/(scaleY\(\S+\))/, `scaleY(${scaleY})`)
-    } else {
-      this.path.style.transform = oldTransform + ` scaleY(${scaleY})`;
-    }
-
-
-    if (this.debounce){
-      clearTimeout(this.debounce);
-    }
-
-    this.debounce = setTimeout(() => {
-      this.path.style.transition = 'opacity 150ms ease';
-    }, 270)
   }
 
   get isHidden(){
@@ -505,6 +436,93 @@ class path_Path {
 
   toggleVisibility(){
     this.path.classList.toggle(path_Path.CSS.graphHidden);
+  }
+}
+// CONCATENATED MODULE: ./src/modules/bar.js
+
+
+/**
+ * Helper for creating an Bar charts
+ */
+class bar_Bar {
+  constructor({canvasHeight, kY, stepX, key}){
+    this.canvasHeight = canvasHeight;
+    this.kY = kY;
+    this.key = key;
+
+    this.prevX = 0;
+    this.stepX = stepX;
+
+    this.wrapper = make('g');
+    this.wrapper.setAttribute('class', bar_Bar.CSS.wrapper);
+    this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+  }
+
+  getAll(){
+    return this.wrapper;
+  }
+
+  /**
+   * CSS classes map
+   * @return {{graphHidden: string}}
+   */
+  static get CSS(){
+    return {
+      wrapper: 'tg-bar',
+      graphHidden: 'tg-graph--hidden',
+    }
+  }
+
+  /**
+   * Compute Y value with scaling
+   */
+  y(val){
+    return Math.round(this.canvasHeight - val * this.kY);
+  }
+
+  /**
+   * Compute X value with scaling
+   */
+  x(val){
+    return val;
+  }
+
+  /**
+   * Go to passed coords
+   * @param {number} x
+   * @param {number} y
+   */
+  moveTo(x, y){
+    this.pathData += `M ${this.x(x)} ${this.y(y)}`;
+  }
+
+  /**
+   * Continue line to the next value
+   * @param {number} y
+   */
+  add(y, prevValue, color){
+    this.prevX = this.prevX + this.stepX;
+    let height = y * this.kY;
+    let heightPrev = prevValue * this.kY;
+
+    const bar = make('rect');
+    bar.setAttribute('width', this.stepX);
+    bar.setAttribute('height', height);
+    bar.setAttribute('x', this.prevX);
+    bar.setAttribute('y', this.y(y) - heightPrev);
+    bar.setAttribute('fill', color);
+    bar.setAttribute('stroke', color);
+
+    this.wrapper.appendChild(bar);
+  }
+
+
+  get isHidden(){
+    return this.wrapper.classList.contains(bar_Bar.CSS.graphHidden);
+  }
+
+  toggleVisibility(){
+    this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden);
   }
 }
 // CONCATENATED MODULE: ./src/utils/log.js
@@ -567,14 +585,15 @@ class graph_Graph {
     this.stepY = 10;
     this.strokeWidth = stroke;
     this.initialWidth = undefined;
-    this.maxPoint = this.state.max * 1.2; // 20% for padding top
+    this.maxPoint = 0;//
+    this.minPoint = 0;
     this.oyScaling = 1;
 
     /**
-     * List of drawn lines
+     * List of drawn charts
      * @type {object} name -> Path
      */
-    this.paths = {};
+    this.charts = {};
 
     /**
      * Cache for canvas width and height values
@@ -591,17 +610,6 @@ class graph_Graph {
       oyGroup: 'oy-group',
     }
   }
-
-  /**
-   * Return Graph's paths as array
-   * @return {Path[]}
-   */
-  get pathsList(){
-    return Object.entries(this.paths).map(([name, path]) => {
-      return path;
-    });
-  }
-
 
   /**
    * Prepares the SVG element
@@ -700,22 +708,119 @@ class graph_Graph {
     this.stepY = newStepY;
   }
 
+  renderCharts(){
+    const type = this.state.getCommonChartsType();
+
+    switch (type){
+      case 'bar':
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns() * 1.2; // 20% for padding top
+        this.drawBarCharts();
+        break;
+      default:
+      case 'line':
+        this.maxPoint = this.state.max * 1.2; // 20% for padding top
+        this.state.linesAvailable.forEach( name => {
+          /**
+           * Array of chart Y values
+           */
+          const values = this.state.getLinePoints(name);
+
+          /**
+           * Color of drawing line
+           */
+          const color = this.state.getLineColor(name);
+
+          this.charts[name] = this.drawLineChart(values, color);
+        });
+
+        break;
+    }
+  }
+
+  drawBarCharts(){
+    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+    let barmens = this.state.linesAvailable.map( line => {
+      return new bar_Bar({
+        canvasHeight: this.height,
+        stepX: this.stepX,
+        kY,
+        key: line
+      });
+    });
+
+    // console.log('this.state.colors', this.state.colors);
+
+    // Object.entries(this.state.colors).forEach(([name, color]) => {
+    //   let el = document.createElement('div');
+    //   el.style.height = 100 + 'px';
+    //   el.style.backgroundColor = color;
+    //   el.textContent = name;
+    //
+    //   document.body.appendChild(el);
+    // })
+
+
+
+    const pointsCount = this.state.daysCount;
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let stackValue = 0;
+      this.state.linesAvailable.forEach( (line, index) => {
+        const color = this.state.getLineColor(line);
+
+
+
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        // const editorLabelStyle = `line-height: 1em;
+        //     color: #fff;
+        //     display: inline-block;
+        //     font-size: 12px;
+        //     line-height: 1em;
+        //     background-color: ${color};
+        //     padding: 4px 9px;
+        //     border-radius: 30px;
+        //     margin: 4px 5px 4px 0;`;
+        // console.log(`%c${pointValue}|${stackValue}`, editorLabelStyle);
+
+
+        barmens[index].add(pointValue, stackValue, color);
+        stackValue += pointValue;
+      });
+
+
+
+      // console.log('%o -> stack %o', pointIndex, stackValue);
+    }
+
+    barmens.forEach(barmen => {
+      this.oxGroup.appendChild(barmen.getAll());
+      this.charts[barmen.key] = barmen;
+    });
+  }
+
+  getMaxFromVisible(leftPointIndex, pointsVisible){
+    const type = this.state.getCommonChartsType();
+
+    switch (type) {
+      case 'bar':
+        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible);
+        break;
+      default:
+      case 'line':
+        return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
+          let slice = this.state.getPointsSlice(line, leftPointIndex, pointsVisible);
+          return Math.max(...slice);
+        }));
+        break;
+    }
+
+  }
 
   /**
-   * Renders a line by name
-   * @param {string} name - line name ("y0", "y1" etc)
+   * Create a 'line' chart
+   * @return {Path}
    */
-  renderLine(name){
-    /**
-     * Array of chart Y values
-     */
-    const values = this.state.getLinePoints(name);
-
-    /**
-     * Color of drawing line
-     */
-    const color = this.state.getLineColor(name);
-
+  drawLineChart(values, color){
     /**
      * Point to from which we will start drawing
      */
@@ -748,7 +853,7 @@ class graph_Graph {
 
     path.render(this.animate);
 
-    this.paths[name] = path;
+    return path;
   }
 
   scroll(newLeft){
@@ -772,17 +877,21 @@ class graph_Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax){
-    this.oyScaling = this.maxPoint / newMax * 0.8;
+  scaleToMaxPoint(newMax, newMin){
+    this.oyScaling = this.maxPoint / newMax;
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+
+    // let emptyAreaHeight = this.height /this.maxPoint * newMin;
+    // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
+    // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
   }
 
   checkPathVisibility(name){
-    return !this.paths[name].isHidden;
+    return !this.charts[name].isHidden;
   }
 
   togglePathVisibility(name){
-    this.paths[name].toggleVisibility();
+    this.charts[name].toggleVisibility();
   }
 }
 // CONCATENATED MODULE: ./src/modules/minimap.js
@@ -916,9 +1025,7 @@ class minimap_Minimap {
       height: this.nodes.wrapper.offsetHeight
     });
 
-    this.state.linesAvailable.forEach( name => {
-      this.graph.renderLine(name);
-    });
+    this.graph.renderCharts();
 
     this.setInitialPosition();
 
@@ -980,7 +1087,8 @@ class minimap_Minimap {
     this.width = this.modules.chart.minimalMapWidth;
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1027,7 +1135,7 @@ class minimap_Minimap {
    * @param {string} offsetLeft
    */
   moveViewport(offsetLeft){
-    log({offsetLeft})
+    // log({offsetLeft})
     const width = this.width;
     const maxLeft = this.wrapperWidth - width;
     const minLeft = this.leftZoneMinimumWidth;
@@ -1256,6 +1364,27 @@ class minimap_Minimap {
     this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
+// CONCATENATED MODULE: ./src/utils/numbers.js
+function beautify(number) {
+  if (number < 1000) {
+    return number
+  } else if (number < 10000){
+      let thousands = Math.floor(number / 1000);
+      let left = number - thousands * 1000;
+
+      if (left > 100){
+        return thousands + ' ' + left;
+      } else if (left > 10) {
+        return thousands + ' 0' + left;
+      } else {
+        return thousands + ' 00' + left;
+      }
+  } else if (number < 1000000) {
+      return Math.floor(number / 1000) + 'k';
+  } else {
+    return Math.floor(number / 1000000) + 'M';
+  }
+}
 // CONCATENATED MODULE: ./src/modules/tooltip.js
 
 
@@ -1270,7 +1399,9 @@ class tooltip_Tooltip {
       wrapper:  undefined,
       title: undefined,
       values: undefined
-    }
+    };
+
+    this._width = 0;
   }
 
   /**
@@ -1307,18 +1438,27 @@ class tooltip_Tooltip {
   }
 
   move(lineLeftCoord){
-    let offsetLeft = -25;
-    const tooltipWidth = this.nodes.wrapper.offsetWidth;
-
-    if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
-      offsetLeft = -1.3 * tooltipWidth;
-    } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
-      offsetLeft = -0.8 * tooltipWidth;
-    } else if (lineLeftCoord < 45){
-      offsetLeft = 20;
+    if (!this._width){
+      this._width = this.nodes.wrapper.offsetWidth;
     }
 
-    this.nodes.wrapper.style.left = `${lineLeftCoord + offsetLeft}px`;
+    let offsetLeft = -25;
+    let left = lineLeftCoord + offsetLeft;
+
+    if (left + this._width > this.modules.chart.viewportWidth){
+      left = this.modules.chart.viewportWidth - this._width - 30;
+    }
+
+
+    // if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
+    //   offsetLeft = -1.3 * tooltipWidth;
+    // } else if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth ){
+    //   offsetLeft = -0.8 * tooltipWidth;
+    // } else if (lineLeftCoord < 45){
+    //   offsetLeft = 20;
+    // }
+
+    this.nodes.wrapper.style.left = `${left}px`;
   }
 
   clear(){
@@ -1532,7 +1672,7 @@ class chart_Chart {
 
     this.initialScale = originalScalingChange;
 
-    log({scaling: this.scaling});
+    // log({scaling: this.scaling});
   }
 
   set initialScale(value){
@@ -1653,10 +1793,7 @@ class chart_Chart {
 
 
 
-    this.state.linesAvailable.forEach( name => {
-      this.graph.renderLine(name);
-    });
-
+    this.graph.renderCharts();
     this.renderGrid();
     this.renderLegend();
   }
@@ -1751,11 +1888,11 @@ class chart_Chart {
     let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
     let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
 
-    log({
-      'points on screen': pointsOnScreen,
-      'vlezet': this.datesPerScreen,
-      showEvery
-    });
+    // log({
+    //   'points on screen': pointsOnScreen,
+    //   'vlezet': this.datesPerScreen,
+    //   showEvery
+    // });
 
 
     /**
@@ -1883,7 +2020,7 @@ class chart_Chart {
   scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
 
-    log({scaling});
+    // log({scaling});
 
     this.scaling = scaling;
   }
@@ -1911,12 +2048,14 @@ class chart_Chart {
   fitToMax(){
     const stepX = this.graph.step;
     const pointsVisible = Math.round(this.viewportWidth / stepX / this.scaling);
-    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+    const maxVisiblePoint = this.graph.getMaxFromVisible(this.leftPointIndex, pointsVisible);
+
+    const minVisiblePoint = Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
       let slice = this.state.getPointsSlice(line, this.leftPointIndex, pointsVisible);
-      return Math.max(...slice);
+      return Math.min(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
 
     /**
      * Rerender grid if it was rendered before
@@ -2134,6 +2273,7 @@ class telegraph_Telegraph {
    * @param {ChartData} inputData - chart data
    */
   constructor({holderId, inputData}){
+    console.time('telegraph');
     this.holder = document.getElementById(holderId);
 
     /**
@@ -2166,6 +2306,8 @@ class telegraph_Telegraph {
      */
     this.chart.renderCharts();
     this.minimap.renderMap();
+
+    console.timeEnd('telegraph');
   }
 
   /**

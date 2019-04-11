@@ -97,7 +97,7 @@
     left: 0;
     height: 350px;
     opacity: 0;
-    transition: opacity 150ms ease, left 150ms ease;
+    /*transition: opacity 150ms ease, left 50ms ease;*/
     will-change: opacity, left;
 }
 
@@ -281,13 +281,13 @@
 */
 .tg-tooltip {
     position: absolute;
-    background: #fff;
+    background: rgba(255,255,255,.94);
     border-radius: 5px;
     box-shadow: 0 1px 4px 0 rgba(0,0,0,0.13);
     top: 20px;
     padding: 10px 15px;
     z-index: 3;
-    transition: left 150ms ease, opacity 200ms ease;
+    transition: left 50ms ease, opacity 300ms ease;
     will-change: left, opacity;
     opacity: 0;
 }

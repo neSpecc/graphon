@@ -1,6 +1,6 @@
 import * as Dom from '../utils/dom';
-import * as Numbers from '../utils/numbers';
 import Path from './path';
+import Bar from './bar';
 
 import log from '../utils/log.js';
 
@@ -41,14 +41,15 @@ export default class Graph {
     this.stepY = 10;
     this.strokeWidth = stroke;
     this.initialWidth = undefined;
-    this.maxPoint = this.state.max * 1.2; // 20% for padding top
+    this.maxPoint = 0;//
+    this.minPoint = 0;
     this.oyScaling = 1;
 
     /**
-     * List of drawn lines
+     * List of drawn charts
      * @type {object} name -> Path
      */
-    this.paths = {};
+    this.charts = {};
 
     /**
      * Cache for canvas width and height values
@@ -65,17 +66,6 @@ export default class Graph {
       oyGroup: 'oy-group',
     }
   }
-
-  /**
-   * Return Graph's paths as array
-   * @return {Path[]}
-   */
-  get pathsList(){
-    return Object.entries(this.paths).map(([name, path]) => {
-      return path;
-    });
-  }
-
 
   /**
    * Prepares the SVG element
@@ -174,22 +164,119 @@ export default class Graph {
     this.stepY = newStepY;
   }
 
+  renderCharts(){
+    const type = this.state.getCommonChartsType();
+
+    switch (type){
+      case 'bar':
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns() * 1.2; // 20% for padding top
+        this.drawBarCharts();
+        break;
+      default:
+      case 'line':
+        this.maxPoint = this.state.max * 1.2; // 20% for padding top
+        this.state.linesAvailable.forEach( name => {
+          /**
+           * Array of chart Y values
+           */
+          const values = this.state.getLinePoints(name);
+
+          /**
+           * Color of drawing line
+           */
+          const color = this.state.getLineColor(name);
+
+          this.charts[name] = this.drawLineChart(values, color);
+        });
+
+        break;
+    }
+  }
+
+  drawBarCharts(){
+    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+    let barmens = this.state.linesAvailable.map( line => {
+      return new Bar({
+        canvasHeight: this.height,
+        stepX: this.stepX,
+        kY,
+        key: line
+      });
+    });
+
+    // console.log('this.state.colors', this.state.colors);
+
+    // Object.entries(this.state.colors).forEach(([name, color]) => {
+    //   let el = document.createElement('div');
+    //   el.style.height = 100 + 'px';
+    //   el.style.backgroundColor = color;
+    //   el.textContent = name;
+    //
+    //   document.body.appendChild(el);
+    // })
+
+
+
+    const pointsCount = this.state.daysCount;
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let stackValue = 0;
+      this.state.linesAvailable.forEach( (line, index) => {
+        const color = this.state.getLineColor(line);
+
+
+
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        // const editorLabelStyle = `line-height: 1em;
+        //     color: #fff;
+        //     display: inline-block;
+        //     font-size: 12px;
+        //     line-height: 1em;
+        //     background-color: ${color};
+        //     padding: 4px 9px;
+        //     border-radius: 30px;
+        //     margin: 4px 5px 4px 0;`;
+        // console.log(`%c${pointValue}|${stackValue}`, editorLabelStyle);
+
+
+        barmens[index].add(pointValue, stackValue, color);
+        stackValue += pointValue;
+      });
+
+
+
+      // console.log('%o -> stack %o', pointIndex, stackValue);
+    }
+
+    barmens.forEach(barmen => {
+      this.oxGroup.appendChild(barmen.getAll());
+      this.charts[barmen.key] = barmen;
+    });
+  }
+
+  getMaxFromVisible(leftPointIndex, pointsVisible){
+    const type = this.state.getCommonChartsType();
+
+    switch (type) {
+      case 'bar':
+        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible);
+        break;
+      default:
+      case 'line':
+        return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
+          let slice = this.state.getPointsSlice(line, leftPointIndex, pointsVisible);
+          return Math.max(...slice);
+        }));
+        break;
+    }
+
+  }
 
   /**
-   * Renders a line by name
-   * @param {string} name - line name ("y0", "y1" etc)
+   * Create a 'line' chart
+   * @return {Path}
    */
-  renderLine(name){
-    /**
-     * Array of chart Y values
-     */
-    const values = this.state.getLinePoints(name);
-
-    /**
-     * Color of drawing line
-     */
-    const color = this.state.getLineColor(name);
-
+  drawLineChart(values, color){
     /**
      * Point to from which we will start drawing
      */
@@ -222,7 +309,7 @@ export default class Graph {
 
     path.render(this.animate);
 
-    this.paths[name] = path;
+    return path;
   }
 
   scroll(newLeft){
@@ -246,16 +333,20 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax){
-    this.oyScaling = this.maxPoint / newMax * 0.8;
+  scaleToMaxPoint(newMax, newMin){
+    this.oyScaling = this.maxPoint / newMax;
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+
+    // let emptyAreaHeight = this.height /this.maxPoint * newMin;
+    // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
+    // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
   }
 
   checkPathVisibility(name){
-    return !this.paths[name].isHidden;
+    return !this.charts[name].isHidden;
   }
 
   togglePathVisibility(name){
-    this.paths[name].toggleVisibility();
+    this.charts[name].toggleVisibility();
   }
 }

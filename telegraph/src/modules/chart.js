@@ -103,7 +103,7 @@ export default class Chart {
 
     this.initialScale = originalScalingChange;
 
-    log({scaling: this.scaling});
+    // log({scaling: this.scaling});
   }
 
   set initialScale(value){
@@ -224,10 +224,7 @@ export default class Chart {
 
 
 
-    this.state.linesAvailable.forEach( name => {
-      this.graph.renderLine(name);
-    });
-
+    this.graph.renderCharts();
     this.renderGrid();
     this.renderLegend();
   }
@@ -322,11 +319,11 @@ export default class Chart {
     let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
     let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
 
-    log({
-      'points on screen': pointsOnScreen,
-      'vlezet': this.datesPerScreen,
-      showEvery
-    });
+    // log({
+    //   'points on screen': pointsOnScreen,
+    //   'vlezet': this.datesPerScreen,
+    //   showEvery
+    // });
 
 
     /**
@@ -454,7 +451,7 @@ export default class Chart {
   scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
 
-    log({scaling});
+    // log({scaling});
 
     this.scaling = scaling;
   }
@@ -482,12 +479,14 @@ export default class Chart {
   fitToMax(){
     const stepX = this.graph.step;
     const pointsVisible = Math.round(this.viewportWidth / stepX / this.scaling);
-    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+    const maxVisiblePoint = this.graph.getMaxFromVisible(this.leftPointIndex, pointsVisible);
+
+    const minVisiblePoint = Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
       let slice = this.state.getPointsSlice(line, this.leftPointIndex, pointsVisible);
-      return Math.max(...slice);
+      return Math.min(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
 
     /**
      * Rerender grid if it was rendered before

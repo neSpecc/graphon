@@ -15,7 +15,14 @@ export default class State {
     /**
      * Cache
      */
-    this._dates = this.columns[0].slice(1);
+    this._cache = {
+      /**
+       * @todo maybe array copying worst than slice
+       */
+      getLinePoints: {},
+      dates: this.columns[0].slice(1),
+      daysCount: this.columns[0].slice(1).length
+    };
   }
 
   /**
@@ -24,7 +31,7 @@ export default class State {
    * @return {number[]} - array of dates in milliseconds
    */
   get dates(){
-    return this._dates;
+    return this._cache.dates;
   }
 
   /**
@@ -40,7 +47,7 @@ export default class State {
    * @return {number}
    */
   get daysCount(){
-    return this.columns[0].length - 1; // -1 because the first element is column type ("x")
+    return this._cache.daysCount;
   }
 
   /**
@@ -49,7 +56,14 @@ export default class State {
    * @return {number[]}
    */
   getLinePoints(lineName){
-    return this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+    if (this._cache.getLinePoints[lineName]){
+      return this._cache.getLinePoints[lineName];
+    }
+
+    this._cache.getLinePoints[lineName] = this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+
+
+    return this._cache.getLinePoints[lineName];
   }
 
   /**
@@ -79,6 +93,60 @@ export default class State {
    */
   getLineColor(lineName){
     return this.colors[lineName];
+  }
+
+  /**
+   * Returns chart type by name
+   * @param {string} chartName - "y0", "y1" etc
+   * @return {string} - "line", "bar", "area"
+   */
+  getChartType(chartName){
+    return this.types[chartName];
+  }
+
+  /**
+   * Detect type of charts
+   * @return {string}
+   */
+  getCommonChartsType(){
+    return Object.values(this.types)[0];
+  }
+
+  /**
+   * Return value of same point of previous chart
+   * @param currentChartNumber
+   * @param pointIndex
+   */
+  getPrevChartValueForPoint(currentChartNumber, pointIndex){
+    let prevChartKey = this.linesAvailable[currentChartNumber - 1];
+    return this.getLinePoints(prevChartKey)[pointIndex];
+  }
+
+  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount){
+    let max = 0;
+
+    for (let pointIndex = from; pointIndex < to; pointIndex++){
+      let stackValue = 0;
+
+      this.linesAvailable.forEach(line => {
+        stackValue += this.getLinePoints(line)[pointIndex];
+      });
+
+      if (max < stackValue){
+        max = stackValue;
+      }
+    }
+
+    return max;
+  }
+
+  /**
+   * Returns chart type by name
+   * @param {string} chartName - "y0", "y1" etc
+   * @return {string} - "line", "bar", "area"
+   */
+  getOhterTypes(chartName){
+    return Object.keys(this.types).filter(type => type !== chartName);
   }
 
   /**
