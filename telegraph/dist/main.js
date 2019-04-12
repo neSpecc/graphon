@@ -329,7 +329,7 @@ class State {
  */
 function make(tagName, classNames = undefined, attributes = {}) {
   const svgNamespace = 'http://www.w3.org/2000/svg';
-  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g'];
+  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g', 'animate'];
   const isSvg = svgElements.includes(tagName);
   const el = !isSvg ? document.createElement(tagName) : document.createElementNS(svgNamespace, tagName);
 
@@ -585,28 +585,31 @@ class bar_Bar {
  * Helper for creating an Bar charts
  */
 class area_Area {
-  constructor({canvasHeight, kY, stepX, key, color}){
+  constructor({canvasHeight, stepX, key, color}){
     this.canvasHeight = canvasHeight;
-    this.kY = kY;
     this.key = key;
+    this.color = color;
 
     this.prevX = 0;
     this.stepX = stepX;
-
-    this.wrapper = make('g');
-    this.wrapper.setAttribute('class', area_Area.CSS.wrapper);
-    this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
     this.hidden = false;
 
 
-    this.path = make('path', null, {
-      fill : color,
+    this.path = this.createPath();
+    this.morphing = undefined;
+
+    this.pathData = [];
+  }
+
+  createPath(){
+    let path = make('path', null, {
+      fill : this.color,
       'vector-effect': 'non-scaling-stroke',
-      stroke: color,
-      strokeWidth : 2
     });
 
-    this.pathData = '';
+    path.classList.add(area_Area.CSS.path);
+
+    return path;
   }
 
   getAll(){
@@ -619,7 +622,7 @@ class area_Area {
    */
   static get CSS(){
     return {
-      wrapper: 'tg-area',
+      path: 'tg-area',
       graphHidden: 'tg-area--hidden',
     }
   }
@@ -653,71 +656,56 @@ class area_Area {
    */
   moveTo(x, y, total = 0){
     let valueInPercents = total ? this.valueToPercent(y, total) : y;
-    console.log('move to', valueInPercents);
-    this.pathData += `M ${x} ${this.percentToValue(valueInPercents)}`;
+    this.pathData.push(`M ${x} ${this.percentToValue(valueInPercents)}`);
   }
 
   /**
    * Continue line to the next value
-   * @param {number} y
    * @param {number} total - this value is 100% for all charts
    */
-  stepTo(y, total, prev, skip = false){
-    let curPercents = 100/ total * y;
+  stepTo(total, prev, skip = false){
     let prevPercents = 100 / total * prev;
     let percentage = this.percentToValue(100 - prevPercents);
     // console.log('current per %o | 100% is %o | prev percents is %o | -->', curPercents, total, prevPercents, percentage);
     if (!skip) {
       this.prevX = this.prevX + this.stepX;
     }
-    this.pathData += ` L ${this.x(this.prevX)} ${this.y(percentage)}`;
+    this.pathData.push(`L ${this.x(this.prevX)} ${this.y(percentage)}`);
+  }
+
+  /**
+   * Recalculate Y coordinate
+   * @param {number} y
+   * @param {number} total - this value is 100% for all charts
+   */
+  move(index, total, prev){
+    let pointToChange = this.pathData[index + 1]; // +1 to skip M value
+    let [l, x, y] = pointToChange.trim().split(' ');
+
+    let prevPercents = 100 / total * prev;
+    let percentage = this.percentToValue(100 - prevPercents);
+
+    this.pathData[index + 1] = ` L ${x} ${this.y(percentage)}`;
+  }
+
+  update(){
+    this.morphing = make('animate');
+    this.morphing.setAttribute('attributeName', 'd');
+    this.morphing.setAttribute('attributeType', 'XML');
+    this.morphing.setAttribute('dur', '170ms');
+    this.morphing.setAttribute('fill', 'freeze');
+    this.morphing.setAttribute('to', this.pathData.join(' '));
+    this.path.appendChild(this.morphing);
+    this.morphing.beginElement();
   }
 
   /**
    * Append a line
    */
   finish(){
-    // console.log('finished', this.pathData);
-    this.pathData += ` L ${this.x(this.prevX)} ${this.canvasHeight} 0 ${this.canvasHeight} 0 0`;
-    this.path.setAttribute('d', this.pathData);
+    this.pathData.push(`L ${this.x(this.prevX)} ${this.canvasHeight} 0 ${this.canvasHeight} 0 0`);
+    this.path.setAttribute('d', this.pathData.join(' '));
   }
-
-
-
-
-  /**
-   * Continue line to the next value
-   * @param {number} y
-   */
-  add(y, stackValue, prevValue, color){
-    this.prevX = this.prevX + this.stepX;
-    let stackScaled = stackValue * this.kY;
-    let heightPrev = prevValue * this.kY;
-    let height = stackScaled - heightPrev;
-
-    const bar = make('rect');
-    bar.setAttribute('width', this.stepX);
-    bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX);
-    bar.setAttribute('y', this.y(stackValue - prevValue));
-    bar.setAttribute('fill', color);
-    // bar.setAttribute('stroke', color);
-    // bar.setAttribute('opacity', 0.6);
-
-
-    this.wrapper.appendChild(bar);
-  }
-
-  move(index, newStack, prevValue) {
-    let bar = this.wrapper.children[index];
-    let stackScaled = newStack * this.kY;
-    let heightPrev = prevValue * this.kY;
-    let height = stackScaled - heightPrev;
-
-    bar.setAttribute('height', height);
-    bar.setAttribute('y', this.y(newStack - prevValue));
-  }
-
 
   get isHidden(){
     return this.hidden;
@@ -725,7 +713,7 @@ class area_Area {
 
   toggleVisibility(){
     this.hidden = !this.hidden;
-    this.wrapper.classList.toggle(area_Area.CSS.graphHidden);
+    this.path.classList.toggle(area_Area.CSS.graphHidden);
   }
 }
 // CONCATENATED MODULE: ./src/utils/log.js
@@ -947,12 +935,10 @@ class graph_Graph {
   }
 
   drawAreaCharts(){
-    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
     let areas = this.state.linesAvailable.reverse().map( line => {
       return new area_Area({
         canvasHeight: this.height,
         stepX: this.stepX,
-        kY,
         key: line,
         color: this.state.getLineColor(line)
       });
@@ -962,54 +948,23 @@ class graph_Graph {
     const stacks = this.state.getStacks();
 
     this.state.linesAvailable.reverse().forEach( (line, index) => {
-      areas[index].moveTo(0, 0);
+      areas[index].moveTo(0, this.state.getLinePoints(line)[0], stacks[0]);
     });
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      if (pointIndex > 10 ){
-        // break;
-      }
-
-
       this.state.linesAvailable.reverse().forEach( (line, index) => {
-        if (index > 1 ){
-          // return;
-        }
-
-
         let pointValue = this.state.getLinePoints(line)[pointIndex];
-        if (pointIndex === 0){
-          areas[index].moveTo(0, pointValue, stacks[pointIndex]);
-        }
 
         if (pointIndex === 0){
-          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue, true);
+          areas[index].stepTo(stacks[pointIndex], prevValue, true);
         } else {
-          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue);
+          areas[index].stepTo(stacks[pointIndex], prevValue);
         }
 
-
-        // const editorLabelStyle = `line-height: 1em;
-        //     color: #fff;
-        //     display: inline-block;
-        //     font-size: 12px;
-        //     line-height: 1em;
-        //     background-color: ${color};
-        //     padding: 4px 9px;
-        //     border-radius: 30px;
-        //     margin: 4px 5px 4px 0;`;
-        // console.log(`%c${pointValue}`, editorLabelStyle);
-
-
-        // areas[index].moveTo(pointValue, stacks[pointIndex], prevValue,);
         prevValue += pointValue;
       });
-
-
-
-      // console.log('%o -> stack %o', pointIndex, stackValue);
     }
 
     areas.forEach(area => {
@@ -1156,9 +1111,7 @@ class graph_Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
-      console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
-    // console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;
@@ -1170,10 +1123,44 @@ class graph_Graph {
    * Change bars height and Y to fit hidden charts place
    */
   recalculatePointsHeight(){
-    if (this.type !== 'bar'){
-      return;
+    if (this.type === 'bar'){
+      this.recalculateBars();
+    } else if (this.type === 'area') {
+      this.recalculateArea();
+    }
+  }
+
+  recalculateArea(){
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
+        return val + this.state.getLinePoints(line)[pointIndex];
+      }, 0);
+
+      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+        let newStack = stacks[pointIndex] - hiddenPointsValue;
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+
+        if (pointIndex === 0){
+          this.charts[line].move(pointIndex, newStack, prevValue, true);
+        } else {
+          this.charts[line].move(pointIndex, newStack, prevValue);
+        }
+
+        prevValue += pointValue;
+      });
     }
 
+    Object.entries(this.charts).filter(([line, area]) => this.checkPathVisibility(line)).forEach(([line, area]) => {
+      area.update();
+    });
+  }
+
+  recalculateBars(){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
 
@@ -1657,7 +1644,17 @@ class minimap_Minimap {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.fitToMax();
+
+    if (this.state.type === 'bar'){
+      this.graph.recalculatePointsHeight();
+      this.fitToMax();
+    } else if (this.state.type === 'area') {
+      this.graph.recalculatePointsHeight();
+    } else {
+      this.fitToMax();
+    }
+
+
   }
 
   /**
@@ -1665,8 +1662,6 @@ class minimap_Minimap {
    */
   fitToMax(){
     const maxVisiblePoint = this.graph.getMaxFromVisible();
-
-    this.graph.recalculatePointsHeight();
     this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
@@ -2124,11 +2119,23 @@ class chart_Chart {
 
 
     let stepY = this.stepY;
-    const height = this.height;
-    const max = forceMax || this.maxPoint;
-    const kY = height / max;
-
+    let height = this.height;
+    let max = forceMax || this.maxPoint;
+    let kY = height / max;
     let linesCount = height / (stepY * kY) >> 0;
+
+    if (this.state.type === 'area'){
+      stepY = 25;
+      linesCount = 5;
+      max = 100;
+      kY = height / max;
+    }
+
+
+
+
+
+
 
     if (linesCount === 0){
       stepY = stepY / 3;
@@ -2491,11 +2498,14 @@ class chart_Chart {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.graph.recalculatePointsHeight();
-    // setTimeout(() => {
+    if (this.state.type === 'bar'){
+      this.graph.recalculatePointsHeight();
       this.fitToMax();
-    // }, 150)
-
+    } else if (this.state.type === 'area') {
+      this.graph.recalculatePointsHeight();
+    } else {
+      this.fitToMax();
+    }
   }
 
   highlightBar(index, scrollOffset){

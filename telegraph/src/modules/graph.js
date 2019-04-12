@@ -200,12 +200,10 @@ export default class Graph {
   }
 
   drawAreaCharts(){
-    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
     let areas = this.state.linesAvailable.reverse().map( line => {
       return new Area({
         canvasHeight: this.height,
         stepX: this.stepX,
-        kY,
         key: line,
         color: this.state.getLineColor(line)
       });
@@ -215,54 +213,23 @@ export default class Graph {
     const stacks = this.state.getStacks();
 
     this.state.linesAvailable.reverse().forEach( (line, index) => {
-      areas[index].moveTo(0, 0);
+      areas[index].moveTo(0, this.state.getLinePoints(line)[0], stacks[0]);
     });
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      if (pointIndex > 10 ){
-        // break;
-      }
-
-
       this.state.linesAvailable.reverse().forEach( (line, index) => {
-        if (index > 1 ){
-          // return;
-        }
-
-
         let pointValue = this.state.getLinePoints(line)[pointIndex];
-        if (pointIndex === 0){
-          areas[index].moveTo(0, pointValue, stacks[pointIndex]);
-        }
 
         if (pointIndex === 0){
-          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue, true);
+          areas[index].stepTo(stacks[pointIndex], prevValue, true);
         } else {
-          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue);
+          areas[index].stepTo(stacks[pointIndex], prevValue);
         }
 
-
-        // const editorLabelStyle = `line-height: 1em;
-        //     color: #fff;
-        //     display: inline-block;
-        //     font-size: 12px;
-        //     line-height: 1em;
-        //     background-color: ${color};
-        //     padding: 4px 9px;
-        //     border-radius: 30px;
-        //     margin: 4px 5px 4px 0;`;
-        // console.log(`%c${pointValue}`, editorLabelStyle);
-
-
-        // areas[index].moveTo(pointValue, stacks[pointIndex], prevValue,);
         prevValue += pointValue;
       });
-
-
-
-      // console.log('%o -> stack %o', pointIndex, stackValue);
     }
 
     areas.forEach(area => {
@@ -409,9 +376,7 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
-      console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
-    // console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;
@@ -423,10 +388,44 @@ export default class Graph {
    * Change bars height and Y to fit hidden charts place
    */
   recalculatePointsHeight(){
-    if (this.type !== 'bar'){
-      return;
+    if (this.type === 'bar'){
+      this.recalculateBars();
+    } else if (this.type === 'area') {
+      this.recalculateArea();
+    }
+  }
+
+  recalculateArea(){
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
+        return val + this.state.getLinePoints(line)[pointIndex];
+      }, 0);
+
+      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+        let newStack = stacks[pointIndex] - hiddenPointsValue;
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+
+        if (pointIndex === 0){
+          this.charts[line].move(pointIndex, newStack, prevValue, true);
+        } else {
+          this.charts[line].move(pointIndex, newStack, prevValue);
+        }
+
+        prevValue += pointValue;
+      });
     }
 
+    Object.entries(this.charts).filter(([line, area]) => this.checkPathVisibility(line)).forEach(([line, area]) => {
+      area.update();
+    });
+  }
+
+  recalculateBars(){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
 

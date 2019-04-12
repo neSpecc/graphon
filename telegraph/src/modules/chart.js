@@ -249,11 +249,23 @@ export default class Chart {
 
 
     let stepY = this.stepY;
-    const height = this.height;
-    const max = forceMax || this.maxPoint;
-    const kY = height / max;
-
+    let height = this.height;
+    let max = forceMax || this.maxPoint;
+    let kY = height / max;
     let linesCount = height / (stepY * kY) >> 0;
+
+    if (this.state.type === 'area'){
+      stepY = 25;
+      linesCount = 5;
+      max = 100;
+      kY = height / max;
+    }
+
+
+
+
+
+
 
     if (linesCount === 0){
       stepY = stepY / 3;
@@ -616,11 +628,14 @@ export default class Chart {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.graph.recalculatePointsHeight();
-    // setTimeout(() => {
+    if (this.state.type === 'bar'){
+      this.graph.recalculatePointsHeight();
       this.fitToMax();
-    // }, 150)
-
+    } else if (this.state.type === 'area') {
+      this.graph.recalculatePointsHeight();
+    } else {
+      this.fitToMax();
+    }
   }
 
   highlightBar(index, scrollOffset){

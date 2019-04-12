@@ -4,28 +4,31 @@ import * as Dom from "../utils/dom";
  * Helper for creating an Bar charts
  */
 export default class Area {
-  constructor({canvasHeight, kY, stepX, key, color}){
+  constructor({canvasHeight, stepX, key, color}){
     this.canvasHeight = canvasHeight;
-    this.kY = kY;
     this.key = key;
+    this.color = color;
 
     this.prevX = 0;
     this.stepX = stepX;
-
-    this.wrapper = Dom.make('g');
-    this.wrapper.setAttribute('class', Area.CSS.wrapper);
-    this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
     this.hidden = false;
 
 
-    this.path = Dom.make('path', null, {
-      fill : color,
+    this.path = this.createPath();
+    this.morphing = undefined;
+
+    this.pathData = [];
+  }
+
+  createPath(){
+    let path = Dom.make('path', null, {
+      fill : this.color,
       'vector-effect': 'non-scaling-stroke',
-      stroke: color,
-      strokeWidth : 2
     });
 
-    this.pathData = '';
+    path.classList.add(Area.CSS.path);
+
+    return path;
   }
 
   getAll(){
@@ -38,7 +41,7 @@ export default class Area {
    */
   static get CSS(){
     return {
-      wrapper: 'tg-area',
+      path: 'tg-area',
       graphHidden: 'tg-area--hidden',
     }
   }
@@ -72,71 +75,56 @@ export default class Area {
    */
   moveTo(x, y, total = 0){
     let valueInPercents = total ? this.valueToPercent(y, total) : y;
-    console.log('move to', valueInPercents);
-    this.pathData += `M ${x} ${this.percentToValue(valueInPercents)}`;
+    this.pathData.push(`M ${x} ${this.percentToValue(valueInPercents)}`);
   }
 
   /**
    * Continue line to the next value
-   * @param {number} y
    * @param {number} total - this value is 100% for all charts
    */
-  stepTo(y, total, prev, skip = false){
-    let curPercents = 100/ total * y;
+  stepTo(total, prev, skip = false){
     let prevPercents = 100 / total * prev;
     let percentage = this.percentToValue(100 - prevPercents);
     // console.log('current per %o | 100% is %o | prev percents is %o | -->', curPercents, total, prevPercents, percentage);
     if (!skip) {
       this.prevX = this.prevX + this.stepX;
     }
-    this.pathData += ` L ${this.x(this.prevX)} ${this.y(percentage)}`;
+    this.pathData.push(`L ${this.x(this.prevX)} ${this.y(percentage)}`);
+  }
+
+  /**
+   * Recalculate Y coordinate
+   * @param {number} y
+   * @param {number} total - this value is 100% for all charts
+   */
+  move(index, total, prev){
+    let pointToChange = this.pathData[index + 1]; // +1 to skip M value
+    let [l, x, y] = pointToChange.trim().split(' ');
+
+    let prevPercents = 100 / total * prev;
+    let percentage = this.percentToValue(100 - prevPercents);
+
+    this.pathData[index + 1] = ` L ${x} ${this.y(percentage)}`;
+  }
+
+  update(){
+    this.morphing = Dom.make('animate');
+    this.morphing.setAttribute('attributeName', 'd');
+    this.morphing.setAttribute('attributeType', 'XML');
+    this.morphing.setAttribute('dur', '170ms');
+    this.morphing.setAttribute('fill', 'freeze');
+    this.morphing.setAttribute('to', this.pathData.join(' '));
+    this.path.appendChild(this.morphing);
+    this.morphing.beginElement();
   }
 
   /**
    * Append a line
    */
   finish(){
-    // console.log('finished', this.pathData);
-    this.pathData += ` L ${this.x(this.prevX)} ${this.canvasHeight} 0 ${this.canvasHeight} 0 0`;
-    this.path.setAttribute('d', this.pathData);
+    this.pathData.push(`L ${this.x(this.prevX)} ${this.canvasHeight} 0 ${this.canvasHeight} 0 0`);
+    this.path.setAttribute('d', this.pathData.join(' '));
   }
-
-
-
-
-  /**
-   * Continue line to the next value
-   * @param {number} y
-   */
-  add(y, stackValue, prevValue, color){
-    this.prevX = this.prevX + this.stepX;
-    let stackScaled = stackValue * this.kY;
-    let heightPrev = prevValue * this.kY;
-    let height = stackScaled - heightPrev;
-
-    const bar = Dom.make('rect');
-    bar.setAttribute('width', this.stepX);
-    bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX);
-    bar.setAttribute('y', this.y(stackValue - prevValue));
-    bar.setAttribute('fill', color);
-    // bar.setAttribute('stroke', color);
-    // bar.setAttribute('opacity', 0.6);
-
-
-    this.wrapper.appendChild(bar);
-  }
-
-  move(index, newStack, prevValue) {
-    let bar = this.wrapper.children[index];
-    let stackScaled = newStack * this.kY;
-    let heightPrev = prevValue * this.kY;
-    let height = stackScaled - heightPrev;
-
-    bar.setAttribute('height', height);
-    bar.setAttribute('y', this.y(newStack - prevValue));
-  }
-
 
   get isHidden(){
     return this.hidden;
@@ -144,6 +132,6 @@ export default class Area {
 
   toggleVisibility(){
     this.hidden = !this.hidden;
-    this.wrapper.classList.toggle(Area.CSS.graphHidden);
+    this.path.classList.toggle(Area.CSS.graphHidden);
   }
 }

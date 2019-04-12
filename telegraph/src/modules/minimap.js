@@ -452,7 +452,17 @@ export default class Minimap {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.fitToMax();
+
+    if (this.state.type === 'bar'){
+      this.graph.recalculatePointsHeight();
+      this.fitToMax();
+    } else if (this.state.type === 'area') {
+      this.graph.recalculatePointsHeight();
+    } else {
+      this.fitToMax();
+    }
+
+
   }
 
   /**
@@ -460,8 +470,6 @@ export default class Minimap {
    */
   fitToMax(){
     const maxVisiblePoint = this.graph.getMaxFromVisible();
-
-    this.graph.recalculatePointsHeight();
     this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }

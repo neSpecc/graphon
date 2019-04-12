@@ -100,6 +100,19 @@
     will-change: width, x;
 }
 
+/**
+ * Area
+ */
+.tg-area {
+    will-change: opacity, transform !important;
+    transition: all 170ms ease !important;
+}
+
+.tg-area--hidden {
+    /*opacity: 0 !important;*/
+    transform: scaleY(0) !important;
+}
+
 
 
 /**
