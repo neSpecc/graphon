@@ -80,7 +80,8 @@ export default class Chart {
   }
 
   get minimalMapWidth(){
-    return 2 * this.initialStep;
+    // return 2 * this.initialStep;
+    return 50;
   }
 
   get initialScale(){

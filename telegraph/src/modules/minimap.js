@@ -190,8 +190,8 @@ export default class Minimap {
     this.width = this.modules.chart.minimalMapWidth;
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();

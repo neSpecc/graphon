@@ -555,9 +555,9 @@ class bar_Bar {
     let height = stackScaled - heightPrev;
 
     const bar = make('rect');
-    bar.setAttribute('width', this.stepX + 1);
+    bar.setAttribute('width', this.stepX);
     bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX - 1);
+    bar.setAttribute('x', this.prevX);
     bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
     // bar.setAttribute('stroke', color);
@@ -1190,8 +1190,8 @@ class minimap_Minimap {
     this.width = this.modules.chart.minimalMapWidth;
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
-    // this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    this.viewportOffsetLeft = 0;
+    this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -1751,7 +1751,8 @@ class chart_Chart {
   }
 
   get minimalMapWidth(){
-    return 2 * this.initialStep;
+    // return 2 * this.initialStep;
+    return 50;
   }
 
   get initialScale(){

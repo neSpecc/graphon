@@ -67,9 +67,9 @@ export default class Bar {
     let height = stackScaled - heightPrev;
 
     const bar = Dom.make('rect');
-    bar.setAttribute('width', this.stepX + 1);
+    bar.setAttribute('width', this.stepX);
     bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX - 1);
+    bar.setAttribute('x', this.prevX);
     bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
     // bar.setAttribute('stroke', color);
