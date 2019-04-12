@@ -11,6 +11,7 @@ export default class State {
     this.colors = chartsData.colors;
     this.names = chartsData.names;
     this.types = chartsData.types;
+    this.type = this.getCommonChartsType();
 
     /**
      * Cache

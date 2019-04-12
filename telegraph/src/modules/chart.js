@@ -6,6 +6,7 @@ import * as Event from '../utils/event.js';
 
 import log from '../utils/log.js';
 import * as Numbers from "../utils/numbers";
+import Bar from "./bar";
 
 /**
  * Module for working with main Chart zone
@@ -33,6 +34,10 @@ export default class Chart {
       gridLines: [],
       legend: undefined,
       legendDates: [],
+      overlays: undefined,
+      overlayLeft: undefined,
+      overlayRight: undefined,
+
     };
 
     this.tooltip = new Tooltip(this.modules);
@@ -56,11 +61,6 @@ export default class Chart {
     this.onscreenDates = new Set();
     this.onscreenDatesElements = {}; // origin index -> element mapping
     this._datesPerScreen = undefined;
-
-
-
-
-
 
     /**
      * Any properties can be cached here
@@ -123,6 +123,9 @@ export default class Chart {
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
       dateHidden: 'tg-legend__date--hidden',
+      overlays: 'tg-chart__overlays',
+      overlayLeft: 'tg-chart__overlay-left',
+      overlayRight: 'tg-chart__overlay-right',
     }
   }
 
@@ -227,6 +230,7 @@ export default class Chart {
     this.graph.renderCharts();
     this.renderGrid();
     this.renderLegend();
+    this.renderOverlays();
   }
 
   /**
@@ -362,6 +366,10 @@ export default class Chart {
     this.onscreenDatesElements[originIndex] = dateEl;
   }
 
+  get onscreenPointsCount(){
+    return Math.floor(this.viewportWidth / this.stepScaled);
+  }
+
 
 
   /**
@@ -377,8 +385,7 @@ export default class Chart {
    * @return {number}
    */
   get rightPointIndex(){
-    let onscreen = Math.floor(this.viewportWidth / this.stepX / this.scaling);
-    return this.leftPointIndex + onscreen;
+    return this.leftPointIndex + this.onscreenPointsCount;
   }
 
   /**
@@ -546,7 +553,12 @@ export default class Chart {
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
-    this.pointer.move(newLeft);
+
+    if (this.state.type === 'line'){
+      this.pointer.move(newLeft);
+    } else {
+      this.highlightBar(pointIndex -1, scrollOffset);
+    }
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
@@ -581,6 +593,7 @@ export default class Chart {
   mouseLeave(){
     this.tooltip.hide();
     this.pointer.hide();
+    this.hideOverlays();
   }
 
   /**
@@ -595,4 +608,42 @@ export default class Chart {
     // }, 150)
 
   }
+
+  highlightBar(index, scrollOffset){
+    this.nodes.overlays.style.opacity = '1';
+    this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
+    this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
+    this.nodes.overlayRight.setAttribute('width', (this.onscreenPointsCount - index) * this.stepScaled - scrollOffset );
+  }
+
+  renderOverlays(){
+    this.nodes.overlays = Dom.make('g');
+    this.nodes.overlays.setAttribute('class', Chart.CSS.overlays);
+
+
+    this.nodes.overlayLeft = Dom.make('rect');
+    this.nodes.overlayLeft.setAttribute('class', Chart.CSS.overlayLeft);
+    this.nodes.overlayRight = Dom.make('rect');
+    this.nodes.overlayRight.setAttribute('class', Chart.CSS.overlayRight);
+
+    let defaultWidth = 0;
+
+    this.nodes.overlayLeft.setAttribute('x', 0);
+    this.nodes.overlayRight.setAttribute('x', this.viewportWidth - defaultWidth);
+    this.nodes.overlayLeft.setAttribute('y', 0);
+    this.nodes.overlayRight.setAttribute('y', 0);
+    this.nodes.overlayLeft.setAttribute('width', defaultWidth);
+    this.nodes.overlayRight.setAttribute('width', defaultWidth);
+    this.nodes.overlayLeft.setAttribute('height', this.viewportHeight);
+    this.nodes.overlayRight.setAttribute('height', this.viewportHeight);
+
+    this.nodes.overlays.appendChild(this.nodes.overlayLeft);
+    this.nodes.overlays.appendChild(this.nodes.overlayRight);
+    this.graph.canvas.appendChild(this.nodes.overlays);
+  }
+
+  hideOverlays(){
+    this.nodes.overlays.style.opacity = 0;
+  }
+
 }

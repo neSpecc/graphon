@@ -106,6 +106,7 @@ class State {
     this.colors = chartsData.colors;
     this.names = chartsData.names;
     this.types = chartsData.types;
+    this.type = this.getCommonChartsType();
 
     /**
      * Cache
@@ -1677,6 +1678,7 @@ class pointer_Pointer {
 
 
 
+
 /**
  * Module for working with main Chart zone
  * - Render UI
@@ -1703,6 +1705,10 @@ class chart_Chart {
       gridLines: [],
       legend: undefined,
       legendDates: [],
+      overlays: undefined,
+      overlayLeft: undefined,
+      overlayRight: undefined,
+
     };
 
     this.tooltip = new tooltip_Tooltip(this.modules);
@@ -1726,11 +1732,6 @@ class chart_Chart {
     this.onscreenDates = new Set();
     this.onscreenDatesElements = {}; // origin index -> element mapping
     this._datesPerScreen = undefined;
-
-
-
-
-
 
     /**
      * Any properties can be cached here
@@ -1793,6 +1794,9 @@ class chart_Chart {
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
       dateHidden: 'tg-legend__date--hidden',
+      overlays: 'tg-chart__overlays',
+      overlayLeft: 'tg-chart__overlay-left',
+      overlayRight: 'tg-chart__overlay-right',
     }
   }
 
@@ -1897,6 +1901,7 @@ class chart_Chart {
     this.graph.renderCharts();
     this.renderGrid();
     this.renderLegend();
+    this.renderOverlays();
   }
 
   /**
@@ -2032,6 +2037,10 @@ class chart_Chart {
     this.onscreenDatesElements[originIndex] = dateEl;
   }
 
+  get onscreenPointsCount(){
+    return Math.floor(this.viewportWidth / this.stepScaled);
+  }
+
 
 
   /**
@@ -2047,8 +2056,7 @@ class chart_Chart {
    * @return {number}
    */
   get rightPointIndex(){
-    let onscreen = Math.floor(this.viewportWidth / this.stepX / this.scaling);
-    return this.leftPointIndex + onscreen;
+    return this.leftPointIndex + this.onscreenPointsCount;
   }
 
   /**
@@ -2216,7 +2224,12 @@ class chart_Chart {
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
     this.tooltip.show();
-    this.pointer.move(newLeft);
+
+    if (this.state.type === 'line'){
+      this.pointer.move(newLeft);
+    } else {
+      this.highlightBar(pointIndex -1, scrollOffset);
+    }
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
@@ -2251,6 +2264,7 @@ class chart_Chart {
   mouseLeave(){
     this.tooltip.hide();
     this.pointer.hide();
+    this.hideOverlays();
   }
 
   /**
@@ -2265,6 +2279,44 @@ class chart_Chart {
     // }, 150)
 
   }
+
+  highlightBar(index, scrollOffset){
+    this.nodes.overlays.style.opacity = '1';
+    this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
+    this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
+    this.nodes.overlayRight.setAttribute('width', (this.onscreenPointsCount - index) * this.stepScaled - scrollOffset );
+  }
+
+  renderOverlays(){
+    this.nodes.overlays = make('g');
+    this.nodes.overlays.setAttribute('class', chart_Chart.CSS.overlays);
+
+
+    this.nodes.overlayLeft = make('rect');
+    this.nodes.overlayLeft.setAttribute('class', chart_Chart.CSS.overlayLeft);
+    this.nodes.overlayRight = make('rect');
+    this.nodes.overlayRight.setAttribute('class', chart_Chart.CSS.overlayRight);
+
+    let defaultWidth = 0;
+
+    this.nodes.overlayLeft.setAttribute('x', 0);
+    this.nodes.overlayRight.setAttribute('x', this.viewportWidth - defaultWidth);
+    this.nodes.overlayLeft.setAttribute('y', 0);
+    this.nodes.overlayRight.setAttribute('y', 0);
+    this.nodes.overlayLeft.setAttribute('width', defaultWidth);
+    this.nodes.overlayRight.setAttribute('width', defaultWidth);
+    this.nodes.overlayLeft.setAttribute('height', this.viewportHeight);
+    this.nodes.overlayRight.setAttribute('height', this.viewportHeight);
+
+    this.nodes.overlays.appendChild(this.nodes.overlayLeft);
+    this.nodes.overlays.appendChild(this.nodes.overlayRight);
+    this.graph.canvas.appendChild(this.nodes.overlays);
+  }
+
+  hideOverlays(){
+    this.nodes.overlays.style.opacity = 0;
+  }
+
 }
 // CONCATENATED MODULE: ./src/modules/legend.js
 

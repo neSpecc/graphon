@@ -53,6 +53,10 @@
     opacity: 0;
 }
 
+/**
+ * Bar
+ */
+
 .tg-bar {
     will-change: opacity, transform;
     transition: opacity 350ms ease, transform 300ms ease;
@@ -73,6 +77,20 @@
     will-change: y;
     shape-rendering: optimizespeed;
 }
+
+.tg-chart__overlays{
+    will-change: opacity;
+    transition: opacity 250ms ease;
+}
+
+.tg-chart__overlay-left,
+.tg-chart__overlay-right {
+    fill: #fff;
+    opacity: 0.5;
+    will-change: width, x;
+}
+
+
 
 /**
  * Footer with dates
@@ -270,7 +288,7 @@
     left: 0;
     right: 0;
     padding-bottom: 5px;
-    border-bottom: 1px solid rgba(170,181,191, 0.3);
+    border-bottom: 1px solid rgba(24,45,59,0.10);
     transition: bottom 200ms ease, opacity 300ms ease, transform 200ms ease;
     will-change: bottom, opacity;
 }
