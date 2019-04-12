@@ -221,6 +221,10 @@ class State {
    * Return a stack value for each point
    */
   getStacks(){
+    if (this._cache.stacks){
+      return this._cache.stacks;
+    }
+
     let from = 0;
     let to = this.daysCount;
     let stacks = [];
@@ -231,7 +235,9 @@ class State {
       stacks.push(stackValue);
     }
 
-    return stacks;
+    this._cache.stacks = stacks;
+
+    return this._cache.stacks;
   }
 
   /**
@@ -496,6 +502,7 @@ class bar_Bar {
     this.wrapper = make('g');
     this.wrapper.setAttribute('class', bar_Bar.CSS.wrapper);
     this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.hidden = false;
   }
 
   getAll(){
@@ -509,7 +516,7 @@ class bar_Bar {
   static get CSS(){
     return {
       wrapper: 'tg-bar',
-      graphHidden: 'tg-graph--hidden',
+      graphHidden: 'tg-bar--hidden',
     }
   }
 
@@ -517,7 +524,7 @@ class bar_Bar {
    * Compute Y value with scaling
    */
   y(val){
-    return Math.round(this.canvasHeight - val * this.kY);
+    return this.canvasHeight - val * this.kY;
   }
 
   /**
@@ -559,12 +566,23 @@ class bar_Bar {
     this.wrapper.appendChild(bar);
   }
 
+  move(index, newStack, prevValue) {
+    let bar = this.wrapper.children[index];
+    let stackScaled = newStack * this.kY;
+    let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
+
+    bar.setAttribute('height', height);
+    bar.setAttribute('y', this.y(newStack - prevValue));
+  }
+
 
   get isHidden(){
-    return this.wrapper.classList.contains(bar_Bar.CSS.graphHidden);
+    return this.hidden;
   }
 
   toggleVisibility(){
+    this.hidden = !this.hidden;
     this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden);
   }
 }
@@ -631,6 +649,7 @@ class graph_Graph {
     this.maxPoint = 0;//
     this.minPoint = 0;
     this.oyScaling = 1;
+    this.type = this.state.getCommonChartsType();
 
     /**
      * List of drawn charts
@@ -930,19 +949,43 @@ class graph_Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax, newMin){
-    // console.log('max %o new max %o', this.maxPoint, newMax, this.maxPoint / newMax);
-
-    // let hiddenChartsMax = this.hiddenCharts.reduce((prev, line) => {
-    //   return prev + Math.max(...this.state.getLinePoints(line));
-    // }, 0);
-
+    scaleToMaxPoint(newMax, newMin){
+      console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
+    console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;
     // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
     // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
+  }
+
+  /**
+   * Change bars height and Y to fit hidden charts place
+   */
+  recalculatePointsHeight(){
+    if (this.type !== 'bar'){
+      return;
+    }
+
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
+        return val + this.state.getLinePoints(line)[pointIndex];
+      }, 0);
+
+      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+        let newStack = stacks[pointIndex] - hiddenPointsValue;
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+
+        this.charts[line].move(pointIndex, newStack, prevValue);
+        prevValue += pointValue;
+      });
+    }
   }
 
   checkPathVisibility(name){
@@ -1418,7 +1461,8 @@ class minimap_Minimap {
   fitToMax(){
     const maxVisiblePoint = this.graph.getMaxFromVisible();
 
-    // this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.recalculatePointsHeight();
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
 // CONCATENATED MODULE: ./src/utils/numbers.js
@@ -2215,7 +2259,11 @@ class chart_Chart {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.fitToMax();
+    this.graph.recalculatePointsHeight();
+    // setTimeout(() => {
+      this.fitToMax();
+    // }, 150)
+
   }
 }
 // CONCATENATED MODULE: ./src/modules/legend.js

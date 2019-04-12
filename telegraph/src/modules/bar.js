@@ -15,6 +15,7 @@ export default class Bar {
     this.wrapper = Dom.make('g');
     this.wrapper.setAttribute('class', Bar.CSS.wrapper);
     this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.hidden = false;
   }
 
   getAll(){
@@ -28,7 +29,7 @@ export default class Bar {
   static get CSS(){
     return {
       wrapper: 'tg-bar',
-      graphHidden: 'tg-graph--hidden',
+      graphHidden: 'tg-bar--hidden',
     }
   }
 
@@ -36,7 +37,7 @@ export default class Bar {
    * Compute Y value with scaling
    */
   y(val){
-    return Math.round(this.canvasHeight - val * this.kY);
+    return this.canvasHeight - val * this.kY;
   }
 
   /**
@@ -78,12 +79,23 @@ export default class Bar {
     this.wrapper.appendChild(bar);
   }
 
+  move(index, newStack, prevValue) {
+    let bar = this.wrapper.children[index];
+    let stackScaled = newStack * this.kY;
+    let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
+
+    bar.setAttribute('height', height);
+    bar.setAttribute('y', this.y(newStack - prevValue));
+  }
+
 
   get isHidden(){
-    return this.wrapper.classList.contains(Bar.CSS.graphHidden);
+    return this.hidden;
   }
 
   toggleVisibility(){
+    this.hidden = !this.hidden;
     this.wrapper.classList.toggle(Bar.CSS.graphHidden);
   }
 }

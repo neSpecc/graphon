@@ -589,6 +589,10 @@ export default class Chart {
    */
   togglePath(name){
     this.graph.togglePathVisibility(name);
-    this.fitToMax();
+    this.graph.recalculatePointsHeight();
+    // setTimeout(() => {
+      this.fitToMax();
+    // }, 150)
+
   }
 }

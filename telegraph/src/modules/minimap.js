@@ -462,6 +462,7 @@ export default class Minimap {
   fitToMax(){
     const maxVisiblePoint = this.graph.getMaxFromVisible();
 
-    // this.graph.scaleToMaxPoint(maxVisiblePoint);
+    this.graph.recalculatePointsHeight();
+    this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }

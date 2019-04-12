@@ -44,6 +44,7 @@ export default class Graph {
     this.maxPoint = 0;//
     this.minPoint = 0;
     this.oyScaling = 1;
+    this.type = this.state.getCommonChartsType();
 
     /**
      * List of drawn charts
@@ -343,19 +344,43 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax, newMin){
-    // console.log('max %o new max %o', this.maxPoint, newMax, this.maxPoint / newMax);
-
-    // let hiddenChartsMax = this.hiddenCharts.reduce((prev, line) => {
-    //   return prev + Math.max(...this.state.getLinePoints(line));
-    // }, 0);
-
+    scaleToMaxPoint(newMax, newMin){
+      console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
+    console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;
     // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
     // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
+  }
+
+  /**
+   * Change bars height and Y to fit hidden charts place
+   */
+  recalculatePointsHeight(){
+    if (this.type !== 'bar'){
+      return;
+    }
+
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
+        return val + this.state.getLinePoints(line)[pointIndex];
+      }, 0);
+
+      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+        let newStack = stacks[pointIndex] - hiddenPointsValue;
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+
+        this.charts[line].move(pointIndex, newStack, prevValue);
+        prevValue += pointValue;
+      });
+    }
   }
 
   checkPathVisibility(name){

@@ -27,6 +27,7 @@
     height: 100%;
 }
 
+
 .tg-chart g,
 .tg-minimap g {
     transform-origin: bottom left;
@@ -44,6 +45,7 @@
     transform-origin: bottom left;
     transition: opacity 150ms ease;
     will-change: transform, opacity;
+    shape-rendering: optimizespeed;
 }
 
 .tg-chart .tg-graph--hidden,
@@ -51,6 +53,26 @@
     opacity: 0;
 }
 
+.tg-bar {
+    will-change: opacity, transform;
+    transition: opacity 350ms ease, transform 300ms ease;
+}
+
+.tg-bar--hidden {
+    /*display: none;*/
+    transform: matrix(1, 0, 0, 0.1, 0, 50);
+    opacity: 0;
+}
+
+.tg-minimap .tg-bar {
+    transition: none !important;
+}
+
+.tg-bar rect {
+    /*transition: y 300ms ease;*/
+    will-change: y;
+    shape-rendering: optimizespeed;
+}
 
 /**
  * Footer with dates

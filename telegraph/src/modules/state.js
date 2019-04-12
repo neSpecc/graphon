@@ -126,6 +126,10 @@ export default class State {
    * Return a stack value for each point
    */
   getStacks(){
+    if (this._cache.stacks){
+      return this._cache.stacks;
+    }
+
     let from = 0;
     let to = this.daysCount;
     let stacks = [];
@@ -136,7 +140,9 @@ export default class State {
       stacks.push(stackValue);
     }
 
-    return stacks;
+    this._cache.stacks = stacks;
+
+    return this._cache.stacks;
   }
 
   /**
