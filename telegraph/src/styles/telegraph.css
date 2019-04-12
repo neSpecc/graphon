@@ -64,8 +64,11 @@
 
 .tg-bar--hidden {
     /*display: none;*/
-    transform: matrix(1, 0, 0, 0.1, 0, 50);
     opacity: 0;
+}
+
+.tg-chart .tg-bar--hidden {
+    transform: matrix(1, 0, 0, 0.1, 0, 50);
 }
 
 .tg-minimap .tg-bar {

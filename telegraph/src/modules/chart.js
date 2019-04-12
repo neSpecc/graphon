@@ -553,6 +553,16 @@ export default class Chart {
 
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
+     if (newLeft < this.stepScaled * 2){
+       // let old = this.scrollValue;
+       // let newScroll = (this.scrollValue + 20) * -1;
+
+       //scroll
+       //
+       // this.modules.minimap.moveViewport(-1 * (old*-1 - newScroll));
+       // this.scroll(newScroll);
+     }
+
     this.tooltip.show();
 
     if (this.state.type === 'line'){
