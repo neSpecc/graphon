@@ -59,18 +59,21 @@ export default class Bar {
    * Continue line to the next value
    * @param {number} y
    */
-  add(y, prevValue, color){
+  add(y, stackValue, prevValue, color){
     this.prevX = this.prevX + this.stepX;
-    let height = y * this.kY;
+    let stackScaled = stackValue * this.kY;
     let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
 
     const bar = Dom.make('rect');
-    bar.setAttribute('width', this.stepX);
+    bar.setAttribute('width', this.stepX + 1);
     bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX);
-    bar.setAttribute('y', this.y(y) - heightPrev);
+    bar.setAttribute('x', this.prevX - 1);
+    bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
-    bar.setAttribute('stroke', color);
+    // bar.setAttribute('stroke', color);
+    // bar.setAttribute('opacity', 0.6);
+
 
     this.wrapper.appendChild(bar);
   }

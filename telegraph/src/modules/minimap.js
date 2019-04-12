@@ -460,10 +460,8 @@ export default class Minimap {
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.graph.checkPathVisibility(line)).map(line => {
-      return Math.max(...this.state.getLinePoints(line));
-    }));
+    const maxVisiblePoint = this.graph.getMaxFromVisible();
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    // this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }

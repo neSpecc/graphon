@@ -217,15 +217,55 @@ class State {
     return this.getLinePoints(prevChartKey)[pointIndex];
   }
 
-  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount){
+  /**
+   * Return a stack value for each point
+   */
+  getStacks(){
+    let from = 0;
+    let to = this.daysCount;
+    let stacks = [];
+
+    for (let pointIndex = from; pointIndex < to; pointIndex++){
+      let stackValue = this.getStackForPoint(pointIndex);
+
+      stacks.push(stackValue);
+    }
+
+    return stacks;
+  }
+
+  /**
+   * Return accumulated stack value for point
+   * @param {number} pointIndex
+   * @param {string[]} skipLines - line numbers to skip (it may be hidden)
+   * @return {number}
+   */
+  getStackForPoint(pointIndex, skipLines = []){
+    let stackValue = 0;
+
+    this.linesAvailable.forEach(line => {
+      if (skipLines.includes(line)){
+        return;
+      }
+
+      stackValue += this.getLinePoints(line)[pointIndex];
+    });
+
+    return stackValue;
+  }
+
+  /**
+   *
+   * @param from
+   * @param to
+   * @param {string[]} skipLines - line numbers to skip (it may be hidden)
+   * @return {number}
+   */
+  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount, skipLines = []){
     let max = 0;
 
     for (let pointIndex = from; pointIndex < to; pointIndex++){
-      let stackValue = 0;
-
-      this.linesAvailable.forEach(line => {
-        stackValue += this.getLinePoints(line)[pointIndex];
-      });
+      let stackValue = this.getStackForPoint(pointIndex, skipLines);
 
       if (max < stackValue){
         max = stackValue;
@@ -500,18 +540,21 @@ class bar_Bar {
    * Continue line to the next value
    * @param {number} y
    */
-  add(y, prevValue, color){
+  add(y, stackValue, prevValue, color){
     this.prevX = this.prevX + this.stepX;
-    let height = y * this.kY;
+    let stackScaled = stackValue * this.kY;
     let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
 
     const bar = make('rect');
-    bar.setAttribute('width', this.stepX);
+    bar.setAttribute('width', this.stepX + 1);
     bar.setAttribute('height', height);
-    bar.setAttribute('x', this.prevX);
-    bar.setAttribute('y', this.y(y) - heightPrev);
+    bar.setAttribute('x', this.prevX - 1);
+    bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
-    bar.setAttribute('stroke', color);
+    // bar.setAttribute('stroke', color);
+    // bar.setAttribute('opacity', 0.6);
+
 
     this.wrapper.appendChild(bar);
   }
@@ -713,12 +756,12 @@ class graph_Graph {
 
     switch (type){
       case 'bar':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns() * 1.2; // 20% for padding top
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawBarCharts();
         break;
       default:
       case 'line':
-        this.maxPoint = this.state.max * 1.2; // 20% for padding top
+        this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
         this.state.linesAvailable.forEach( name => {
           /**
            * Array of chart Y values
@@ -739,7 +782,7 @@ class graph_Graph {
 
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
-    let barmens = this.state.linesAvailable.map( line => {
+    let barmens = this.state.linesAvailable.reverse().map( line => {
       return new bar_Bar({
         canvasHeight: this.height,
         stepX: this.stepX,
@@ -763,9 +806,12 @@ class graph_Graph {
 
     const pointsCount = this.state.daysCount;
 
+    const stacks = this.state.getStacks();
+
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
-      let stackValue = 0;
-      this.state.linesAvailable.forEach( (line, index) => {
+      let prevValue = 0;
+
+      this.state.linesAvailable.reverse().forEach( (line, index) => {
         const color = this.state.getLineColor(line);
 
 
@@ -780,11 +826,11 @@ class graph_Graph {
         //     padding: 4px 9px;
         //     border-radius: 30px;
         //     margin: 4px 5px 4px 0;`;
-        // console.log(`%c${pointValue}|${stackValue}`, editorLabelStyle);
+        // console.log(`%c${pointValue}`, editorLabelStyle);
 
 
-        barmens[index].add(pointValue, stackValue, color);
-        stackValue += pointValue;
+        barmens[index].add(pointValue, stacks[pointIndex], prevValue, color);
+        prevValue += pointValue;
       });
 
 
@@ -798,12 +844,19 @@ class graph_Graph {
     });
   }
 
-  getMaxFromVisible(leftPointIndex, pointsVisible){
+  /**
+   * Return names of hidden charts
+   */
+  get hiddenCharts(){
+    return Object.entries(this.charts).filter(([name, chart]) => chart.isHidden).map(([name]) => name);
+  }
+
+  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount){
     const type = this.state.getCommonChartsType();
 
     switch (type) {
       case 'bar':
-        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible);
+        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
         break;
       default:
       case 'line':
@@ -878,6 +931,12 @@ class graph_Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
+    // console.log('max %o new max %o', this.maxPoint, newMax, this.maxPoint / newMax);
+
+    // let hiddenChartsMax = this.hiddenCharts.reduce((prev, line) => {
+    //   return prev + Math.max(...this.state.getLinePoints(line));
+    // }, 0);
+
     this.oyScaling = this.maxPoint / newMax;
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
@@ -1357,11 +1416,9 @@ class minimap_Minimap {
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    const maxVisiblePoint = Math.max(...this.state.linesAvailable.filter(line => this.graph.checkPathVisibility(line)).map(line => {
-      return Math.max(...this.state.getLinePoints(line));
-    }));
+    const maxVisiblePoint = this.graph.getMaxFromVisible();
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    // this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
 // CONCATENATED MODULE: ./src/utils/numbers.js
@@ -2061,7 +2118,7 @@ class chart_Chart {
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(maxVisiblePoint * 1.2, true);
+      this.renderGrid(maxVisiblePoint, true);
     }
   }
 

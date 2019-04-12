@@ -492,7 +492,7 @@ export default class Chart {
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(maxVisiblePoint * 1.2, true);
+      this.renderGrid(maxVisiblePoint, true);
     }
   }
 

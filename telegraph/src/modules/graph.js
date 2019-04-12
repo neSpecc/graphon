@@ -169,12 +169,12 @@ export default class Graph {
 
     switch (type){
       case 'bar':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns() * 1.2; // 20% for padding top
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawBarCharts();
         break;
       default:
       case 'line':
-        this.maxPoint = this.state.max * 1.2; // 20% for padding top
+        this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
         this.state.linesAvailable.forEach( name => {
           /**
            * Array of chart Y values
@@ -195,7 +195,7 @@ export default class Graph {
 
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
-    let barmens = this.state.linesAvailable.map( line => {
+    let barmens = this.state.linesAvailable.reverse().map( line => {
       return new Bar({
         canvasHeight: this.height,
         stepX: this.stepX,
@@ -219,9 +219,12 @@ export default class Graph {
 
     const pointsCount = this.state.daysCount;
 
+    const stacks = this.state.getStacks();
+
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
-      let stackValue = 0;
-      this.state.linesAvailable.forEach( (line, index) => {
+      let prevValue = 0;
+
+      this.state.linesAvailable.reverse().forEach( (line, index) => {
         const color = this.state.getLineColor(line);
 
 
@@ -236,11 +239,11 @@ export default class Graph {
         //     padding: 4px 9px;
         //     border-radius: 30px;
         //     margin: 4px 5px 4px 0;`;
-        // console.log(`%c${pointValue}|${stackValue}`, editorLabelStyle);
+        // console.log(`%c${pointValue}`, editorLabelStyle);
 
 
-        barmens[index].add(pointValue, stackValue, color);
-        stackValue += pointValue;
+        barmens[index].add(pointValue, stacks[pointIndex], prevValue, color);
+        prevValue += pointValue;
       });
 
 
@@ -254,12 +257,19 @@ export default class Graph {
     });
   }
 
-  getMaxFromVisible(leftPointIndex, pointsVisible){
+  /**
+   * Return names of hidden charts
+   */
+  get hiddenCharts(){
+    return Object.entries(this.charts).filter(([name, chart]) => chart.isHidden).map(([name]) => name);
+  }
+
+  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount){
     const type = this.state.getCommonChartsType();
 
     switch (type) {
       case 'bar':
-        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible);
+        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
         break;
       default:
       case 'line':
@@ -334,6 +344,12 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
+    // console.log('max %o new max %o', this.maxPoint, newMax, this.maxPoint / newMax);
+
+    // let hiddenChartsMax = this.hiddenCharts.reduce((prev, line) => {
+    //   return prev + Math.max(...this.state.getLinePoints(line));
+    // }, 0);
+
     this.oyScaling = this.maxPoint / newMax;
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 

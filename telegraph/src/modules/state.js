@@ -122,15 +122,55 @@ export default class State {
     return this.getLinePoints(prevChartKey)[pointIndex];
   }
 
-  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount){
+  /**
+   * Return a stack value for each point
+   */
+  getStacks(){
+    let from = 0;
+    let to = this.daysCount;
+    let stacks = [];
+
+    for (let pointIndex = from; pointIndex < to; pointIndex++){
+      let stackValue = this.getStackForPoint(pointIndex);
+
+      stacks.push(stackValue);
+    }
+
+    return stacks;
+  }
+
+  /**
+   * Return accumulated stack value for point
+   * @param {number} pointIndex
+   * @param {string[]} skipLines - line numbers to skip (it may be hidden)
+   * @return {number}
+   */
+  getStackForPoint(pointIndex, skipLines = []){
+    let stackValue = 0;
+
+    this.linesAvailable.forEach(line => {
+      if (skipLines.includes(line)){
+        return;
+      }
+
+      stackValue += this.getLinePoints(line)[pointIndex];
+    });
+
+    return stackValue;
+  }
+
+  /**
+   *
+   * @param from
+   * @param to
+   * @param {string[]} skipLines - line numbers to skip (it may be hidden)
+   * @return {number}
+   */
+  getMaximumAccumulatedByColumns(from = 0, to = this.daysCount, skipLines = []){
     let max = 0;
 
     for (let pointIndex = from; pointIndex < to; pointIndex++){
-      let stackValue = 0;
-
-      this.linesAvailable.forEach(line => {
-        stackValue += this.getLinePoints(line)[pointIndex];
-      });
+      let stackValue = this.getStackForPoint(pointIndex, skipLines);
 
       if (max < stackValue){
         max = stackValue;
