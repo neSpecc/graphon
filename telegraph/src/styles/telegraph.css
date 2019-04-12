@@ -11,9 +11,16 @@
 .tg-chart {
     position: relative;
     margin-bottom: 25px;
+    margin-right: 15px;
     font-size: 14px;
     overflow: hidden;
     font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+}
+
+@media all and (max-width: 1000px){
+    .tg-chart {
+        overflow: visible;
+    }
 }
 
 .tg-chart__viewport {
@@ -100,7 +107,8 @@
  * ----------------------------
  */
 .tg-chart footer {
-    padding: 15px 0;
+    margin-top: 10px;
+    height: 18px;
     color: #939CA1;
     font-size: 12px;
     font-family: Roboto, 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
@@ -182,7 +190,7 @@
 .tg-minimap {
     position: relative;
     height: 60px;
-    margin-bottom: 20px;
+    margin: 10px 15px 20px;
     border-top: 2px solid #C0D1E1;
     border-bottom: 2px solid #C0D1E1;
     cursor: pointer;
@@ -279,7 +287,7 @@
     position: absolute;
     right: 0;
     top: 0;
-    left: 0;
+    left: 15px;
     height: 350px;
     color: #939CA1;
     font-size: 14px;
@@ -368,6 +376,7 @@
  */
 .tg-legend {
     margin-bottom: 50px;
+    padding: 0 15px;
     font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
 }
 
