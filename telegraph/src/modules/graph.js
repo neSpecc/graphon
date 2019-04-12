@@ -1,6 +1,7 @@
 import * as Dom from '../utils/dom';
 import Path from './path';
 import Bar from './bar';
+import Area from './area';
 
 import log from '../utils/log.js';
 
@@ -173,6 +174,10 @@ export default class Graph {
         this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawBarCharts();
         break;
+      case 'area':
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.drawAreaCharts();
+        break;
       default:
       case 'line':
         this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
@@ -194,6 +199,79 @@ export default class Graph {
     }
   }
 
+  drawAreaCharts(){
+    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+    let areas = this.state.linesAvailable.reverse().map( line => {
+      return new Area({
+        canvasHeight: this.height,
+        stepX: this.stepX,
+        kY,
+        key: line,
+        color: this.state.getLineColor(line)
+      });
+    });
+
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    this.state.linesAvailable.reverse().forEach( (line, index) => {
+      areas[index].moveTo(0, 0);
+    });
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      if (pointIndex > 10 ){
+        // break;
+      }
+
+
+      this.state.linesAvailable.reverse().forEach( (line, index) => {
+        if (index > 1 ){
+          // return;
+        }
+
+
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        if (pointIndex === 0){
+          areas[index].moveTo(0, pointValue, stacks[pointIndex]);
+        }
+
+        if (pointIndex === 0){
+          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue, true);
+        } else {
+          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue);
+        }
+
+
+        // const editorLabelStyle = `line-height: 1em;
+        //     color: #fff;
+        //     display: inline-block;
+        //     font-size: 12px;
+        //     line-height: 1em;
+        //     background-color: ${color};
+        //     padding: 4px 9px;
+        //     border-radius: 30px;
+        //     margin: 4px 5px 4px 0;`;
+        // console.log(`%c${pointValue}`, editorLabelStyle);
+
+
+        // areas[index].moveTo(pointValue, stacks[pointIndex], prevValue,);
+        prevValue += pointValue;
+      });
+
+
+
+      // console.log('%o -> stack %o', pointIndex, stackValue);
+    }
+
+    areas.forEach(area => {
+      area.finish();
+      this.oxGroup.appendChild(area.getAll());
+      this.charts[area.key] = area;
+    });
+  }
+
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
     let barmens = this.state.linesAvailable.reverse().map( line => {
@@ -205,21 +283,7 @@ export default class Graph {
       });
     });
 
-    // console.log('this.state.colors', this.state.colors);
-
-    // Object.entries(this.state.colors).forEach(([name, color]) => {
-    //   let el = document.createElement('div');
-    //   el.style.height = 100 + 'px';
-    //   el.style.backgroundColor = color;
-    //   el.textContent = name;
-    //
-    //   document.body.appendChild(el);
-    // })
-
-
-
     const pointsCount = this.state.daysCount;
-
     const stacks = this.state.getStacks();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
@@ -344,10 +408,10 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-    scaleToMaxPoint(newMax, newMin){
+  scaleToMaxPoint(newMax, newMin){
       console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
-    console.log('this.oyScaling', this.oyScaling);
+    // console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;

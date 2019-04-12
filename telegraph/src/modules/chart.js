@@ -494,7 +494,10 @@ export default class Chart {
       return Math.min(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+    if (this.state.type !== 'area'){
+      this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+    }
+
 
     /**
      * Rerender grid if it was rendered before
@@ -565,10 +568,10 @@ export default class Chart {
 
     this.tooltip.show();
 
-    if (this.state.type === 'line'){
-      this.pointer.move(newLeft);
-    } else {
+    if (this.state.type === 'bar'){
       this.highlightBar(pointIndex -1, scrollOffset);
+    } else {
+      this.pointer.move(newLeft);
     }
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {

@@ -536,15 +536,6 @@ class bar_Bar {
   }
 
   /**
-   * Go to passed coords
-   * @param {number} x
-   * @param {number} y
-   */
-  moveTo(x, y){
-    this.pathData += `M ${this.x(x)} ${this.y(y)}`;
-  }
-
-  /**
    * Continue line to the next value
    * @param {number} y
    */
@@ -587,6 +578,156 @@ class bar_Bar {
     this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden);
   }
 }
+// CONCATENATED MODULE: ./src/modules/area.js
+
+
+/**
+ * Helper for creating an Bar charts
+ */
+class area_Area {
+  constructor({canvasHeight, kY, stepX, key, color}){
+    this.canvasHeight = canvasHeight;
+    this.kY = kY;
+    this.key = key;
+
+    this.prevX = 0;
+    this.stepX = stepX;
+
+    this.wrapper = make('g');
+    this.wrapper.setAttribute('class', area_Area.CSS.wrapper);
+    this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.hidden = false;
+
+
+    this.path = make('path', null, {
+      fill : color,
+      'vector-effect': 'non-scaling-stroke',
+      stroke: color,
+      strokeWidth : 2
+    });
+
+    this.pathData = '';
+  }
+
+  getAll(){
+    return this.path;
+  }
+
+  /**
+   * CSS classes map
+   * @return {{graphHidden: string}}
+   */
+  static get CSS(){
+    return {
+      wrapper: 'tg-area',
+      graphHidden: 'tg-area--hidden',
+    }
+  }
+
+  /**
+   * Compute Y value with scaling
+   */
+  y(val){
+    return this.canvasHeight - val;
+  }
+
+  /**
+   * Compute X value with scaling
+   */
+  x(val){
+    return val;
+  }
+
+  percentToValue(per){
+    return this.canvasHeight / 100 * per;
+  }
+
+  valueToPercent(val, total){
+    return 100 / total * val;
+  }
+
+  /**
+   * Go to passed coords
+   * @param {number} x
+   * @param {number} y
+   */
+  moveTo(x, y, total = 0){
+    let valueInPercents = total ? this.valueToPercent(y, total) : y;
+    console.log('move to', valueInPercents);
+    this.pathData += `M ${x} ${this.percentToValue(valueInPercents)}`;
+  }
+
+  /**
+   * Continue line to the next value
+   * @param {number} y
+   * @param {number} total - this value is 100% for all charts
+   */
+  stepTo(y, total, prev, skip = false){
+    let curPercents = 100/ total * y;
+    let prevPercents = 100 / total * prev;
+    let percentage = this.percentToValue(100 - prevPercents);
+    // console.log('current per %o | 100% is %o | prev percents is %o | -->', curPercents, total, prevPercents, percentage);
+    if (!skip) {
+      this.prevX = this.prevX + this.stepX;
+    }
+    this.pathData += ` L ${this.x(this.prevX)} ${this.y(percentage)}`;
+  }
+
+  /**
+   * Append a line
+   */
+  finish(){
+    // console.log('finished', this.pathData);
+    this.pathData += ` L ${this.x(this.prevX)} ${this.canvasHeight} 0 ${this.canvasHeight} 0 0`;
+    this.path.setAttribute('d', this.pathData);
+  }
+
+
+
+
+  /**
+   * Continue line to the next value
+   * @param {number} y
+   */
+  add(y, stackValue, prevValue, color){
+    this.prevX = this.prevX + this.stepX;
+    let stackScaled = stackValue * this.kY;
+    let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
+
+    const bar = make('rect');
+    bar.setAttribute('width', this.stepX);
+    bar.setAttribute('height', height);
+    bar.setAttribute('x', this.prevX);
+    bar.setAttribute('y', this.y(stackValue - prevValue));
+    bar.setAttribute('fill', color);
+    // bar.setAttribute('stroke', color);
+    // bar.setAttribute('opacity', 0.6);
+
+
+    this.wrapper.appendChild(bar);
+  }
+
+  move(index, newStack, prevValue) {
+    let bar = this.wrapper.children[index];
+    let stackScaled = newStack * this.kY;
+    let heightPrev = prevValue * this.kY;
+    let height = stackScaled - heightPrev;
+
+    bar.setAttribute('height', height);
+    bar.setAttribute('y', this.y(newStack - prevValue));
+  }
+
+
+  get isHidden(){
+    return this.hidden;
+  }
+
+  toggleVisibility(){
+    this.hidden = !this.hidden;
+    this.wrapper.classList.toggle(area_Area.CSS.graphHidden);
+  }
+}
 // CONCATENATED MODULE: ./src/utils/log.js
 let prevValues = {};
 
@@ -604,6 +745,7 @@ function log(obj){
   el.innerHTML = content;
 }
 // CONCATENATED MODULE: ./src/modules/graph.js
+
 
 
 
@@ -779,6 +921,10 @@ class graph_Graph {
         this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawBarCharts();
         break;
+      case 'area':
+        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.drawAreaCharts();
+        break;
       default:
       case 'line':
         this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
@@ -800,6 +946,79 @@ class graph_Graph {
     }
   }
 
+  drawAreaCharts(){
+    const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+    let areas = this.state.linesAvailable.reverse().map( line => {
+      return new area_Area({
+        canvasHeight: this.height,
+        stepX: this.stepX,
+        kY,
+        key: line,
+        color: this.state.getLineColor(line)
+      });
+    });
+
+    const pointsCount = this.state.daysCount;
+    const stacks = this.state.getStacks();
+
+    this.state.linesAvailable.reverse().forEach( (line, index) => {
+      areas[index].moveTo(0, 0);
+    });
+
+    for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
+      let prevValue = 0;
+
+      if (pointIndex > 10 ){
+        // break;
+      }
+
+
+      this.state.linesAvailable.reverse().forEach( (line, index) => {
+        if (index > 1 ){
+          // return;
+        }
+
+
+        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        if (pointIndex === 0){
+          areas[index].moveTo(0, pointValue, stacks[pointIndex]);
+        }
+
+        if (pointIndex === 0){
+          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue, true);
+        } else {
+          areas[index].stepTo(pointValue, stacks[pointIndex], prevValue);
+        }
+
+
+        // const editorLabelStyle = `line-height: 1em;
+        //     color: #fff;
+        //     display: inline-block;
+        //     font-size: 12px;
+        //     line-height: 1em;
+        //     background-color: ${color};
+        //     padding: 4px 9px;
+        //     border-radius: 30px;
+        //     margin: 4px 5px 4px 0;`;
+        // console.log(`%c${pointValue}`, editorLabelStyle);
+
+
+        // areas[index].moveTo(pointValue, stacks[pointIndex], prevValue,);
+        prevValue += pointValue;
+      });
+
+
+
+      // console.log('%o -> stack %o', pointIndex, stackValue);
+    }
+
+    areas.forEach(area => {
+      area.finish();
+      this.oxGroup.appendChild(area.getAll());
+      this.charts[area.key] = area;
+    });
+  }
+
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
     let barmens = this.state.linesAvailable.reverse().map( line => {
@@ -811,21 +1030,7 @@ class graph_Graph {
       });
     });
 
-    // console.log('this.state.colors', this.state.colors);
-
-    // Object.entries(this.state.colors).forEach(([name, color]) => {
-    //   let el = document.createElement('div');
-    //   el.style.height = 100 + 'px';
-    //   el.style.backgroundColor = color;
-    //   el.textContent = name;
-    //
-    //   document.body.appendChild(el);
-    // })
-
-
-
     const pointsCount = this.state.daysCount;
-
     const stacks = this.state.getStacks();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
@@ -950,10 +1155,10 @@ class graph_Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-    scaleToMaxPoint(newMax, newMin){
+  scaleToMaxPoint(newMax, newMin){
       console.log(this.maxPoint, newMax);
     this.oyScaling = this.maxPoint / newMax;
-    console.log('this.oyScaling', this.oyScaling);
+    // console.log('this.oyScaling', this.oyScaling);
     this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
 
     // let emptyAreaHeight = this.height /this.maxPoint * newMin;
@@ -1191,7 +1396,6 @@ class minimap_Minimap {
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
-    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
@@ -2165,7 +2369,10 @@ class chart_Chart {
       return Math.min(...slice);
     }));
 
-    this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+    if (this.state.type !== 'area'){
+      this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+    }
+
 
     /**
      * Rerender grid if it was rendered before
@@ -2236,10 +2443,10 @@ class chart_Chart {
 
     this.tooltip.show();
 
-    if (this.state.type === 'line'){
-      this.pointer.move(newLeft);
-    } else {
+    if (this.state.type === 'bar'){
       this.highlightBar(pointIndex -1, scrollOffset);
+    } else {
+      this.pointer.move(newLeft);
     }
 
     const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {

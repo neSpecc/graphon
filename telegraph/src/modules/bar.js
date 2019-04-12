@@ -48,15 +48,6 @@ export default class Bar {
   }
 
   /**
-   * Go to passed coords
-   * @param {number} x
-   * @param {number} y
-   */
-  moveTo(x, y){
-    this.pathData += `M ${this.x(x)} ${this.y(y)}`;
-  }
-
-  /**
    * Continue line to the next value
    * @param {number} y
    */
