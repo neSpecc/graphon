@@ -478,7 +478,9 @@ export default class Graph {
     // console.log('newMax, newMin, line', newMax, newMin, line);
     // newMax = Numbers.round(newMax);
     // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
-    newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
+
+
+    // newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
 
 
     let max, kY, zeroShifting;
@@ -518,7 +520,7 @@ export default class Graph {
       // need to store somewhere
       let oyScaling = newKY / kY;
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
-      let currentMinimum = newMin;
+      chart.currentMinimum = newMin;
 
       chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
     }

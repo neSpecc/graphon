@@ -13,6 +13,9 @@ export default class Path {
     this.max = max;
     this.min = min;
 
+    // here will be stored current minimum value for 2-y axis charts
+    this.currentMinimum = 0;
+
     this.path = Dom.make('path', null, {
       'stroke-width' : stroke,
       stroke : color,

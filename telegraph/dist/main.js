@@ -456,6 +456,9 @@ class path_Path {
     this.max = max;
     this.min = min;
 
+    // here will be stored current minimum value for 2-y axis charts
+    this.currentMinimum = 0;
+
     this.path = make('path', null, {
       'stroke-width' : stroke,
       stroke : color,
@@ -1308,7 +1311,9 @@ class graph_Graph {
     // console.log('newMax, newMin, line', newMax, newMin, line);
     // newMax = Numbers.round(newMax);
     // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
-    newMin = roundToMin(newMin, (newMax - newMin) / 5);
+
+
+    // newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
 
 
     let max, kY, zeroShifting;
@@ -1348,7 +1353,7 @@ class graph_Graph {
       // need to store somewhere
       let oyScaling = newKY / kY;
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
-      let currentMinimum = newMin;
+      chart.currentMinimum = newMin;
 
       chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
     }
@@ -2003,7 +2008,8 @@ class tooltip_Tooltip {
       const title = this.modules.state.names[name];
 
 
-      item.innerHTML = `<b>${beautify(value)}</b>${title}`;
+      item.innerHTML = `<b>${value}</b>${title}`;
+      // item.innerHTML = `<b>${Numbers.beautify(value)}</b>${title}`;
       item.style.color = color;
 
       this.nodes.values.appendChild(item);
@@ -2225,6 +2231,8 @@ class chart_Chart {
       grid: 'tg-grid',
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
+      gridCounter: 'tg-grid__counter',
+      gridCounterSecond: 'tg-grid__counter--second',
       dateHidden: 'tg-legend__date--hidden',
       overlays: 'tg-chart__overlays',
       overlayLeft: 'tg-chart__overlay-left',
@@ -2344,16 +2352,14 @@ class chart_Chart {
     return line;
   }
 
-  getLegendStep(stepsCount, kY){
-    const max = this.getMaxVisiblePoint();
-    const min = this.graph.currentMinimum || 0;
-    const diffSize = max - min;
-
+  getLegendStep(max, min, stepsCount, kY, kYRatio){
+    let diffSize = max - min;
     let step = diffSize / stepsCount;
     let decimals = Math.log10(diffSize) >> 0;
     let rounding = Math.pow(10, decimals) / 2;
+    // console.log('step', step);
 
-    step = Math.ceil(step / rounding ) * rounding;
+    step = Math.ceil(step / rounding) * rounding;
 
     let possibleHeight = step * stepsCount * kY;
 
@@ -2364,25 +2370,58 @@ class chart_Chart {
     return step;
   }
 
+  getLegendCounter(value, isSecond){
+    let counter = make('span', chart_Chart.CSS.gridCounter);
+    counter.textContent = beautify(value);
+
+    if (isSecond){
+      counter.classList.add(chart_Chart.CSS.gridCounterSecond);
+    }
+
+    return counter;
+  }
+
   /**
    * Render or updates a grid
-   * @param {number} forceMax - new max value for updating
-   * @param {boolean} isUpdating - true for updating
    */
-  renderGrid(forceMax, isUpdating = false){
+  renderGrid(){
     if (!this.nodes.grid) {
       this.nodes.grid = make('div', chart_Chart.CSS.grid);
       this.nodes.gridLines = [];
       insertBefore(this.nodes.canvas, this.nodes.grid);
     }
 
-
     let height = this.height;
-    let max = forceMax || this.maxPoint;
-    let min = this.graph.currentMinimum || 0;
+    let max = this.getMaxVisiblePoint();
+    let min = !this.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
     let kY = height / (max - min);
     let linesCount = 5;
-    let stepY = this.getLegendStep(linesCount, kY);
+    let stepY = this.getLegendStep(max, min, linesCount, kY);
+
+    let stepYSecond, kYSecond, maxSecond, minSecond;
+
+    if (this.state.isYScaled){
+      maxSecond = this.getMaxVisiblePoint('y1');
+      minSecond = this.getMinVisiblePoint('y1');
+
+      kYSecond = height / (maxSecond - minSecond);
+      let kYRatio = kY / kYSecond;
+      // let kYRatio = kY / kYSecond;
+      console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
+
+      stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
+      // console.log('maxSecond',maxSecond , 'minSecond', minSecond, 'kYSecond', kYSecond, kYRatio, 'stepYSecond', stepYSecond);
+      //
+      // let oldStyle = this.graph.charts['y1'].path.style.transform;
+      //
+      // if (oldStyle){
+      //   let oldScale = oldStyle.match(/scaleY\((\S+)\)/);
+      //   let newScale = parseFloat(oldScale[1]) - parseFloat(oldScale[1])  * kYRatio;
+      //   let newZeroShifting = minSecond * kY;
+      //   console.log('oldStyle', oldStyle, parseFloat(oldScale[1]), newScale);
+      //   this.graph.charts['y1'].path.style.transform = oldStyle.replace(/scaleY\(\S+\)/, `scaleY(${newScale})`);
+      // }
+    }
 
     if (this.state.type === 'area'){
       stepY = 25;
@@ -2419,7 +2458,19 @@ class chart_Chart {
 
       line.classList.remove(chart_Chart.CSS.gridSectionHidden);
       line.style.bottom = `${y * kY}px`;
-      line.textContent = beautify(Math.round(y + min));
+
+      line.innerHTML = '';
+
+      let counter = this.getLegendCounter(y + min);
+      line.appendChild(counter);
+
+      if (stepYSecond){
+        counter.style.color = this.state.getLineColor('y0');
+        let kYRatio = kY / kYSecond;
+        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), true);
+        counter2.style.color = this.state.getLineColor('y1');
+        line.appendChild(counter2);
+      }
     }
   }
 
@@ -2642,7 +2693,7 @@ class chart_Chart {
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(this.getMaxVisiblePoint(), true);
+      this.renderGrid();
     }
   }
 

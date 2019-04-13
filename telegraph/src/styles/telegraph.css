@@ -329,6 +329,18 @@
     will-change: transfrom, opacity;
 }
 
+.tg-grid__counter {
+    background: rgba(255,255,255,0.8);
+    display: inline-block;
+    border-radius: 20px;
+    padding: 1px 3px;
+    margin: 0 -3px -1px;
+}
+
+.tg-grid__counter--second {
+    float: right;
+}
+
 .tg-grid__section--hidden {
     opacity: 0;
     transform: translateY(-50px);
