@@ -726,6 +726,45 @@ class area_Area {
     this.path.classList.toggle(area_Area.CSS.graphHidden);
   }
 }
+// CONCATENATED MODULE: ./src/utils/numbers.js
+function beautify(number) {
+  if (number < 1000) {
+    return number
+  } else if (number < 10000){
+      let thousands = Math.floor(number / 1000);
+      let left = number - thousands * 1000;
+
+      if (left === 0){
+        return thousands + ' 000';
+      } else if (left >= 100){
+        return thousands + ' ' + left;
+      } else if (left > 10) {
+        return thousands + ' 0' + left;
+      } else {
+        return thousands + ' 0' + left;
+      }
+  } else if (number < 1000000) {
+      return Math.floor(number / 1000) + 'k';
+  } else {
+    return Math.floor(number / 1000000) + 'M';
+  }
+}
+
+function round(number) {
+  if (number < 100) {
+    return Math.floor(number / 10 ) * 10
+  } else if (number < 1000){
+    return Math.floor(number / 100 ) * 100
+  } else if (number < 3000) {
+    return Math.floor(number / 200) * 200
+  } else if (number < 6000) {
+    return Math.floor(number / 600 ) * 600
+  } else if (number < 10000) {
+    return Math.floor(number / 1000 ) * 1000
+  } else if (number < 100000) {
+    return Math.floor(number / 30000 ) * 30000
+  }
+}
 // CONCATENATED MODULE: ./src/utils/log.js
 let prevValues = {};
 
@@ -743,6 +782,7 @@ function log(obj){
   el.innerHTML = content;
 }
 // CONCATENATED MODULE: ./src/modules/graph.js
+
 
 
 
@@ -938,8 +978,13 @@ class graph_Graph {
      * All lines maximum value
      */
     const max = this.state.max;
+    const min = this.state.min;
     const stepsAvailable = [5, 10, 25, 50, 100, 1000, 500, 10000, 5000, 100000, 1000000, 10000000];
-    let newStepYIndex = stepsAvailable.reverse().findIndex( step => max > step ),
+    let newStepYIndex = stepsAvailable.reverse().findIndex( (step) => {
+      let c = (max - min) > step;
+
+      return c;
+    }),
     newStepY = stepsAvailable[newStepYIndex];
 
     if (max / newStepY < 3 && newStepYIndex < stepsAvailable.length - 1){
@@ -1165,6 +1210,8 @@ class graph_Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
+    newMin = round(newMin);
+
     if (!this.zeroShifting || !newMin){
       this.oyScaling = this.maxPoint / newMax;
       this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
@@ -1728,27 +1775,6 @@ class minimap_Minimap {
     this.graph.scaleToMaxPoint(maxVisiblePoint);
   }
 }
-// CONCATENATED MODULE: ./src/utils/numbers.js
-function beautify(number) {
-  if (number < 1000) {
-    return number
-  } else if (number < 10000){
-      let thousands = Math.floor(number / 1000);
-      let left = number - thousands * 1000;
-
-      if (left > 100){
-        return thousands + ' ' + left;
-      } else if (left > 10) {
-        return thousands + ' 0' + left;
-      } else {
-        return thousands + ' 00' + left;
-      }
-  } else if (number < 1000000) {
-      return Math.floor(number / 1000) + 'k';
-  } else {
-    return Math.floor(number / 1000000) + 'M';
-  }
-}
 // CONCATENATED MODULE: ./src/modules/tooltip.js
 
 
@@ -1865,8 +1891,8 @@ class pointer_Pointer {
     this.modules = modules;
     this.nodes = {
       wrapper: undefined,
-    }
-    this.pointers = [];
+    };
+    this.pointers = {};
   }
 
   /**
@@ -1878,7 +1904,8 @@ class pointer_Pointer {
     return {
       wrapper: 'tg-pointer',
       showed: 'tg-pointer--showed',
-      pointer: 'tg-pointer__pointer'
+      pointer: 'tg-pointer__pointer',
+      pointerHidden: 'tg-pointer__pointer--hidden'
     }
   }
 
@@ -1900,18 +1927,24 @@ class pointer_Pointer {
     this.nodes.wrapper.style.left = `${leftPx}px`;
   }
 
+  toggleVisibility(name){
+    if (this.pointers[name]) {
+      this.pointers[name].classList.toggle(pointer_Pointer.CSS.pointerHidden)
+    }
+  }
+
   /**
    * Show circles
    * @param {{name: string, value: number}[]} values
    */
   showValues(values){
-    if (!this.pointers.length){
+    if (!Object.keys(this.pointers).length){
       values.forEach( ({name}) => {
         const item = make('div', pointer_Pointer.CSS.pointer);
 
         item.style.borderColor = this.modules.state.colors[name];
         this.nodes.wrapper.appendChild(item);
-        this.pointers.push(item);
+        this.pointers[name] = item;
       })
     }
 
@@ -1920,14 +1953,14 @@ class pointer_Pointer {
      */
     const {graph} = this.modules.chart;
 
-    values.forEach( ({name, value}, index) => {
-      const item = this.pointers[index];
+    values.forEach( ({name, value}) => {
+      const item = this.pointers[name];
       const currentZero = graph.currentMinimum;
       const valueFromZero = value - currentZero;
       const coord = valueFromZero * graph.kYScaled;
 
-      item.style.bottom = `${coord}px`;
-      // item.style.transform = `translateY(${coord}px)`;
+      // item.style.bottom = `${coord}px`;
+      item.style.transform = `translateY(-${coord}px)`;
     })
 
   }
@@ -2169,6 +2202,34 @@ class chart_Chart {
     this.renderOverlays();
   }
 
+  createLine(){
+    const line = make('div', chart_Chart.CSS.gridSection);
+    this.nodes.grid.appendChild(line);
+    this.nodes.gridLines.push(line);
+
+    return line;
+  }
+
+  getLegendStep(stepsCount, kY){
+    const max = this.maxVisiblePoint;
+    const min = this.graph.currentMinimum || 0;
+    const diffSize = max - min;
+
+    let step = diffSize / stepsCount;
+    let decimals = Math.log10(diffSize) >> 0;
+    let rounding = Math.pow(10, decimals) / 2;
+
+    step = Math.ceil(step / rounding ) * rounding;
+
+    let possibleHeight = step * stepsCount * kY;
+
+    if (possibleHeight > this.height){
+      step = step / (possibleHeight / this.height >> 0);
+    }
+
+    return step;
+  }
+
   /**
    * Render or updates a grid
    * @param {number} forceMax - new max value for updating
@@ -2182,12 +2243,12 @@ class chart_Chart {
     }
 
 
-
-    let stepY = this.stepY;
     let height = this.height;
     let max = forceMax || this.maxPoint;
-    let kY = height / max;
-    let linesCount = height / (stepY * kY) >> 0;
+    let min = this.graph.currentMinimum || 0;
+    let kY = height / (max - min);
+    let linesCount = 5;
+    let stepY = this.getLegendStep(linesCount, kY);
 
     if (this.state.type === 'area'){
       stepY = 25;
@@ -2196,39 +2257,11 @@ class chart_Chart {
       kY = height / max;
     }
 
-
-
-
-
-
-
-    if (linesCount === 0){
-      stepY = stepY / 3;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 1){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 2){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount > 5){
-      stepY = stepY * 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
     if (this.nodes.gridLines.length){
       this.nodes.gridLines.forEach( line => {
         line.classList.add(chart_Chart.CSS.gridSectionHidden);
       })
     }
-
-    // Drawing horizontal lines
 
     for (let j = 0; j <= linesCount; j++) {
       let y = j * stepY;
@@ -2237,25 +2270,22 @@ class chart_Chart {
       if (this.nodes.gridLines.length && this.nodes.gridLines[j]){
         line = this.nodes.gridLines[j];
       } else {
-        line = make('div', chart_Chart.CSS.gridSection);
-        this.nodes.grid.appendChild(line);
-        this.nodes.gridLines.push(line);
+        line = this.createLine();
       }
 
       if (j === 0){
         line.classList.add('no-animation');
       }
 
-      /**
-       * To prevent overflow last line
-       */
-      if (y * kY > 325){
+      let bottom = y * kY;
+
+      if (bottom > this.height){
         return;
       }
 
       line.classList.remove(chart_Chart.CSS.gridSectionHidden);
-      line.style.bottom = y * kY + 'px';
-      line.textContent = beautify(Math.round(y));
+      line.style.bottom = `${y * kY}px`;
+      line.textContent = beautify(Math.round(y + min));
     }
   }
 
@@ -2433,29 +2463,35 @@ class chart_Chart {
     return this.graph.checkPathVisibility(line);
   }
 
+  get pointsVisible(){
+    const stepX = this.graph.step;
+    return Math.round(this.viewportWidth / stepX / this.scaling);
+  }
+
+  get maxVisiblePoint(){
+    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible);
+  }
+
+  get minVisiblePoint(){
+    return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+      let slice = this.state.getPointsSlice(line, this.leftPointIndex, this.pointsVisible);
+      return Math.min(...slice);
+    }));
+  }
+
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    const stepX = this.graph.step;
-    const pointsVisible = Math.round(this.viewportWidth / stepX / this.scaling);
-    const maxVisiblePoint = this.graph.getMaxFromVisible(this.leftPointIndex, pointsVisible);
-
-    const minVisiblePoint = Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-      let slice = this.state.getPointsSlice(line, this.leftPointIndex, pointsVisible);
-      return Math.min(...slice);
-    }));
-
     if (this.state.type !== 'area'){
-      this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+      this.graph.scaleToMaxPoint(this.maxVisiblePoint, this.minVisiblePoint);
     }
-
 
     /**
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(maxVisiblePoint, true);
+      this.renderGrid(this.maxVisiblePoint, true);
     }
   }
 
@@ -2567,6 +2603,7 @@ class chart_Chart {
    * @param {string} name - graph name
    */
   togglePath(name){
+    this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight();

@@ -2,6 +2,7 @@ import * as Dom from '../utils/dom';
 import Path from './path';
 import Bar from './bar';
 import Area from './area';
+import * as Numbers from "../utils/numbers";
 
 import log from '../utils/log.js';
 
@@ -193,8 +194,13 @@ export default class Graph {
      * All lines maximum value
      */
     const max = this.state.max;
+    const min = this.state.min;
     const stepsAvailable = [5, 10, 25, 50, 100, 1000, 500, 10000, 5000, 100000, 1000000, 10000000];
-    let newStepYIndex = stepsAvailable.reverse().findIndex( step => max > step ),
+    let newStepYIndex = stepsAvailable.reverse().findIndex( (step) => {
+      let c = (max - min) > step;
+
+      return c;
+    }),
     newStepY = stepsAvailable[newStepYIndex];
 
     if (max / newStepY < 3 && newStepYIndex < stepsAvailable.length - 1){
@@ -420,6 +426,8 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
+    newMin = Numbers.round(newMin);
+
     if (!this.zeroShifting || !newMin){
       this.oyScaling = this.maxPoint / newMax;
       this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;

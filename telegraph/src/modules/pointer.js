@@ -8,8 +8,8 @@ export default class Pointer {
     this.modules = modules;
     this.nodes = {
       wrapper: undefined,
-    }
-    this.pointers = [];
+    };
+    this.pointers = {};
   }
 
   /**
@@ -21,7 +21,8 @@ export default class Pointer {
     return {
       wrapper: 'tg-pointer',
       showed: 'tg-pointer--showed',
-      pointer: 'tg-pointer__pointer'
+      pointer: 'tg-pointer__pointer',
+      pointerHidden: 'tg-pointer__pointer--hidden'
     }
   }
 
@@ -43,18 +44,24 @@ export default class Pointer {
     this.nodes.wrapper.style.left = `${leftPx}px`;
   }
 
+  toggleVisibility(name){
+    if (this.pointers[name]) {
+      this.pointers[name].classList.toggle(Pointer.CSS.pointerHidden)
+    }
+  }
+
   /**
    * Show circles
    * @param {{name: string, value: number}[]} values
    */
   showValues(values){
-    if (!this.pointers.length){
+    if (!Object.keys(this.pointers).length){
       values.forEach( ({name}) => {
         const item = Dom.make('div', Pointer.CSS.pointer);
 
         item.style.borderColor = this.modules.state.colors[name];
         this.nodes.wrapper.appendChild(item);
-        this.pointers.push(item);
+        this.pointers[name] = item;
       })
     }
 
@@ -63,14 +70,14 @@ export default class Pointer {
      */
     const {graph} = this.modules.chart;
 
-    values.forEach( ({name, value}, index) => {
-      const item = this.pointers[index];
+    values.forEach( ({name, value}) => {
+      const item = this.pointers[name];
       const currentZero = graph.currentMinimum;
       const valueFromZero = value - currentZero;
       const coord = valueFromZero * graph.kYScaled;
 
-      item.style.bottom = `${coord}px`;
-      // item.style.transform = `translateY(${coord}px)`;
+      // item.style.bottom = `${coord}px`;
+      item.style.transform = `translateY(-${coord}px)`;
     })
 
   }

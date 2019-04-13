@@ -234,6 +234,34 @@ export default class Chart {
     this.renderOverlays();
   }
 
+  createLine(){
+    const line = Dom.make('div', Chart.CSS.gridSection);
+    this.nodes.grid.appendChild(line);
+    this.nodes.gridLines.push(line);
+
+    return line;
+  }
+
+  getLegendStep(stepsCount, kY){
+    const max = this.maxVisiblePoint;
+    const min = this.graph.currentMinimum || 0;
+    const diffSize = max - min;
+
+    let step = diffSize / stepsCount;
+    let decimals = Math.log10(diffSize) >> 0;
+    let rounding = Math.pow(10, decimals) / 2;
+
+    step = Math.ceil(step / rounding ) * rounding;
+
+    let possibleHeight = step * stepsCount * kY;
+
+    if (possibleHeight > this.height){
+      step = step / (possibleHeight / this.height >> 0);
+    }
+
+    return step;
+  }
+
   /**
    * Render or updates a grid
    * @param {number} forceMax - new max value for updating
@@ -247,12 +275,12 @@ export default class Chart {
     }
 
 
-
-    let stepY = this.stepY;
     let height = this.height;
     let max = forceMax || this.maxPoint;
-    let kY = height / max;
-    let linesCount = height / (stepY * kY) >> 0;
+    let min = this.graph.currentMinimum || 0;
+    let kY = height / (max - min);
+    let linesCount = 5;
+    let stepY = this.getLegendStep(linesCount, kY);
 
     if (this.state.type === 'area'){
       stepY = 25;
@@ -261,39 +289,11 @@ export default class Chart {
       kY = height / max;
     }
 
-
-
-
-
-
-
-    if (linesCount === 0){
-      stepY = stepY / 3;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 1){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount === 2){
-      stepY = stepY / 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
-    if (linesCount > 5){
-      stepY = stepY * 2;
-      linesCount = height / (stepY * kY) >> 0;
-    }
-
     if (this.nodes.gridLines.length){
       this.nodes.gridLines.forEach( line => {
         line.classList.add(Chart.CSS.gridSectionHidden);
       })
     }
-
-    // Drawing horizontal lines
 
     for (let j = 0; j <= linesCount; j++) {
       let y = j * stepY;
@@ -302,25 +302,22 @@ export default class Chart {
       if (this.nodes.gridLines.length && this.nodes.gridLines[j]){
         line = this.nodes.gridLines[j];
       } else {
-        line = Dom.make('div', Chart.CSS.gridSection);
-        this.nodes.grid.appendChild(line);
-        this.nodes.gridLines.push(line);
+        line = this.createLine();
       }
 
       if (j === 0){
         line.classList.add('no-animation');
       }
 
-      /**
-       * To prevent overflow last line
-       */
-      if (y * kY > 325){
+      let bottom = y * kY;
+
+      if (bottom > this.height){
         return;
       }
 
       line.classList.remove(Chart.CSS.gridSectionHidden);
-      line.style.bottom = y * kY + 'px';
-      line.textContent = Numbers.beautify(Math.round(y));
+      line.style.bottom = `${y * kY}px`;
+      line.textContent = Numbers.beautify(Math.round(y + min));
     }
   }
 
@@ -498,29 +495,35 @@ export default class Chart {
     return this.graph.checkPathVisibility(line);
   }
 
+  get pointsVisible(){
+    const stepX = this.graph.step;
+    return Math.round(this.viewportWidth / stepX / this.scaling);
+  }
+
+  get maxVisiblePoint(){
+    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible);
+  }
+
+  get minVisiblePoint(){
+    return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+      let slice = this.state.getPointsSlice(line, this.leftPointIndex, this.pointsVisible);
+      return Math.min(...slice);
+    }));
+  }
+
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    const stepX = this.graph.step;
-    const pointsVisible = Math.round(this.viewportWidth / stepX / this.scaling);
-    const maxVisiblePoint = this.graph.getMaxFromVisible(this.leftPointIndex, pointsVisible);
-
-    const minVisiblePoint = Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-      let slice = this.state.getPointsSlice(line, this.leftPointIndex, pointsVisible);
-      return Math.min(...slice);
-    }));
-
     if (this.state.type !== 'area'){
-      this.graph.scaleToMaxPoint(maxVisiblePoint, minVisiblePoint);
+      this.graph.scaleToMaxPoint(this.maxVisiblePoint, this.minVisiblePoint);
     }
-
 
     /**
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(maxVisiblePoint, true);
+      this.renderGrid(this.maxVisiblePoint, true);
     }
   }
 
@@ -632,6 +635,7 @@ export default class Chart {
    * @param {string} name - graph name
    */
   togglePath(name){
+    this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight();
