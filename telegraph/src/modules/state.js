@@ -209,6 +209,18 @@ export default class State {
   }
 
   /**
+   * Return minimum value from all charts
+   * @return {number}
+   */
+  get min(){
+    const minPerLines = this.linesAvailable.map( name => {
+      return Math.min(...this.getLinePoints(name));
+    });
+
+    return Math.min(...minPerLines);
+  }
+
+  /**
    * Array of available colors
    * @return {string[]}
    */

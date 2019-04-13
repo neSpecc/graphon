@@ -383,8 +383,6 @@ export default class Chart {
     return Math.floor(this.viewportWidth / this.stepScaled);
   }
 
-
-
   /**
    * Left visible point
    * @return {number}
@@ -419,9 +417,16 @@ export default class Chart {
     let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
-    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
-    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
     // console.log('l %o (%o) r %o (%o)', this.leftPointIndex, leftDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }), this.rightPointIndex, rightDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+
+    // if (Object.keys(this.onscreenDatesElements).length) {
+    //   datesOnScreen = datesOnScreen.filter((dt, index) => {
+    //     const originIndex = this.leftPointIndex + index;
+    //     return !!this.onscreenDatesElements[originIndex]
+    //   });
+    // }
 
     datesOnScreen.forEach((date, index) => {
       const originIndex = this.leftPointIndex + index;

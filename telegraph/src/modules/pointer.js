@@ -63,12 +63,14 @@ export default class Pointer {
      */
     const {graph} = this.modules.chart;
 
-    let kY = graph.height / graph.maxPoint * graph.oyScaling;
-
     values.forEach( ({name, value}, index) => {
       const item = this.pointers[index];
+      const currentZero = graph.currentMinimum;
+      const valueFromZero = value - currentZero;
+      const coord = valueFromZero * graph.kYScaled;
 
-      item.style.transform = `translateY(-${value * kY}px)`;
+      item.style.bottom = `${coord}px`;
+      // item.style.transform = `translateY(${coord}px)`;
     })
 
   }

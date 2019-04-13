@@ -13,7 +13,7 @@ export default class Graph {
   /**
    * @param {Telegraph} modules
    */
-  constructor(modules, {stroke, animate}){
+  constructor(modules, {stroke}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
@@ -22,7 +22,8 @@ export default class Graph {
 
     this.modules = modules;
     this.state = modules.state;
-    this.animate = animate || false;
+    this.type = this.state.getCommonChartsType();
+
     /**
      * @todo move to this.nodes
      */
@@ -44,8 +45,37 @@ export default class Graph {
     this.initialWidth = undefined;
     this.maxPoint = 0;//
     this.minPoint = 0;
+
+    /**
+     * [ canvas height / (Max - Min) ]
+     * Ratio from 1:1 scale to fit min (on zero-axis) and max (on top Y axis)
+     */
+    this.kY = 1;
+
+    /**
+     * [ min point * kY ]
+     * On how much we should move down chart to make min-point hit zero-axis
+     */
+    this.zeroShifting = 0;
+
+    /**
+     * What point is currently fit zero-axis;
+     */
+    this.currentMinimum = 0;
+
+    /**
+     * [ new kY / original kY ]
+     * How much the original kY is changed to fit new min & max points
+     */
     this.oyScaling = 1;
-    this.type = this.state.getCommonChartsType();
+
+    /**
+     * [ original shift / new shift ]
+     * How much the original zero axis shifting is changed to fit new min & max points
+     */
+    this.zeroShiftingScaling = 1;
+
+
 
     /**
      * List of drawn charts
@@ -67,6 +97,14 @@ export default class Graph {
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
+  }
+
+  /**
+   * How much the original ratio of height to max-min is changed to fit new min & max points
+   * @return {number}
+   */
+  get kYScaled(){
+    return this.kY * this.oyScaling;
   }
 
   /**
@@ -181,19 +219,8 @@ export default class Graph {
       default:
       case 'line':
         this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
-        this.state.linesAvailable.forEach( name => {
-          /**
-           * Array of chart Y values
-           */
-          const values = this.state.getLinePoints(name);
-
-          /**
-           * Color of drawing line
-           */
-          const color = this.state.getLineColor(name);
-
-          this.charts[name] = this.drawLineChart(values, color);
-        });
+        this.minPoint = this.state.min;
+        this.drawLineCharts();
 
         break;
     }
@@ -315,43 +342,59 @@ export default class Graph {
   }
 
   /**
-   * Create a 'line' chart
-   * @return {Path}
+   * Create a 'line' charts
    */
-  drawLineChart(values, color){
-    /**
-     * Point to from which we will start drawing
-     */
-    const leftPoint = values[0];
+  drawLineCharts(){
+    this.state.linesAvailable.forEach( name => {
+      /**
+       * Array of chart Y values
+       */
+      const values = this.state.getLinePoints(name);
 
-    /**
-     * Create a Path instance
-     */
-    const path = new Path({
-      svg: this.canvas,
-      g: this.oxGroup,
-      color,
-      max: this.maxPoint,
-      stroke: this.strokeWidth,
-      stepX: this.stepX,
+      /**
+       * Color of drawing line
+       */
+      const color = this.state.getLineColor(name);
+
+      /**
+       * Point to from which we will start drawing
+       */
+      const leftPoint = values[0];
+
+
+      // let kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+
+      this.kY = this.height / (this.maxPoint - this.minPoint);
+      this.zeroShifting = this.minPoint * this.kY;
+
+      // let chartHeight = this.height - this.state.min;
+
+      /**
+       * Create a Path instance
+       */
+      const path = new Path({
+        canvasHeight: this.height,
+        color,
+        zeroShifting: this.zeroShifting,
+        kY: this.kY,
+        stroke: this.strokeWidth,
+        stepX: this.stepX,
+      });
+
+      path.moveTo(0, leftPoint);
+
+      values.forEach( (column, index )=> {
+        if (index === 0){
+          path.stepTo(column, true);
+        } else {
+          path.stepTo(column);
+        }
+      });
+
+      this.oxGroup.appendChild(path.render());
+
+      this.charts[name] = path;
     });
-
-    path.moveTo(0, leftPoint);
-
-    values.forEach( (column, index )=> {
-      if (index === 0){
-        // path.dropText(column, true);
-        path.stepTo(column, true);
-      } else {
-        // path.dropText(column);
-        path.stepTo(column);
-      }
-
-    });
-
-    path.render(this.animate);
-
-    return path;
   }
 
   scroll(newLeft){
@@ -376,12 +419,15 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
-    this.oyScaling = this.maxPoint / newMax;
-    this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+    let newKY = this.height / (newMax - newMin);
+    let newZeroShifting = newMin * this.kY;
+    let shift = newZeroShifting - this.zeroShifting;
 
-    // let emptyAreaHeight = this.height /this.maxPoint * newMin;
-    // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
-    // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
+    this.oyScaling = newKY / this.kY;
+    this.zeroShiftingScaling = shift !== 0 ? newZeroShifting / this.zeroShifting  : 1;
+    this.currentMinimum = newMin;
+
+    this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
   }
 
   /**

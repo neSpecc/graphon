@@ -304,6 +304,18 @@ class State {
   }
 
   /**
+   * Return minimum value from all charts
+   * @return {number}
+   */
+  get min(){
+    const minPerLines = this.linesAvailable.map( name => {
+      return Math.min(...this.getLinePoints(name));
+    });
+
+    return Math.min(...minPerLines);
+  }
+
+  /**
    * Array of available colors
    * @return {string[]}
    */
@@ -404,11 +416,10 @@ function debounce(func, wait, immediate) {
  * Helper for creating an SVG path
  */
 class path_Path {
-  constructor({color, svg, max, stroke, stepX, opacity = 1, g}){
-    this.svg = svg;
-    this.group = g;
-    this.canvasHeight = parseInt(this.svg.style.height, 10);
-    this.kY = max !== 0 ? this.canvasHeight / max : 1;
+  constructor({canvasHeight, zeroShifting, color, kY, stroke, stepX}){
+    this.canvasHeight = canvasHeight;
+    this.zeroShifting = zeroShifting;
+    this.kY = kY;
     this.stepX = stepX;
     this.prevX = 0;
 
@@ -419,7 +430,6 @@ class path_Path {
       'stroke-linecap' : 'round',
       'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
-      opacity
     });
 
     this.pathData = '';
@@ -439,7 +449,7 @@ class path_Path {
    * Compute Y value with scaling
    */
   y(val){
-    return Math.round(this.canvasHeight - val * this.kY);
+    return Math.round(this.canvasHeight - val * this.kY + this.zeroShifting);
   }
 
   /**
@@ -474,7 +484,7 @@ class path_Path {
    */
   render(){
     this.path.setAttribute('d', this.pathData);
-    this.group.appendChild(this.path);
+    return this.path;
   }
 
   get isHidden(){
@@ -748,7 +758,7 @@ class graph_Graph {
   /**
    * @param {Telegraph} modules
    */
-  constructor(modules, {stroke, animate}){
+  constructor(modules, {stroke}){
     /**
      * Width of date label is used for default stepX value in 1:1 scale
      * @type {number}
@@ -757,7 +767,8 @@ class graph_Graph {
 
     this.modules = modules;
     this.state = modules.state;
-    this.animate = animate || false;
+    this.type = this.state.getCommonChartsType();
+
     /**
      * @todo move to this.nodes
      */
@@ -779,8 +790,37 @@ class graph_Graph {
     this.initialWidth = undefined;
     this.maxPoint = 0;//
     this.minPoint = 0;
+
+    /**
+     * [ canvas height / (Max - Min) ]
+     * Ratio from 1:1 scale to fit min (on zero-axis) and max (on top Y axis)
+     */
+    this.kY = 1;
+
+    /**
+     * [ min point * kY ]
+     * On how much we should move down chart to make min-point hit zero-axis
+     */
+    this.zeroShifting = 0;
+
+    /**
+     * What point is currently fit zero-axis;
+     */
+    this.currentMinimum = 0;
+
+    /**
+     * [ new kY / original kY ]
+     * How much the original kY is changed to fit new min & max points
+     */
     this.oyScaling = 1;
-    this.type = this.state.getCommonChartsType();
+
+    /**
+     * [ original shift / new shift ]
+     * How much the original zero axis shifting is changed to fit new min & max points
+     */
+    this.zeroShiftingScaling = 1;
+
+
 
     /**
      * List of drawn charts
@@ -802,6 +842,14 @@ class graph_Graph {
       oxGroup: 'ox-group',
       oyGroup: 'oy-group',
     }
+  }
+
+  /**
+   * How much the original ratio of height to max-min is changed to fit new min & max points
+   * @return {number}
+   */
+  get kYScaled(){
+    return this.kY * this.oyScaling;
   }
 
   /**
@@ -916,19 +964,8 @@ class graph_Graph {
       default:
       case 'line':
         this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
-        this.state.linesAvailable.forEach( name => {
-          /**
-           * Array of chart Y values
-           */
-          const values = this.state.getLinePoints(name);
-
-          /**
-           * Color of drawing line
-           */
-          const color = this.state.getLineColor(name);
-
-          this.charts[name] = this.drawLineChart(values, color);
-        });
+        this.minPoint = this.state.min;
+        this.drawLineCharts();
 
         break;
     }
@@ -1050,43 +1087,59 @@ class graph_Graph {
   }
 
   /**
-   * Create a 'line' chart
-   * @return {Path}
+   * Create a 'line' charts
    */
-  drawLineChart(values, color){
-    /**
-     * Point to from which we will start drawing
-     */
-    const leftPoint = values[0];
+  drawLineCharts(){
+    this.state.linesAvailable.forEach( name => {
+      /**
+       * Array of chart Y values
+       */
+      const values = this.state.getLinePoints(name);
 
-    /**
-     * Create a Path instance
-     */
-    const path = new path_Path({
-      svg: this.canvas,
-      g: this.oxGroup,
-      color,
-      max: this.maxPoint,
-      stroke: this.strokeWidth,
-      stepX: this.stepX,
+      /**
+       * Color of drawing line
+       */
+      const color = this.state.getLineColor(name);
+
+      /**
+       * Point to from which we will start drawing
+       */
+      const leftPoint = values[0];
+
+
+      // let kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
+
+      this.kY = this.height / (this.maxPoint - this.minPoint);
+      this.zeroShifting = this.minPoint * this.kY;
+
+      // let chartHeight = this.height - this.state.min;
+
+      /**
+       * Create a Path instance
+       */
+      const path = new path_Path({
+        canvasHeight: this.height,
+        color,
+        zeroShifting: this.zeroShifting,
+        kY: this.kY,
+        stroke: this.strokeWidth,
+        stepX: this.stepX,
+      });
+
+      path.moveTo(0, leftPoint);
+
+      values.forEach( (column, index )=> {
+        if (index === 0){
+          path.stepTo(column, true);
+        } else {
+          path.stepTo(column);
+        }
+      });
+
+      this.oxGroup.appendChild(path.render());
+
+      this.charts[name] = path;
     });
-
-    path.moveTo(0, leftPoint);
-
-    values.forEach( (column, index )=> {
-      if (index === 0){
-        // path.dropText(column, true);
-        path.stepTo(column, true);
-      } else {
-        // path.dropText(column);
-        path.stepTo(column);
-      }
-
-    });
-
-    path.render(this.animate);
-
-    return path;
   }
 
   scroll(newLeft){
@@ -1111,12 +1164,15 @@ class graph_Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
-    this.oyScaling = this.maxPoint / newMax;
-    this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+    let newKY = this.height / (newMax - newMin);
+    let newZeroShifting = newMin * this.kY;
+    let shift = newZeroShifting - this.zeroShifting;
 
-    // let emptyAreaHeight = this.height /this.maxPoint * newMin;
-    // console.log('Should be moved to', this.maxPoint , newMin, emptyAreaHeight, this.height - emptyAreaHeight);
-    // this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${emptyAreaHeight}px)`;
+    this.oyScaling = newKY / this.kY;
+    this.zeroShiftingScaling = shift !== 0 ? newZeroShifting / this.zeroShifting  : 1;
+    this.currentMinimum = newMin;
+
+    this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
   }
 
   /**
@@ -1857,12 +1913,14 @@ class pointer_Pointer {
      */
     const {graph} = this.modules.chart;
 
-    let kY = graph.height / graph.maxPoint * graph.oyScaling;
-
     values.forEach( ({name, value}, index) => {
       const item = this.pointers[index];
+      const currentZero = graph.currentMinimum;
+      const valueFromZero = value - currentZero;
+      const coord = valueFromZero * graph.kYScaled;
 
-      item.style.transform = `translateY(-${value * kY}px)`;
+      item.style.bottom = `${coord}px`;
+      // item.style.transform = `translateY(${coord}px)`;
     })
 
   }
@@ -2253,8 +2311,6 @@ class chart_Chart {
     return Math.floor(this.viewportWidth / this.stepScaled);
   }
 
-
-
   /**
    * Left visible point
    * @return {number}
@@ -2289,9 +2345,16 @@ class chart_Chart {
     let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
-    // let leftDate = new Date(this.state.dates[this.leftPointIndex]);
-    // let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
+    let leftDate = new Date(this.state.dates[this.leftPointIndex]);
+    let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
     // console.log('l %o (%o) r %o (%o)', this.leftPointIndex, leftDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }), this.rightPointIndex, rightDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+
+    // if (Object.keys(this.onscreenDatesElements).length) {
+    //   datesOnScreen = datesOnScreen.filter((dt, index) => {
+    //     const originIndex = this.leftPointIndex + index;
+    //     return !!this.onscreenDatesElements[originIndex]
+    //   });
+    // }
 
     datesOnScreen.forEach((date, index) => {
       const originIndex = this.leftPointIndex + index;

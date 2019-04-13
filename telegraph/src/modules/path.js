@@ -4,11 +4,10 @@ import * as Dom from "../utils/dom";
  * Helper for creating an SVG path
  */
 export default class Path {
-  constructor({color, svg, max, stroke, stepX, opacity = 1, g}){
-    this.svg = svg;
-    this.group = g;
-    this.canvasHeight = parseInt(this.svg.style.height, 10);
-    this.kY = max !== 0 ? this.canvasHeight / max : 1;
+  constructor({canvasHeight, zeroShifting, color, kY, stroke, stepX}){
+    this.canvasHeight = canvasHeight;
+    this.zeroShifting = zeroShifting;
+    this.kY = kY;
     this.stepX = stepX;
     this.prevX = 0;
 
@@ -19,7 +18,6 @@ export default class Path {
       'stroke-linecap' : 'round',
       'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
-      opacity
     });
 
     this.pathData = '';
@@ -39,7 +37,7 @@ export default class Path {
    * Compute Y value with scaling
    */
   y(val){
-    return Math.round(this.canvasHeight - val * this.kY);
+    return Math.round(this.canvasHeight - val * this.kY + this.zeroShifting);
   }
 
   /**
@@ -74,7 +72,7 @@ export default class Path {
    */
   render(){
     this.path.setAttribute('d', this.pathData);
-    this.group.appendChild(this.path);
+    return this.path;
   }
 
   get isHidden(){
