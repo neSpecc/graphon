@@ -480,7 +480,7 @@ export default class Graph {
     // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
 
 
-    // newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
+    newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
 
 
     let max, kY, zeroShifting;

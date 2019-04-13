@@ -1313,7 +1313,7 @@ class graph_Graph {
     // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
 
 
-    // newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
+    newMin = roundToMin(newMin, (newMax - newMin) / 5);
 
 
     let max, kY, zeroShifting;
@@ -2372,7 +2372,7 @@ class chart_Chart {
 
   getLegendCounter(value, isSecond){
     let counter = make('span', chart_Chart.CSS.gridCounter);
-    counter.textContent = beautify(value);
+    counter.textContent = beautify(Math.round(value));
 
     if (isSecond){
       counter.classList.add(chart_Chart.CSS.gridCounterSecond);
@@ -2398,6 +2398,9 @@ class chart_Chart {
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
+
+    // console.log('stepY', stepY);
+
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
     if (this.state.isYScaled){
@@ -2407,7 +2410,7 @@ class chart_Chart {
       kYSecond = height / (maxSecond - minSecond);
       let kYRatio = kY / kYSecond;
       // let kYRatio = kY / kYSecond;
-      console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
+      // console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
 
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
       // console.log('maxSecond',maxSecond , 'minSecond', minSecond, 'kYSecond', kYSecond, kYRatio, 'stepYSecond', stepYSecond);

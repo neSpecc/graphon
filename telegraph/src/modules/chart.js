@@ -264,7 +264,7 @@ export default class Chart {
 
   getLegendCounter(value, isSecond){
     let counter = Dom.make('span', Chart.CSS.gridCounter);
-    counter.textContent = Numbers.beautify(value);
+    counter.textContent = Numbers.beautify(Math.round(value));
 
     if (isSecond){
       counter.classList.add(Chart.CSS.gridCounterSecond);
@@ -290,6 +290,9 @@ export default class Chart {
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
+
+    // console.log('stepY', stepY);
+
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
     if (this.state.isYScaled){
@@ -299,7 +302,7 @@ export default class Chart {
       kYSecond = height / (maxSecond - minSecond);
       let kYRatio = kY / kYSecond;
       // let kYRatio = kY / kYSecond;
-      console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
+      // console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
 
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
       // console.log('maxSecond',maxSecond , 'minSecond', minSecond, 'kYSecond', kYSecond, kYRatio, 'stepYSecond', stepYSecond);
