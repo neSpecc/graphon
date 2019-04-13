@@ -243,7 +243,7 @@ export default class Chart {
   }
 
   getLegendStep(stepsCount, kY){
-    const max = this.maxVisiblePoint;
+    const max = this.getMaxVisiblePoint();
     const min = this.graph.currentMinimum || 0;
     const diffSize = max - min;
 
@@ -500,15 +500,26 @@ export default class Chart {
     return Math.round(this.viewportWidth / stepX / this.scaling);
   }
 
-  get maxVisiblePoint(){
-    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible);
+  /**
+   * Return max visible point
+   * If line passed, check for that. Otherwise, return maximum between all
+   */
+  getMaxVisiblePoint(line = undefined){
+    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible, line);
   }
 
-  get minVisiblePoint(){
-    return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-      let slice = this.state.getPointsSlice(line, this.leftPointIndex, this.pointsVisible);
-      return Math.min(...slice);
-    }));
+  /**
+   * Return min visible point
+   * If line passed, check for that. Otherwise, return maximum between all
+   */
+  getMinVisiblePoint(line = undefined){
+    if (!line){
+      return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+        return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+      }));
+    }
+
+    return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
   }
 
   /**
@@ -516,14 +527,20 @@ export default class Chart {
    */
   fitToMax(){
     if (this.state.type !== 'area'){
-      this.graph.scaleToMaxPoint(this.maxVisiblePoint, this.minVisiblePoint);
+      if (!this.state.isYScaled){
+        this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(), this.getMinVisiblePoint());
+      } else {
+        this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).forEach((line) => {
+          this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(line), this.getMinVisiblePoint(line), line);
+        })
+      }
     }
 
     /**
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid(this.maxVisiblePoint, true);
+      this.renderGrid(this.getMaxVisiblePoint(), true);
     }
   }
 

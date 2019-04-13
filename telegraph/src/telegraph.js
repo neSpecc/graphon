@@ -15,6 +15,7 @@ import Legend from './modules/legend.js';
  *                                 "x" (x axis values for each of the charts at the corresponding positions).
  * @property {{y0: string, y1: string}} colors – Color for each line in 6-hex-digit format (e.g. "#AAAAAA").
  * @property {{y0: string, y1: string}} names – Names for each line.
+ * @property {boolean} y_scaled – True if the graph has 2 different OY axis
  */
 
 export default class Telegraph {
@@ -24,7 +25,7 @@ export default class Telegraph {
    * @param {ChartData} inputData - chart data
    */
   constructor({holderId, inputData}){
-    console.time('telegraph');
+    // console.time('telegraph');
     this.holder = document.getElementById(holderId);
 
     /**
@@ -58,7 +59,7 @@ export default class Telegraph {
     this.chart.renderCharts();
     this.minimap.renderMap();
 
-    console.timeEnd('telegraph');
+    // console.timeEnd('telegraph');
   }
 
   /**

@@ -4,12 +4,14 @@ import * as Dom from "../utils/dom";
  * Helper for creating an SVG path
  */
 export default class Path {
-  constructor({canvasHeight, zeroShifting, color, kY, stroke, stepX}){
+  constructor({canvasHeight, zeroShifting, color, kY, stroke, stepX, max, min, isScaled}){
     this.canvasHeight = canvasHeight;
     this.zeroShifting = zeroShifting;
     this.kY = kY;
     this.stepX = stepX;
     this.prevX = 0;
+    this.max = max;
+    this.min = min;
 
     this.path = Dom.make('path', null, {
       'stroke-width' : stroke,
@@ -19,6 +21,10 @@ export default class Path {
       'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
     });
+
+    if (isScaled){
+      this.path.classList.add('scaled');
+    }
 
     this.pathData = '';
   }

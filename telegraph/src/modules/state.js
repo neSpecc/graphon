@@ -12,6 +12,7 @@ export default class State {
     this.names = chartsData.names;
     this.types = chartsData.types;
     this.type = this.getCommonChartsType();
+    this.isYScaled = !!chartsData.y_scaled;
 
     /**
      * Cache
@@ -209,6 +210,14 @@ export default class State {
   }
 
   /**
+   * Return maximum value for passed line
+   * @return {number}
+   */
+  maxForLine(name){
+    return Math.max(...this.getLinePoints(name));
+  }
+
+  /**
    * Return minimum value from all charts
    * @return {number}
    */
@@ -218,6 +227,28 @@ export default class State {
     });
 
     return Math.min(...minPerLines);
+  }
+
+  /**
+   * Return minimum value for passed line
+   * @return {number}
+   */
+  minForLine(name){
+    return Math.min(...this.getLinePoints(name));
+  }
+
+  /**
+   * Return max value for line with start point and next N visible
+   */
+  getMaxForLineSliced(line, leftPointIndex, pointsVisible){
+    return Math.max(...this.getPointsSlice(line, leftPointIndex, pointsVisible));
+  }
+
+  /**
+   * Return min value for line with start point and next N visible
+   */
+  getMinForLineSliced(line, leftPointIndex, pointsVisible){
+    return Math.min(...this.getPointsSlice(line, leftPointIndex, pointsVisible));
   }
 
   /**

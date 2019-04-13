@@ -469,7 +469,16 @@ export default class Minimap {
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    const maxVisiblePoint = this.graph.getMaxFromVisible();
-    this.graph.scaleToMaxPoint(maxVisiblePoint);
+    if (this.state.type !== 'area'){
+      if (!this.state.isYScaled){
+        this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible());
+      } else {
+        this.state.linesAvailable.filter(line => this.modules.chart.notHiddenGraph(line)).forEach((line) => {
+          this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible(line), undefined, line);
+        })
+      }
+    }
+
+
   }
 }

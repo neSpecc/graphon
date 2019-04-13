@@ -225,9 +225,13 @@ export default class Graph {
         break;
       default:
       case 'line':
-        this.maxPoint = this.state.max; // @todo removed *1.2 (20% for padding top)
-        this.minPoint = this.state.min;
-        this.drawLineCharts();
+        if (!this.state.isYScaled) {
+          this.maxPoint = this.state.max;
+          this.minPoint = this.state.min;
+          this.drawLineCharts();
+        } else {
+          this.drawScaledLineCharts();
+        }
 
         break;
     }
@@ -330,7 +334,11 @@ export default class Graph {
     return Object.entries(this.charts).filter(([name, chart]) => chart.isHidden).map(([name]) => name);
   }
 
-  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount){
+  /**
+   * Return max visible point
+   * If line passed, check for that. Otherwise, return maximum between all
+   */
+  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount, line = undefined){
     const type = this.state.getCommonChartsType();
 
     switch (type) {
@@ -339,13 +347,57 @@ export default class Graph {
         break;
       default:
       case 'line':
-        return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
-          let slice = this.state.getPointsSlice(line, leftPointIndex, pointsVisible);
-          return Math.max(...slice);
-        }));
+        if (!line) {
+          return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
+            return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible);
+          }));
+        }
+
+        return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible, line);
         break;
     }
+  }
 
+  drawScaledLineCharts(){
+    this.state.linesAvailable.forEach( name => {
+      const lineMin = this.state.minForLine(name);
+      const lineMax = this.state.maxForLine(name);
+      const values = this.state.getLinePoints(name);
+
+      // console.log('[%o] min %o max %o', name, lineMin, lineMax);
+
+      let kY = this.height / (lineMax - lineMin);
+      let zeroShifting = lineMin * kY;
+
+      /**
+       * Create a Path instance
+       */
+      const path = new Path({
+        canvasHeight: this.height,
+        isScaled: this.state.isYScaled,
+        max: lineMax,
+        color: this.state.getLineColor(name),
+        zeroShifting,
+        kY,
+        stroke: this.strokeWidth,
+        stepX: this.stepX,
+      });
+
+      path.moveTo(0, values[0]);
+
+      values.forEach( (column, index )=> {
+        if (index === 0){
+          path.stepTo(column, true);
+        } else {
+          path.stepTo(column);
+        }
+      });
+
+      this.oxGroup.appendChild(path.render());
+
+      this.charts[name] = path;
+
+    });
   }
 
   /**
@@ -368,19 +420,16 @@ export default class Graph {
        */
       const leftPoint = values[0];
 
-
-      // let kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
-
       this.kY = this.height / (this.maxPoint - this.minPoint);
       this.zeroShifting = this.minPoint * this.kY;
-
-      // let chartHeight = this.height - this.state.min;
 
       /**
        * Create a Path instance
        */
       const path = new Path({
         canvasHeight: this.height,
+        max: this.maxPoint,
+        min: this.minPoint,
         color,
         zeroShifting: this.zeroShifting,
         kY: this.kY,
@@ -425,24 +474,54 @@ export default class Graph {
    * Scale path on OY
    * @param {number} newMax - new max value
    */
-  scaleToMaxPoint(newMax, newMin){
-    newMin = Numbers.round(newMin);
+  scaleToMaxPoint(newMax, newMin, line){
+    // console.log('newMax, newMin, line', newMax, newMin, line);
+    // newMax = Numbers.round(newMax);
+    // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
+    newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
 
-    if (!this.zeroShifting || !newMin){
-      this.oyScaling = this.maxPoint / newMax;
-      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
-      return;
+
+    let max, kY, zeroShifting;
+
+    if (!this.state.isYScaled){
+      max = this.maxPoint;
+      kY = this.kY;
+
+      // area and bars
+      if (!this.zeroShifting || !newMin){
+        this.oyScaling = max / newMax;
+        this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+        return;
+      }
+
+      let newKY = this.height / (newMax - newMin);
+      let newZeroShifting = newMin * kY;
+      let shift = newZeroShifting - this.zeroShifting;
+
+      this.oyScaling = newKY / kY;
+      this.zeroShiftingScaling = shift !== 0 ? newZeroShifting / this.zeroShifting  : 1;
+      this.currentMinimum = newMin;
+
+      this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
+
+    } else {
+      const chart = this.charts[line];
+      max = chart.max;
+      kY = chart.kY;
+      zeroShifting = chart.zeroShifting;
+
+
+      let newKY = this.height / (newMax - newMin);
+      let newZeroShifting = newMin * kY;
+      let shift = newZeroShifting - zeroShifting;
+
+      // need to store somewhere
+      let oyScaling = newKY / kY;
+      let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
+      let currentMinimum = newMin;
+
+      chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
     }
-
-    let newKY = this.height / (newMax - newMin);
-    let newZeroShifting = newMin * this.kY;
-    let shift = newZeroShifting - this.zeroShifting;
-
-    this.oyScaling = newKY / this.kY;
-    this.zeroShiftingScaling = shift !== 0 ? newZeroShifting / this.zeroShifting  : 1;
-    this.currentMinimum = newMin;
-
-    this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
   }
 
   /**

@@ -44,15 +44,21 @@
 
 .tg-chart .oy-group,
 .tg-minimap .oy-group {
-    transition: transform 200ms ease;
+    transition: transform 300ms ease;
     will-change: transform;
+    shape-rendering: optimizespeed;
+}
+
+.tg-chart path.scaled {
+    transition: transform 400ms ease, opacity 300ms ease;
+    will-change: transform, opacity;
 }
 
 .tg-chart path,
 .tg-minimap path {
     transform-origin: bottom left;
-    transition: opacity 150ms ease;
-    will-change: transform, opacity;
+    transition: opacity 300ms ease;
+    will-change: opacity;
     shape-rendering: optimizespeed;
 }
 
@@ -84,12 +90,12 @@
 }
 
 .tg-bar rect {
-    /*transition: y 300ms ease;*/
-    will-change: y;
+    /*transition: height 300ms ease;*/
+    will-change: height, y;
     shape-rendering: optimizespeed;
 }
 
-.tg-chart__overlays{
+.tg-chart__overlays {
     will-change: opacity;
     transition: opacity 250ms ease;
 }

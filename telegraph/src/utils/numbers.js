@@ -1,3 +1,27 @@
+export function round(number) {
+  let zeros = Math.log10(number) >> 0;
+  let rounding = Math.pow(10, zeros);
+
+  return Math.round(number / rounding) * rounding;
+}
+
+export function roundToMin(number, maxSlicing) {
+  let zeros = Math.log10(number) >> 0;
+  let rounding = Math.pow(10, zeros);
+  let result = Math.floor(number / rounding) * rounding;
+
+  // console.log(number, ' -> zeros', zeros, 'r' , rounding, maxSlicing);
+
+  if (number - result > maxSlicing){
+    // let old  =result;
+    rounding = Math.pow(10, zeros - 1);
+    result = Math.floor(number / rounding) * rounding;
+    // console.warn('descreasing', old, result)
+  }
+
+  return result;
+}
+
 export function beautify(number) {
   if (number < 1000) {
     return number
@@ -18,21 +42,5 @@ export function beautify(number) {
       return Math.floor(number / 1000) + 'k';
   } else {
     return Math.floor(number / 1000000) + 'M';
-  }
-}
-
-export function round(number) {
-  if (number < 100) {
-    return Math.floor(number / 10 ) * 10
-  } else if (number < 1000){
-    return Math.floor(number / 100 ) * 100
-  } else if (number < 3000) {
-    return Math.floor(number / 200) * 200
-  } else if (number < 6000) {
-    return Math.floor(number / 600 ) * 600
-  } else if (number < 10000) {
-    return Math.floor(number / 1000 ) * 1000
-  } else if (number < 100000) {
-    return Math.floor(number / 30000 ) * 30000
   }
 }
