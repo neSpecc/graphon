@@ -210,6 +210,7 @@ export default class Graph {
     switch (type){
       case 'bar':
         this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.minPoint = this.state.min;
         this.drawBarCharts();
         break;
       case 'area':
@@ -419,6 +420,12 @@ export default class Graph {
    * @param {number} newMax - new max value
    */
   scaleToMaxPoint(newMax, newMin){
+    if (!this.zeroShifting || !newMin){
+      this.oyScaling = this.maxPoint / newMax;
+      this.oyGroup.style.transform = `scaleY(${this.oyScaling})`;
+      return;
+    }
+
     let newKY = this.height / (newMax - newMin);
     let newZeroShifting = newMin * this.kY;
     let shift = newZeroShifting - this.zeroShifting;
