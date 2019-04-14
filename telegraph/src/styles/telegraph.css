@@ -223,53 +223,82 @@
     position: relative;
     height: 60px;
     margin: 10px 15px 20px;
-    border-top: 2px solid #C0D1E1;
-    border-bottom: 2px solid #C0D1E1;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 9px;
 }
 
+.tg-minimap svg {
+    border-radius: 9px;
+    overflow: hidden;
+}
 
 .tg-minimap__left,
 .tg-minimap__right {
     position: absolute;
-    top: -2px;
-    bottom: -2px;
+    top: 0;
+    bottom: 0;
     width: 20%;
     background: rgba(226,238,249,0.60);
-    border-top: 2px solid #EDF5FB;
-    border-bottom: 2px solid #EDF5FB;
     z-index: 2;
     cursor: default;
     will-change: width;
 }
 
+
 .tg-minimap__left {
     left: 0;
-    border-radius: 8px 0 0 8px;
+    border-radius: 9px 0 0 9px;
 }
+
+.tg-minimap__center {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 10px;
+    border-top: 1px solid #C0D1E1;
+    border-bottom: 1px solid #C0D1E1;
+}
+
+.tg-minimap__center::before,
+.tg-minimap__center::after {
+    content: '';
+    width: 1px;
+    background: #fff;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+.tg-minimap__center::before{
+    left: 0;
+}
+
+.tg-minimap__center::after{
+    right: 0;
+}
+
 
 .tg-minimap__right {
     right: 0;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 9px 9px 0;
 }
 
 .tg-minimap__left-scaler,
 .tg-minimap__right-scaler {
     position: absolute;
     height: calc(100% + 4px);
-    width: 26px;
+    width: 22px;
     top: -2px;
     z-index: 2;
     cursor: col-resize;
 }
 
 .tg-minimap__left-scaler {
-    right: -13px;
+    right: 0;
 }
 
 .tg-minimap__right-scaler {
-    left: -13px;
+    left: 0;
 
 }
 
@@ -278,8 +307,10 @@
     content: '';
     position: absolute;
     height: 100%;
-    width: 15px;
+    width: 16px;
     background: #C0D1E1;
+    border: 1px solid #fff;
+    box-sizing: border-box;
 }
 
 .tg-minimap__left-scaler::after,
@@ -288,21 +319,30 @@
     position: absolute;
     height: 15px;
     width: 3px;
-    border-radius: 3px;
+    border-radius: 5px;
     background: #fff;
-    left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateY(-50%);
+}
+
+.tg-minimap__right-scaler::after {
+    left: 6px;
+}
+
+.tg-minimap__left-scaler::after {
+    right: 6px;
 }
 
 .tg-minimap__left-scaler::before {
-    left: 5px;
-    border-radius: 8px 0 0 8px;
+    right: 0;
+    border-radius: 9px 0 0 9px;
+    border-right: 0;
 }
 
 .tg-minimap__right-scaler::before {
-    left: 6px;
-    border-radius: 0 8px 8px 0;
+    left: 0;
+    border-radius: 0 9px 9px 0;
+    border-left: 0;
 }
 
 .tg-minimap__left-scaler:hover::before,
@@ -348,11 +388,11 @@
 
 .tg-chart--line .tg-grid__counter{
     display: inline-block;
-    background: rgba(255,255,255,0.83);
-    box-shadow: 0 0 23px #fff;
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 0 5px #fff;
     border-radius: 4px;
-    padding: 1px 3px;
-    margin: 0 -3px -1px;
+    padding: 0px 2px;
+    margin: 0 -2px;
 }
 
 .tg-grid__counter--second {

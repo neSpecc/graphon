@@ -31,6 +31,7 @@ export default class Minimap {
       leftZoneScaler: undefined,
       rightZone: undefined,
       rightZoneScaler: undefined,
+      centerZone: undefined
     };
 
     this.wrapperWidthCached = undefined;
@@ -94,6 +95,7 @@ export default class Minimap {
       leftZoneScaler: 'tg-minimap__left-scaler',
       rightZone: 'tg-minimap__right',
       rightZoneScaler: 'tg-minimap__right-scaler',
+      centerZone: 'tg-minimap__center',
     }
   }
 
@@ -104,6 +106,7 @@ export default class Minimap {
   renderUi(){
     this.nodes.wrapper = Dom.make('div', Minimap.CSS.wrapper);
     this.nodes.leftZone = Dom.make('div', Minimap.CSS.leftZone);
+    this.nodes.centerZone = Dom.make('div', Minimap.CSS.centerZone);
     this.nodes.rightZone = Dom.make('div', Minimap.CSS.rightZone);
     this.nodes.leftZoneScaler = Dom.make('div', Minimap.CSS.leftZoneScaler);
     this.nodes.rightZoneScaler = Dom.make('div', Minimap.CSS.rightZoneScaler);
@@ -112,6 +115,7 @@ export default class Minimap {
     this.nodes.rightZone.appendChild(this.nodes.rightZoneScaler);
 
     this.nodes.wrapper.appendChild(this.nodes.leftZone);
+    this.nodes.wrapper.appendChild(this.nodes.centerZone);
     this.nodes.wrapper.appendChild(this.nodes.rightZone);
 
     this.bindEvents();
@@ -157,6 +161,7 @@ export default class Minimap {
   set leftWidth(val){
     this.leftZoneWidth = val;
     this.nodes.leftZone.style.width = val + 'px';
+    this.nodes.centerZone.style.left = val + 'px';
   }
 
   /**
@@ -176,7 +181,10 @@ export default class Minimap {
 
     this.leftWidth = scrollDistance;
     this.rightWidth = this.wrapperWidth - scrollDistance - value;
+
     this.viewportWidth = value;
+    this.nodes.centerZone.style.width = value + 'px';
+
   }
 
   /**
@@ -430,6 +438,8 @@ export default class Minimap {
 
       this.leftWidth = newScalerWidth;
 
+      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth) + 'px';
+
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
@@ -438,7 +448,11 @@ export default class Minimap {
       }
 
       this.rightWidth = newScalerWidth;
+
+      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth) + 'px';
     }
+
+
 
     const newViewportWidth = side === 'left' ?
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :

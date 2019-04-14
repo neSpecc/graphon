@@ -1474,6 +1474,7 @@ class minimap_Minimap {
       leftZoneScaler: undefined,
       rightZone: undefined,
       rightZoneScaler: undefined,
+      centerZone: undefined
     };
 
     this.wrapperWidthCached = undefined;
@@ -1537,6 +1538,7 @@ class minimap_Minimap {
       leftZoneScaler: 'tg-minimap__left-scaler',
       rightZone: 'tg-minimap__right',
       rightZoneScaler: 'tg-minimap__right-scaler',
+      centerZone: 'tg-minimap__center',
     }
   }
 
@@ -1547,6 +1549,7 @@ class minimap_Minimap {
   renderUi(){
     this.nodes.wrapper = make('div', minimap_Minimap.CSS.wrapper);
     this.nodes.leftZone = make('div', minimap_Minimap.CSS.leftZone);
+    this.nodes.centerZone = make('div', minimap_Minimap.CSS.centerZone);
     this.nodes.rightZone = make('div', minimap_Minimap.CSS.rightZone);
     this.nodes.leftZoneScaler = make('div', minimap_Minimap.CSS.leftZoneScaler);
     this.nodes.rightZoneScaler = make('div', minimap_Minimap.CSS.rightZoneScaler);
@@ -1555,6 +1558,7 @@ class minimap_Minimap {
     this.nodes.rightZone.appendChild(this.nodes.rightZoneScaler);
 
     this.nodes.wrapper.appendChild(this.nodes.leftZone);
+    this.nodes.wrapper.appendChild(this.nodes.centerZone);
     this.nodes.wrapper.appendChild(this.nodes.rightZone);
 
     this.bindEvents();
@@ -1600,6 +1604,7 @@ class minimap_Minimap {
   set leftWidth(val){
     this.leftZoneWidth = val;
     this.nodes.leftZone.style.width = val + 'px';
+    this.nodes.centerZone.style.left = val + 'px';
   }
 
   /**
@@ -1619,7 +1624,10 @@ class minimap_Minimap {
 
     this.leftWidth = scrollDistance;
     this.rightWidth = this.wrapperWidth - scrollDistance - value;
+
     this.viewportWidth = value;
+    this.nodes.centerZone.style.width = value + 'px';
+
   }
 
   /**
@@ -1873,6 +1881,8 @@ class minimap_Minimap {
 
       this.leftWidth = newScalerWidth;
 
+      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth) + 'px';
+
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
 
@@ -1881,7 +1891,11 @@ class minimap_Minimap {
       }
 
       this.rightWidth = newScalerWidth;
+
+      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth) + 'px';
     }
+
+
 
     const newViewportWidth = side === 'left' ?
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
