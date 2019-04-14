@@ -8,7 +8,7 @@ export default function log(obj){
    let content = '';
 
    Object.entries(prevValues).forEach(([key, value]) => {
-     content += `${key} ${value.toFixed(3)}   `
+     content += `${key} ${!isNaN(value) ? value.toFixed(3) : value}   `
    })
 
   el.innerHTML = content;

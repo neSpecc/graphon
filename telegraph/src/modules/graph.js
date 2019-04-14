@@ -300,6 +300,7 @@ export default class Graph {
 
 
         let pointValue = this.state.getLinePoints(line)[pointIndex];
+
         // const editorLabelStyle = `line-height: 1em;
         //     color: #fff;
         //     display: inline-block;
@@ -522,7 +523,7 @@ export default class Graph {
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
 
-      chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
+      chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
     }
   }
 

@@ -825,7 +825,7 @@ function log(obj){
    let content = '';
 
    Object.entries(prevValues).forEach(([key, value]) => {
-     content += `${key} ${value.toFixed(3)}   `
+     content += `${key} ${!isNaN(value) ? value.toFixed(3) : value}   `
    })
 
   el.innerHTML = content;
@@ -1133,6 +1133,7 @@ class graph_Graph {
 
 
         let pointValue = this.state.getLinePoints(line)[pointIndex];
+
         // const editorLabelStyle = `line-height: 1em;
         //     color: #fff;
         //     display: inline-block;
@@ -1355,7 +1356,7 @@ class graph_Graph {
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
 
-      chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
+      chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
     }
   }
 
@@ -1806,8 +1807,12 @@ class minimap_Minimap {
 
     // let direction = this.prevX < delta ? 'right' : 'left';
 
+    let prevScrolledValue = this.scrolledValue;
+
     // this.prevX = delta + 0;
     this.moveViewport(delta);
+    // console.log('delta', delta);
+    // this.modules.chart.scrollByDelta((prevScrolledValue - delta) * this.modules.chart.width / this.wrapperWidth );
     this.syncScrollWithChart();
 
     this.modules.chart.fitToMax(true);
@@ -1817,7 +1822,8 @@ class minimap_Minimap {
    * Sync scroll between minimap and chart
    * @param {number} [newScroll] - pass scroll if you have
    */
-  syncScrollWithChart(newScroll = null, fromScale = false, scaling = 1){
+  syncScrollWithChart(newScroll = null, fromScale = false){
+    // console.log('this.scrolledValue', this.scrolledValue);
     /**
      * How many percents of mini-map is scrolled
      */
@@ -1825,7 +1831,7 @@ class minimap_Minimap {
     const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
-    this.modules.chart.scroll(chartScroll * scaling, fromScale);
+    this.modules.chart.scroll(chartScroll, fromScale);
   }
 
   /**
@@ -2160,7 +2166,11 @@ class chart_Chart {
 
 
 
-    this.lenendDateWidth = 38;
+    this.legendDateWidth = 40;
+    this.legendDateWidthMargins = 20 * 2;
+    this.legendDatesHidedTimes = 0;
+    this.legendDatesRecentlyHided = false;
+
 
     /**
      * Set will be store indexes of visible dates
@@ -2168,7 +2178,8 @@ class chart_Chart {
      */
     this.onscreenDates = new Set();
     this.onscreenDatesElements = {}; // origin index -> element mapping
-    this._datesPerScreen = undefined;
+    this._datesPerScreenInitial = undefined;
+    this._showEveryNDateInitial = undefined;
 
     /**
      * Any properties can be cached here
@@ -2477,47 +2488,31 @@ class chart_Chart {
     }
   }
 
+  moveDate(originalIndex){
+    let centering = originalIndex !== 0 ? 'translateX(-50%)' : '';
+    let dateEl = this.onscreenDatesElements[originalIndex];
+    let newX = originalIndex * this.stepScaled + this.scrollValue;
+
+    dateEl.style.transform = `translateX(${ newX }px)` + centering;
+
+    let skippedCount = Math.floor(Math.floor(this.onscreenPointsCount / this.datesPerScreen) / this.datesPerScreen);
+    let checks = [];
+
+    for (let i = 1; i < skippedCount + 1; i++){
+      let idxToCheck = originalIndex + i * this._showEveryNDateInitial;
+      let check = idxToCheck % (this._showEveryNDateInitial * 2 * i) === 0;
+      checks.push(check)
+    }
+
+    if (skippedCount && checks.some(check => !!check)){
+      dateEl.style.opacity = '0';
+    } else {
+      dateEl.style.opacity = '1';
+    }
+  }
+
 
   pushDate(date, originIndex){
-    let centering = 'translateX(-50%)';
-
-    if (originIndex === 0){
-      centering = '';
-    }
-
-
-    let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
-    let showEvery = Math.ceil(pointsOnScreen / this.datesPerScreen);
-
-    // log({
-    //   'points on screen': pointsOnScreen,
-    //   'vlezet': this.datesPerScreen,
-    //   showEvery
-    // });
-
-
-    /**
-     * If point already showed, move it or hide
-     */
-    if (this.onscreenDates.has(originIndex)){
-      if (originIndex % showEvery !== 0){
-        this.onscreenDatesElements[originIndex].remove();
-        this.onscreenDates.delete(originIndex );
-        delete this.onscreenDatesElements[originIndex];
-      } else {
-        this.onscreenDatesElements[originIndex].style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
-      }
-
-
-      return
-    }
-
-
-
-    if (originIndex % showEvery !== 0){
-      return;
-    }
-
     const dt = new Date(date);
     const dateEl = make('time');
     dateEl.textContent = dt.toLocaleDateString('en-US', {
@@ -2525,11 +2520,11 @@ class chart_Chart {
       month: 'short'
     });
 
-    dateEl.style.transform = `translateX(${ originIndex * this.stepScaled }px)` + centering;
     this.nodes.legend.appendChild(dateEl);
     this.nodes.legendDates.push(dateEl);
     this.onscreenDates.add(originIndex);
     this.onscreenDatesElements[originIndex] = dateEl;
+    this.moveDate(originIndex);
   }
 
   get onscreenPointsCount(){
@@ -2552,49 +2547,84 @@ class chart_Chart {
     return this.leftPointIndex + this.onscreenPointsCount;
   }
 
-  /**
-   * @todo add cache
-   */
   get datesPerScreen(){
-    if (!this._datesPerScreen){
-      this._datesPerScreen = Math.floor(this.viewportWidth / (this.lenendDateWidth + 40));
+    if (!this._datesPerScreenInitial){
+      this._datesPerScreenInitial = Math.floor(this.viewportWidth / (this.legendDateWidth + this.legendDateWidthMargins));
     }
-    return this._datesPerScreen;
+    return this._datesPerScreenInitial;
   }
 
   get stepScaled(){
     return this.stepX * this.scaling
   }
 
+  scaleDates(){
+    let visibleIndex = 0;
+    this.onscreenDates.forEach((originalIndex) => {
+      this.moveDate(originalIndex);
+      visibleIndex++;
+    });
+
+    this.addOnscreenDates();
+  }
+
   addOnscreenDates(){
-    let datesOnScreen = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    /**
+     * Get slice of timestamps that currently visible on the screen
+     */
+    let datesOnScreenSlice = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
-    let leftDate = new Date(this.state.dates[this.leftPointIndex]);
-    let rightDate = new Date(this.state.dates[this.leftPointIndex + this.rightPointIndex]);
-    // console.log('l %o (%o) r %o (%o)', this.leftPointIndex, leftDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }), this.rightPointIndex, rightDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+    if (!this._showEveryNDateInitial){
+      let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
+      this._showEveryNDateInitial = Math.ceil(pointsOnScreen / this.datesPerScreen);
+    }
 
-    // if (Object.keys(this.onscreenDatesElements).length) {
-    //   datesOnScreen = datesOnScreen.filter((dt, index) => {
-    //     const originIndex = this.leftPointIndex + index;
-    //     return !!this.onscreenDatesElements[originIndex]
-    //   });
-    // }
-
-    datesOnScreen.forEach((date, index) => {
+    datesOnScreenSlice.forEach((date, index) => {
       const originIndex = this.leftPointIndex + index;
 
+      /**
+       * Skip dates that can not be fit event on maximum zoom
+       */
+      if (originIndex % this._showEveryNDateInitial !== 0){
+        return;
+      }
+
+      /**
+       * Store index of added date to check if it out of screen
+       */
       datesOnScreenIndexes.add(originIndex);
+
+      /**
+       * If point already showed, move it
+       */
+      if (this.onscreenDates.has(originIndex)){
+        this.moveDate(originIndex);
+        return
+      }
+
+      /**
+       * Add new date to its position computed by original index * step scaled
+       */
       this.pushDate(date, originIndex);
     });
 
-    this.onscreenDates.forEach((index) => {
-      if (!datesOnScreenIndexes.has(index)) {
-        this.onscreenDatesElements[index].remove();
-        this.onscreenDates.delete(index);
-        delete this.onscreenDatesElements[index];
+    /**
+     * Remove dates that are out of screen
+     */
+    this.onscreenDates.forEach((originalIndex) => {
+      if (!datesOnScreenIndexes.has(originalIndex)) {
+        this.removeDate(originalIndex);
       }
     });
+  }
+
+  removeDate(originalIndex){
+    this.onscreenDatesElements[originalIndex].remove();
+    this.onscreenDates[originalIndex] = null;
+    this.onscreenDates.delete(originalIndex);
+    this.onscreenDatesElements[originalIndex] = null;
+    delete this.onscreenDatesElements[originalIndex];
   }
 
   /**
@@ -2604,7 +2634,7 @@ class chart_Chart {
   renderLegend(){
     this.nodes.legend = make('footer');
 
-    this.addOnscreenDates();
+    // this.addOnscreenDates();
 
     insertAfter(this.nodes.canvas, this.nodes.legend);
   }
@@ -2613,13 +2643,22 @@ class chart_Chart {
    * Perform scroll
    * @param position
    */
-  scroll(position){
+  scroll(position, fromScale){
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
-    this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
-    this.addOnscreenDates();
+    // this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
     this.tooltip.hide();
     this.pointer.hide();
+
+    if (!fromScale){
+      this.addOnscreenDates();
+    } else {
+      this.scaleDates();
+    }
+  }
+
+  scrollByDelta(delta){
+    this.scroll(this.scrollValue + delta);
   }
 
   /**

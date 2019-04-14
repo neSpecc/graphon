@@ -374,8 +374,12 @@ export default class Minimap {
 
     // let direction = this.prevX < delta ? 'right' : 'left';
 
+    let prevScrolledValue = this.scrolledValue;
+
     // this.prevX = delta + 0;
     this.moveViewport(delta);
+    // console.log('delta', delta);
+    // this.modules.chart.scrollByDelta((prevScrolledValue - delta) * this.modules.chart.width / this.wrapperWidth );
     this.syncScrollWithChart();
 
     this.modules.chart.fitToMax(true);
@@ -385,7 +389,8 @@ export default class Minimap {
    * Sync scroll between minimap and chart
    * @param {number} [newScroll] - pass scroll if you have
    */
-  syncScrollWithChart(newScroll = null, fromScale = false, scaling = 1){
+  syncScrollWithChart(newScroll = null, fromScale = false){
+    // console.log('this.scrolledValue', this.scrolledValue);
     /**
      * How many percents of mini-map is scrolled
      */
@@ -393,7 +398,7 @@ export default class Minimap {
     const minimapScrolledPortion = scrolledValue / this.wrapperWidth;
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
-    this.modules.chart.scroll(chartScroll * scaling, fromScale);
+    this.modules.chart.scroll(chartScroll, fromScale);
   }
 
   /**

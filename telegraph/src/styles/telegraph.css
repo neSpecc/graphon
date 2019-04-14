@@ -144,7 +144,7 @@
     white-space: nowrap;
     /*text-align: center;*/
     transition: opacity 200ms ease;
-    will-change: opacity;
+    will-change: opacit, transform;
     /*flex-grow: 1;*/
     /*right: 0;*/
     /*min-width: 55px;*/
@@ -330,11 +330,12 @@
 }
 
 .tg-grid__counter {
-    background: rgba(255,255,255,0.8);
+    /*background: rgba(255,255,255,0.83);*/
+    /*box-shadow: 0 0 23px #fff;*/
     display: inline-block;
-    border-radius: 20px;
-    padding: 1px 3px;
-    margin: 0 -3px -1px;
+    border-radius: 7px;
+    /*padding: 3px 5px;*/
+    /*margin: 0 -3px -1px;*/
 }
 
 .tg-grid__counter--second {
