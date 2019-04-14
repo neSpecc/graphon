@@ -337,6 +337,12 @@
 }
 
 .tg-grid__counter {
+    transition: opacity 300ms ease;
+    will-change: opacity;
+}
+
+.tg-grid__counter--hidden {
+    opacity: 0;
 }
 
 .tg-chart--line .tg-grid__counter{

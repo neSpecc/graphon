@@ -523,7 +523,8 @@ export default class Graph {
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
 
-      chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
+      chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
+      // chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
     }
   }
 

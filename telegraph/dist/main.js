@@ -1365,7 +1365,8 @@ class graph_Graph {
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
 
-      chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
+      chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
+      // chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
     }
   }
 
@@ -2250,6 +2251,8 @@ class chart_Chart {
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
       gridCounter: 'tg-grid__counter',
+      gridCounterHidden: 'tg-grid__counter--hidden',
+      gridCounterFirst: 'tg-grid__counter--first',
       gridCounterSecond: 'tg-grid__counter--second',
       dateHidden: 'tg-legend__date--hidden',
       overlays: 'tg-chart__overlays',
@@ -2390,12 +2393,16 @@ class chart_Chart {
     return step;
   }
 
-  getLegendCounter(value, isSecond){
+  getLegendCounter(value, name, isSecond){
     let counter = make('span', chart_Chart.CSS.gridCounter);
     counter.textContent = beautify(Math.round(value));
 
+    counter.dataset.name = name;
+
     if (isSecond){
       counter.classList.add(chart_Chart.CSS.gridCounterSecond);
+    } else {
+      counter.classList.add(chart_Chart.CSS.gridCounterFirst);
     }
 
     return counter;
@@ -2484,13 +2491,13 @@ class chart_Chart {
 
       line.innerHTML = '';
 
-      let counter = this.getLegendCounter(y + min);
+      let counter = this.getLegendCounter(y + min, 'y0');
       line.appendChild(counter);
 
       if (stepYSecond){
         counter.style.color = this.state.getLineColor('y0');
         let kYRatio = kY / kYSecond;
-        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), true);
+        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), 'y1', true);
         counter2.style.color = this.state.getLineColor('y1');
         line.appendChild(counter2);
       }
@@ -2904,6 +2911,7 @@ class chart_Chart {
   togglePath(name){
     this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
+
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight();
       this.fitToMax();
@@ -2912,6 +2920,18 @@ class chart_Chart {
     } else {
       this.fitToMax();
     }
+
+    if (this.state.isYScaled){
+      this.toggleGridLabelsForChart();
+    }
+  }
+
+  toggleGridLabelsForChart(){
+    this.state.linesAvailable.forEach(line => {
+      this.nodes.grid.querySelectorAll(`[data-name="${line}"]`).forEach( el => {
+        el.classList.toggle(chart_Chart.CSS.gridCounterHidden, !this.graph.checkPathVisibility(line))
+      });
+    });
   }
 
   highlightBar(index, scrollOffset){

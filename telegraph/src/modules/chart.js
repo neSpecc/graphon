@@ -129,6 +129,8 @@ export default class Chart {
       gridSection: 'tg-grid__section',
       gridSectionHidden: 'tg-grid__section--hidden',
       gridCounter: 'tg-grid__counter',
+      gridCounterHidden: 'tg-grid__counter--hidden',
+      gridCounterFirst: 'tg-grid__counter--first',
       gridCounterSecond: 'tg-grid__counter--second',
       dateHidden: 'tg-legend__date--hidden',
       overlays: 'tg-chart__overlays',
@@ -269,12 +271,16 @@ export default class Chart {
     return step;
   }
 
-  getLegendCounter(value, isSecond){
+  getLegendCounter(value, name, isSecond){
     let counter = Dom.make('span', Chart.CSS.gridCounter);
     counter.textContent = Numbers.beautify(Math.round(value));
 
+    counter.dataset.name = name;
+
     if (isSecond){
       counter.classList.add(Chart.CSS.gridCounterSecond);
+    } else {
+      counter.classList.add(Chart.CSS.gridCounterFirst);
     }
 
     return counter;
@@ -363,13 +369,13 @@ export default class Chart {
 
       line.innerHTML = '';
 
-      let counter = this.getLegendCounter(y + min);
+      let counter = this.getLegendCounter(y + min, 'y0');
       line.appendChild(counter);
 
       if (stepYSecond){
         counter.style.color = this.state.getLineColor('y0');
         let kYRatio = kY / kYSecond;
-        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), true);
+        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), 'y1', true);
         counter2.style.color = this.state.getLineColor('y1');
         line.appendChild(counter2);
       }
@@ -783,6 +789,7 @@ export default class Chart {
   togglePath(name){
     this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
+
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight();
       this.fitToMax();
@@ -791,6 +798,18 @@ export default class Chart {
     } else {
       this.fitToMax();
     }
+
+    if (this.state.isYScaled){
+      this.toggleGridLabelsForChart();
+    }
+  }
+
+  toggleGridLabelsForChart(){
+    this.state.linesAvailable.forEach(line => {
+      this.nodes.grid.querySelectorAll(`[data-name="${line}"]`).forEach( el => {
+        el.classList.toggle(Chart.CSS.gridCounterHidden, !this.graph.checkPathVisibility(line))
+      });
+    });
   }
 
   highlightBar(index, scrollOffset){
