@@ -128,6 +128,7 @@
  */
 .tg-chart footer {
     margin-top: 10px;
+    margin-left: 15px;
     height: 18px;
     color: #939CA1;
     font-size: 12px;
@@ -143,7 +144,7 @@
     display: block;
     white-space: nowrap;
     /*text-align: center;*/
-    transition: opacity 200ms ease;
+    transition: opacity 100ms ease;
     will-change: opacit, transform;
     /*flex-grow: 1;*/
     /*right: 0;*/

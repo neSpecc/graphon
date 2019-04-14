@@ -374,15 +374,53 @@ export default class Chart {
     }
   }
 
-  moveDate(originalIndex){
-    let centering = originalIndex !== 0 ? 'translateX(-50%)' : '';
+  moveDate(originalIndex, visibleIndex){
+    let centering = 'translateX(-50%)';
+
+    if (visibleIndex === 0){
+      // centering = '';
+    } else if (visibleIndex === this.datesPerScreen - 1){
+      // centering = '';
+    }
+
+
     let dateEl = this.onscreenDatesElements[originalIndex];
     let newX = originalIndex * this.stepScaled + this.scrollValue;
 
     dateEl.style.transform = `translateX(${ newX }px)` + centering;
 
-    let skippedCount = Math.floor(Math.floor(this.onscreenPointsCount / this.datesPerScreen) / this.datesPerScreen);
+    // let skippedCount = Math.floor(Math.floor(this.onscreenPointsCount / this.datesPerScreen) / this.datesPerScreen);
+    let skippedCount = Math.round(((this.onscreenPointsCount / this.datesPerScreen ) - this._showEveryNDateInitial) / this._showEveryNDateInitial);
     let checks = [];
+
+    // console.warn(this.onscreenPointsCount, this.datesPerScreen, newX, )
+
+    log({
+      step: this.stepScaled,
+      skippedCount: skippedCount,
+    });
+
+
+    let leftReached = newX < ((this.viewportWidth / this.datesPerScreen) / 2) * visibleIndex;
+    //
+    // if (originalIndex === 14){
+    //   console.log(originalIndex, visibleIndex, newX);
+    // }
+    //
+    // let check = (originalIndex + this._showEveryNDateInitial) % (this._showEveryNDateInitial * 2) === 0;
+    // if (leftReached && check){
+    //   dateEl.style.opacity = '0.1';
+    // } else {
+    //   dateEl.style.opacity = '1';
+    // }
+
+
+
+    // console.log('leftReached', leftReached);
+    //
+    // if (leftReached){
+    //   dateEl.style.opacity = '0.5';
+    // }
 
     for (let i = 1; i < skippedCount + 1; i++){
       let idxToCheck = originalIndex + i * this._showEveryNDateInitial;
@@ -390,7 +428,7 @@ export default class Chart {
       checks.push(check)
     }
 
-    if (skippedCount && checks.some(check => !!check)){
+    if (checks.some(check => !!check)){
       dateEl.style.opacity = '0';
     } else {
       dateEl.style.opacity = '1';
@@ -398,7 +436,7 @@ export default class Chart {
   }
 
 
-  pushDate(date, originIndex){
+  pushDate(date, originIndex, visibleIndex){
     const dt = new Date(date);
     const dateEl = Dom.make('time');
     dateEl.textContent = dt.toLocaleDateString('en-US', {
@@ -406,11 +444,13 @@ export default class Chart {
       month: 'short'
     });
 
+    // dateEl.textContent = originIndex;
+
     this.nodes.legend.appendChild(dateEl);
     this.nodes.legendDates.push(dateEl);
     this.onscreenDates.add(originIndex);
     this.onscreenDatesElements[originIndex] = dateEl;
-    this.moveDate(originIndex);
+    this.moveDate(originIndex, visibleIndex);
   }
 
   get onscreenPointsCount(){
@@ -445,11 +485,11 @@ export default class Chart {
   }
 
   scaleDates(){
-    let visibleIndex = 0;
-    this.onscreenDates.forEach((originalIndex) => {
-      this.moveDate(originalIndex);
-      visibleIndex++;
-    });
+    // let visibleIndex = 0;
+    // this.onscreenDates.forEach((originalIndex) => {
+    //   this.moveDate(originalIndex, visibleIndex);
+    //   visibleIndex++;
+    // });
 
     this.addOnscreenDates();
   }
@@ -464,10 +504,14 @@ export default class Chart {
     if (!this._showEveryNDateInitial){
       let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
       this._showEveryNDateInitial = Math.ceil(pointsOnScreen / this.datesPerScreen);
+      console.log('this._showEveryNDateInitial', this._showEveryNDateInitial);
     }
+
+    let visibleIndex = 0;
 
     datesOnScreenSlice.forEach((date, index) => {
       const originIndex = this.leftPointIndex + index;
+
 
       /**
        * Skip dates that can not be fit event on maximum zoom
@@ -485,14 +529,16 @@ export default class Chart {
        * If point already showed, move it
        */
       if (this.onscreenDates.has(originIndex)){
-        this.moveDate(originIndex);
+        this.moveDate(originIndex, visibleIndex);
+        visibleIndex++;
         return
       }
 
       /**
        * Add new date to its position computed by original index * step scaled
        */
-      this.pushDate(date, originIndex);
+      this.pushDate(date, originIndex, visibleIndex);
+      visibleIndex++;
     });
 
     /**
