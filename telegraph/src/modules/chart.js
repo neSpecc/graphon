@@ -209,6 +209,8 @@ export default class Chart {
 
     this.nodes.wrapper.appendChild(this.tooltip.render());
 
+    this.nodes.wrapper.classList.add(Chart.CSS.wrapper + '--' + this.state.type);
+
     this.bindEvents();
 
     return this.nodes.wrapper;

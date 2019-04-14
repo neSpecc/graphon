@@ -44,3 +44,12 @@ export function beautify(number) {
     return Math.floor(number / 1000000) + 'M';
   }
 }
+
+/**
+ * 1000 -> 1 000
+ * @param {number} number
+ * @return {string}
+ */
+export function addSpaces(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}

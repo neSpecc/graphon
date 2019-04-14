@@ -814,6 +814,15 @@ function beautify(number) {
   }
 }
 
+/**
+ * 1000 -> 1 000
+ * @param {number} number
+ * @return {string}
+ */
+function addSpaces(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 // CONCATENATED MODULE: ./src/utils/log.js
 let prevValues = {};
 
@@ -2014,9 +2023,7 @@ class tooltip_Tooltip {
       const title = this.modules.state.names[name];
 
 
-      item.innerHTML = `<b>${value}</b>${title}`;
-      // item.innerHTML = `<b>${Numbers.beautify(value)}</b>${title}`;
-      item.style.color = color;
+      item.innerHTML = `${title} <b style="color: ${color}">${addSpaces(value)}</b>`;
 
       this.nodes.values.appendChild(item);
     })
@@ -2322,6 +2329,8 @@ class chart_Chart {
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
 
     this.nodes.wrapper.appendChild(this.tooltip.render());
+
+    this.nodes.wrapper.classList.add(chart_Chart.CSS.wrapper + '--' + this.state.type);
 
     this.bindEvents();
 

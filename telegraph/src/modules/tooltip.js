@@ -91,9 +91,7 @@ export default class Tooltip {
       const title = this.modules.state.names[name];
 
 
-      item.innerHTML = `<b>${value}</b>${title}`;
-      // item.innerHTML = `<b>${Numbers.beautify(value)}</b>${title}`;
-      item.style.color = color;
+      item.innerHTML = `${title} <b style="color: ${color}">${Numbers.addSpaces(value)}</b>`;
 
       this.nodes.values.appendChild(item);
     })
