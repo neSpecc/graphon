@@ -119,13 +119,15 @@ export default class Tooltip {
 
       counter.style.color = color;
 
+      let valueBeautified = Numbers.addSpaces(value);
+
       setTimeout(() => {
-        Dom.animateCounter(counter, Numbers.addSpaces(value), prevValues[index]);
+        Dom.animateCounter(counter, valueBeautified, prevValues[index]);
       }, 50 * index);
 
 
       this.nodes.values.appendChild(item);
-      this._values.push(value);
+      this._values.push(valueBeautified);
     });
   }
 

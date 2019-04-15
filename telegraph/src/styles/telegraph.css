@@ -566,11 +566,11 @@
 }
 
 .counter-prev.top {
-    animation: exitTop 400ms ease;
+    animation: exitTop 300ms ease;
     animation-fill-mode: forwards;
 }
 .counter-cur.top {
-    animation: enterTop 400ms ease;
+    animation: enterTop 300ms ease;
     animation-fill-mode: forwards;
 }
 
@@ -581,20 +581,24 @@
     }
 
     to {
-        transform: translate(6px, -1px) scale(1.1);
+        transform: translate(0px, -1px) scale(1.35);
         opacity: 0;
     }
 }
 
 @keyframes enter {
     from {
-        transform: translate(5px , 0);
+        transform: scale(0.85) translateX(-2px);
         opacity: 0;
+    }
+
+    80% {
+        transform: scale(1.05);
+        opacity: 1;
     }
 
     to {
         transform: none;
-        opacity: 1;
     }
 }
 

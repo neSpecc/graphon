@@ -2171,13 +2171,15 @@ class tooltip_Tooltip {
 
       counter.style.color = color;
 
+      let valueBeautified = addSpaces(value);
+
       setTimeout(() => {
-        animateCounter(counter, addSpaces(value), prevValues[index]);
+        animateCounter(counter, valueBeautified, prevValues[index]);
       }, 50 * index);
 
 
       this.nodes.values.appendChild(item);
-      this._values.push(value);
+      this._values.push(valueBeautified);
     });
   }
 
