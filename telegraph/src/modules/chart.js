@@ -748,12 +748,8 @@ export default class Chart {
     }
 
     this.tooltip.values = values;
-    this.tooltip.move(newLeft);
-    this.tooltip.title = (new Date(date)).toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      weekday: 'short'
-    });
+    this.tooltip.move(newLeft, values);
+    this.tooltip.date = new Date(date);
   }
 
   mouseLeave(){

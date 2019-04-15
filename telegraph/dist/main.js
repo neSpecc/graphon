@@ -430,13 +430,11 @@ function insertBefore(target, element) {
   target.parentNode.insertBefore(element, target);
 }
 
-function animateCounter(holder, val, prevVal){
-  let prev = make('span', 'counter-prev');
-  let cur = make('span', 'counter-cur');
+function animateCounter(holder, val, prevVal, animateType = 'default'){
+  let prev = make('span', ['counter-prev', animateType]);
+  let cur = make('span', ['counter-cur', animateType]);
 
-  holder.style.width = val.length * 7 ;
-
-  console.log(prevVal);
+  holder.style.width = val.length * 7 + 'px';
 
   prev.textContent = prevVal;
   cur.textContent = val;
@@ -2104,17 +2102,35 @@ class tooltip_Tooltip {
     this.nodes.wrapper.classList.remove(tooltip_Tooltip.CSS.showed);
   }
 
-  move(lineLeftCoord){
+  move(lineLeftCoord, values){
     if (!this._width){
       this._width = this.nodes.wrapper.offsetWidth;
     }
 
+    let max = Math.max(...values.map(value => value.value));
+    let maxBottom = max * this.modules.chart.graph.kY - this.modules.chart.graph.zeroShifting;
+
     let offsetLeft = -25;
     let left = lineLeftCoord + offsetLeft;
 
-    if (left + this._width > this.modules.chart.viewportWidth){
-      left = this.modules.chart.viewportWidth - this._width - 30;
+    console.log(left);
+
+    if (maxBottom > 260) {
+      left = left - this._width;
     }
+
+    if (left < this._width + 25){
+      left = lineLeftCoord + 25
+    }
+
+    if (left + this._width > this.modules.chart.viewportWidth){
+      left = left - this._width;
+    }
+
+    //
+    // if (left + this._width > this.modules.chart.viewportWidth){
+    //   left = this.modules.chart.viewportWidth - this._width - 30;
+    // }
 
 
     // if (lineLeftCoord > this.modules.chart.viewportWidth - tooltipWidth / 1.3){
@@ -2157,7 +2173,7 @@ class tooltip_Tooltip {
 
       setTimeout(() => {
         animateCounter(counter, addSpaces(value), prevValues[index]);
-      }, 20 * index)
+      }, 50 * index);
 
 
       this.nodes.values.appendChild(item);
@@ -2167,6 +2183,33 @@ class tooltip_Tooltip {
 
   set title(string){
     this.nodes.title.innerHTML = string;
+  }
+
+  /**
+   * @param {Date} dt
+   */
+  set date(dt){
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let month = dt.getMonth();
+    let year = dt.getFullYear();
+    let weekday = dt.getDay();
+    let day = dt.getDate();
+    let left = make('span', 'left');
+    let right = make('span');
+
+    right.textContent = months[month] + ' ' +year;
+
+
+    this.nodes.title.innerHTML = '';
+    this.nodes.title.appendChild(left);
+    this.nodes.title.appendChild(right);
+
+    let newDate = `${week[weekday]}, ${day}`;
+
+
+    animateCounter(left, `${week[weekday]}, ${day}`, this._prevDate, 'top' );
+    this._prevDate = newDate
   }
 }
 // CONCATENATED MODULE: ./src/modules/pointer.js
@@ -3005,12 +3048,8 @@ class chart_Chart {
     }
 
     this.tooltip.values = values;
-    this.tooltip.move(newLeft);
-    this.tooltip.title = (new Date(date)).toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      weekday: 'short'
-    });
+    this.tooltip.move(newLeft, values);
+    this.tooltip.date = new Date(date);
   }
 
   mouseLeave(){

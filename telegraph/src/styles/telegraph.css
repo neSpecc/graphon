@@ -91,7 +91,6 @@
 }
 
 .tg-header__title {
-
 }
 
 .tg-header__dates {
@@ -499,7 +498,7 @@
     top: 20px;
     padding: 10px 15px;
     z-index: 3;
-    transition: left 50ms ease, opacity 300ms ease;
+    transition: left 300ms ease, opacity 400ms ease;
     will-change: left, opacity;
     opacity: 0;
     min-width: 130px;
@@ -515,6 +514,18 @@
     font-weight: 500;
     margin-bottom: 7px;
     white-space: nowrap;
+}
+
+.tg-tooltip__title .left {
+    position: relative;
+    margin-right: 5px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.tg-tooltip__title .left span {
+    right: auto;
+    left: 0;
 }
 
 .tg-tooltip__values {
@@ -554,23 +565,55 @@
     height: 1em;
 }
 
+.counter-prev.top {
+    animation: exitTop 400ms ease;
+    animation-fill-mode: forwards;
+}
+.counter-cur.top {
+    animation: enterTop 400ms ease;
+    animation-fill-mode: forwards;
+}
+
 @keyframes exit {
     from {
         transform: none;
-        opacity: 0.9;
+        opacity: 1;
     }
 
     to {
-        transform: translate(15px,0);
-        /*transform: translate(0px, -5px) scale(1.1);*/
+        transform: translate(6px, -1px) scale(1.1);
         opacity: 0;
     }
 }
 
 @keyframes enter {
     from {
-        transform: translate(-15px , 0);
-        /*transform: scaleY(0.8) translate(-2px , 3px);*/
+        transform: translate(5px , 0);
+        opacity: 0;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+
+@keyframes exitTop {
+    from {
+        transform: none;
+        opacity: 1;
+    }
+
+    to {
+        transform: translate(0, -5px);
+        opacity: 0;
+    }
+}
+
+@keyframes enterTop {
+    from {
+        transform: translate(0, 5px);
         opacity: 0;
     }
 
