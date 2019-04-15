@@ -499,7 +499,7 @@
     transition: left 300ms ease, opacity 400ms ease;
     will-change: left, opacity;
     opacity: 0;
-    min-width: 130px;
+    min-width: 140px;
     font-size: 13px;
     font-family: Roboto, 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, sans-serif;
 }
@@ -510,7 +510,6 @@
 
 .tg-tooltip__title {
     font-weight: 500;
-    margin-bottom: 7px;
     white-space: nowrap;
 }
 
@@ -533,11 +532,25 @@
 
 .tg-tooltip__values-item {
     display: flex;
+    margin-top: 5px;
 }
 
-.tg-tooltip__values-item:not(:last-of-type) {
-    margin-bottom: 5px;
+.tg-tooltip__values-item:first-of-type {
+    margin-top: 7px;
 }
+
+.tg-tooltip .percents {
+    display: inline-block;
+    font-weight: 500;
+    min-width: 26px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+
+/*.tg-tooltip__values-item:not(:last-of-type) {*/
+    /*margin-bottom: 5px;*/
+/*}*/
 
 .tg-tooltip__values-item b {
     margin-left: auto;

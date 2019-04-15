@@ -863,16 +863,16 @@ function addSpaces(number) {
 }
 
 // CONCATENATED MODULE: ./src/utils/log.js
-let log_prevValues = {};
+let prevValues = {};
 
 
 function log(obj){
   let el = document.getElementById('log');
-   Object.assign(log_prevValues, obj);
+   Object.assign(prevValues, obj);
 
    let content = '';
 
-   Object.entries(log_prevValues).forEach(([key, value]) => {
+   Object.entries(prevValues).forEach(([key, value]) => {
      content += `${key} ${!isNaN(value) ? value.toFixed(3) : value}   `
    })
 
@@ -2158,27 +2158,70 @@ class tooltip_Tooltip {
 
     this._values = [];
 
-    values.forEach( ({name, value}, index) => {
-      const item = make('div', tooltip_Tooltip.CSS.value);
-      const color = this.modules.state.colors[name];
-      const title = this.modules.state.names[name];
-      const counter = make('b');
+    if (this._setValuesDebounce){
+      clearTimeout(this._setValuesDebounce);
+    }
 
-      item.textContent = title;
-      item.appendChild(counter);
+    let summ = 0;
 
-      counter.style.color = color;
-
-      let valueBeautified = addSpaces(value);
-
-      setTimeout(() => {
-        animateCounter(counter, valueBeautified, prevValues[index]);
-      }, 50 * index);
+    for (let i = 0, lenCached = values.length; i < lenCached; i++) {
+      summ += values[i].value;
+    }
 
 
-      this.nodes.values.appendChild(item);
-      this._values.push(valueBeautified);
-    });
+    if (values.length > 2){
+      this._setValuesDebounce = setTimeout(() => {
+        values.forEach( ({name, value}, index) => {
+          this.createItem(this.modules.state.names[name], this.modules.state.colors[name], value, prevValues[index], index, values)
+        });
+
+        if (this.modules.state.type === 'bar' && values.length > 1){
+          this.createItem('All', '#000', summ, null, values.length, values)
+        }
+      }, 150)
+
+    } else {
+        values.forEach( ({name, value}, index) => {
+          this.createItem(this.modules.state.names[name], this.modules.state.colors[name], value, prevValues[index], index, values)
+        });
+
+        if (this.modules.state.type === 'bar' && values.length > 1){
+          this.createItem('All', '#fff', null, values.length, values)
+        }
+    }
+
+  }
+
+  createItem(title, color, value, prevValue, index = 0, all){
+    const item = make('div', tooltip_Tooltip.CSS.value);
+    const counter = make('b');
+
+    if (this.modules.state.type === 'area'){
+      let total = all.reduce((acc, cur) => acc += cur.value, 0);
+      let percent = Math.ceil((value / total) * 100);
+      let percentEl = make('span', 'percents');
+
+      percentEl.textContent = percent + '%';
+
+      item.appendChild(percentEl)
+    }
+
+
+
+    item.appendChild(document.createTextNode(title));
+    item.appendChild(counter);
+
+    counter.style.color = color;
+
+    let valueBeautified = addSpaces(value);
+
+    setTimeout(() => {
+      animateCounter(counter, valueBeautified, prevValue);
+    }, 50 * index);
+
+
+    this.nodes.values.appendChild(item);
+    this._values.push(valueBeautified);
   }
 
   set title(string){
