@@ -262,29 +262,41 @@ export default class Minimap {
   }
 
   bindEvents(){
+    let supportsPassive = false;
+    try {
+      let opts = Object.defineProperty({}, 'passive', {
+        get: function() {
+          supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
+
     this.nodes.wrapper.addEventListener('mousedown', (event) => {
       this.viewportMousedown(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     document.body.addEventListener('mousemove', (event) => {
       this.viewportMousemove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     document.body.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchstart', (event) => {
       this.viewportMousedown(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchmove', (event) => {
       this.viewportMousemove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchend', (event) => {
       this.viewportMouseup(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
   }
 
   /**
@@ -294,7 +306,7 @@ export default class Minimap {
   viewportMousedown(event){
     const {target} = event;
 
-    event.preventDefault();
+    // event.preventDefault();
 
     const leftScalerClicked = !!target.closest(`.${Minimap.CSS.leftZoneScaler}`);
     const rightScalerClicked = !!target.closest(`.${Minimap.CSS.rightZoneScaler}`);
@@ -388,9 +400,17 @@ export default class Minimap {
     this.moveViewport(delta);
     // console.log('delta', delta);
     // this.modules.chart.scrollByDelta((prevScrolledValue - delta) * this.modules.chart.width / this.wrapperWidth );
+
     this.syncScrollWithChart();
 
-    this.modules.chart.fitToMax(true);
+    if (this._ftmd){
+      clearTimeout(this._ftmd);
+    }
+
+    this._ftmd = setTimeout(() => {
+      this.modules.chart.fitToMax(true);
+    }, 50)
+
   }
 
   /**
@@ -462,7 +482,14 @@ export default class Minimap {
 
     this.modules.chart.scale(scaling, direction);
     this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth, true);
-    this.modules.chart.fitToMax();
+
+    if (this._ftmd){
+      clearTimeout(this._ftmd);
+    }
+
+    this._ftmd = setTimeout(() => {
+      this.modules.chart.fitToMax();
+    }, 20)
   }
 
   /**
@@ -473,10 +500,10 @@ export default class Minimap {
     this.graph.togglePathVisibility(name);
 
     if (this.state.type === 'bar'){
-      this.graph.recalculatePointsHeight();
+      this.graph.recalculatePointsHeight(true);
       this.fitToMax();
     } else if (this.state.type === 'area') {
-      this.graph.recalculatePointsHeight();
+      this.graph.recalculatePointsHeight(true);
     } else {
       this.fitToMax();
     }
@@ -497,7 +524,5 @@ export default class Minimap {
         })
       }
     }
-
-
   }
 }

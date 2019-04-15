@@ -48,7 +48,11 @@ export default class Legend {
 
       this.buttons[name] = item;
 
-      item.addEventListener('click', () => {
+      item.addEventListener('mouseup', () => {
+        this.itemClicked(name);
+      });
+
+      item.addEventListener('touchend', () => {
         this.itemClicked(name);
       });
 
@@ -63,7 +67,10 @@ export default class Legend {
    */
   itemClicked(name){
     this.modules.chart.togglePath(name);
-    this.modules.minimap.togglePath(name);
+    // setTimeout(() => {
+      this.modules.minimap.togglePath(name);
+    // }, 50)
+
 
     this.buttons[name].classList.toggle(Legend.CSS.itemEnabled);
 

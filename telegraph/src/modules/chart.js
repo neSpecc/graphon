@@ -304,9 +304,6 @@ export default class Chart {
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
-
-    // console.log('stepY', stepY);
-
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
     if (this.state.isYScaled){
@@ -315,21 +312,8 @@ export default class Chart {
 
       kYSecond = height / (maxSecond - minSecond);
       let kYRatio = kY / kYSecond;
-      // let kYRatio = kY / kYSecond;
-      // console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
 
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
-      // console.log('maxSecond',maxSecond , 'minSecond', minSecond, 'kYSecond', kYSecond, kYRatio, 'stepYSecond', stepYSecond);
-      //
-      // let oldStyle = this.graph.charts['y1'].path.style.transform;
-      //
-      // if (oldStyle){
-      //   let oldScale = oldStyle.match(/scaleY\((\S+)\)/);
-      //   let newScale = parseFloat(oldScale[1]) - parseFloat(oldScale[1])  * kYRatio;
-      //   let newZeroShifting = minSecond * kY;
-      //   console.log('oldStyle', oldStyle, parseFloat(oldScale[1]), newScale);
-      //   this.graph.charts['y1'].path.style.transform = oldStyle.replace(/scaleY\(\S+\)/, `scaleY(${newScale})`);
-      // }
     }
 
     if (this.state.type === 'area'){
@@ -362,13 +346,15 @@ export default class Chart {
       let bottom = y * kY;
 
       if (bottom > this.height){
-        return;
+        continue;
       }
 
       line.classList.remove(Chart.CSS.gridSectionHidden);
       line.style.bottom = `${y * kY}px`;
 
       line.innerHTML = '';
+
+
 
       let counter = this.getLegendCounter(y + min, 'y0');
       line.appendChild(counter);
@@ -380,6 +366,10 @@ export default class Chart {
         counter2.style.color = this.state.getLineColor('y1');
         line.appendChild(counter2);
       }
+    }
+
+    if (this.state.isYScaled){
+      this.toggleGridLabelsForChart();
     }
   }
 
@@ -469,7 +459,7 @@ export default class Chart {
   }
 
   addOnscreenDates(){
-    // return;
+    return;
     /**
      * Get slice of timestamps that currently visible on the screen
      */
@@ -534,7 +524,6 @@ export default class Chart {
     this.onscreenDates.delete(originalIndex);
     this.onscreenDatesElements[originalIndex].remove();
     this.onscreenDatesElements[originalIndex] = null;
-    delete this.onscreenDatesElements[originalIndex];
   }
 
   /**
@@ -556,11 +545,10 @@ export default class Chart {
   scroll(position, fromScale){
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
-    // this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
     this.tooltip.hide();
     this.pointer.hide();
-
-    this.addOnscreenDates();
+    //
+    // this.addOnscreenDates();
   }
 
   scrollByDelta(delta){
@@ -662,21 +650,32 @@ export default class Chart {
   }
 
   bindEvents(){
+    let supportsPassive = false;
+    try {
+      let opts = Object.defineProperty({}, 'passive', {
+        get: function() {
+          supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
     this.nodes.wrapper.addEventListener('mousemove', (event) => {
       this.mouseMove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('mouseleave', (event) => {
       this.mouseLeave(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchmove', (event) => {
       this.mouseMove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchcancel', (event) => {
       this.mouseLeave(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
   }
 
   /**
@@ -769,20 +768,17 @@ export default class Chart {
    * @param {string} name - graph name
    */
   togglePath(name){
-    this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
+    this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){
+      console.log('recal from chart', name);
       this.graph.recalculatePointsHeight();
       this.fitToMax();
     } else if (this.state.type === 'area') {
       this.graph.recalculatePointsHeight();
     } else {
       this.fitToMax();
-    }
-
-    if (this.state.isYScaled){
-      this.toggleGridLabelsForChart();
     }
   }
 

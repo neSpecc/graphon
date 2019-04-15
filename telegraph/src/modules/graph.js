@@ -531,11 +531,11 @@ export default class Graph {
   /**
    * Change bars height and Y to fit hidden charts place
    */
-  recalculatePointsHeight(){
+  recalculatePointsHeight(useRecalculated = false){
     if (this.type === 'bar'){
-      this.recalculateBars();
+      this.recalculateBars(useRecalculated);
     } else if (this.type === 'area') {
-      this.recalculateArea();
+      this.recalculateArea(useRecalculated);
     }
   }
 
@@ -569,9 +569,26 @@ export default class Graph {
     });
   }
 
-  recalculateBars(){
+  /**
+   * Changes bars heights to correspond hidden charts
+   * @param {boolean} useRecalculated - pass true to use saved value (minimap can use values from main Chart)
+   */
+  recalculateBars(useRecalculated = false){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
+
+    let recalculated = this.state.recalculatedValues;
+
+    if (useRecalculated && recalculated) {
+      for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
+        this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
+      }
+
+      this.state.clearRecalculatedValues();
+      return;
+    }
+
+    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
@@ -580,13 +597,17 @@ export default class Graph {
         return val + this.state.getLinePoints(line)[pointIndex];
       }, 0);
 
-      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+      for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
+        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 
-        this.charts[line].move(pointIndex, newStack, prevValue);
+
+        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.charts[lines[i]].move(pointIndex, newStack, prevValue);
+
         prevValue += pointValue;
-      });
+      }
     }
   }
 

@@ -120,6 +120,8 @@ class State {
       dates: this.columns[0].slice(1),
       daysCount: this.columns[0].slice(1).length
     };
+
+    this._recalculatedPoints = [];
   }
 
   /**
@@ -361,6 +363,27 @@ class State {
   get namesList(){
     return Object.entries(this.names).map(([name, value]) => value);
   }
+
+  /**
+   * Stores previously calculated values to prevent do the same both for chart and for mini map
+   * @type {Array}
+   */
+  saveRecalculatedValues(values){
+    this._recalculatedPoints.push(values);
+  }
+
+  /**
+   * Dealloc used values
+   * @type {Array}
+   */
+  clearRecalculatedValues(){
+    this._recalculatedPoints = [];
+  }
+
+  get recalculatedValues(){
+    return this._recalculatedPoints;
+  }
+
 }
 // CONCATENATED MODULE: ./src/utils/dom.js
 /**
@@ -1373,11 +1396,11 @@ class graph_Graph {
   /**
    * Change bars height and Y to fit hidden charts place
    */
-  recalculatePointsHeight(){
+  recalculatePointsHeight(useRecalculated = false){
     if (this.type === 'bar'){
-      this.recalculateBars();
+      this.recalculateBars(useRecalculated);
     } else if (this.type === 'area') {
-      this.recalculateArea();
+      this.recalculateArea(useRecalculated);
     }
   }
 
@@ -1411,9 +1434,26 @@ class graph_Graph {
     });
   }
 
-  recalculateBars(){
+  /**
+   * Changes bars heights to correspond hidden charts
+   * @param {boolean} useRecalculated - pass true to use saved value (minimap can use values from main Chart)
+   */
+  recalculateBars(useRecalculated = false){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
+
+    let recalculated = this.state.recalculatedValues;
+
+    if (useRecalculated && recalculated) {
+      for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
+        this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
+      }
+
+      this.state.clearRecalculatedValues();
+      return;
+    }
+
+    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
@@ -1422,13 +1462,17 @@ class graph_Graph {
         return val + this.state.getLinePoints(line)[pointIndex];
       }, 0);
 
-      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+      for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
+        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 
-        this.charts[line].move(pointIndex, newStack, prevValue);
+
+        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.charts[lines[i]].move(pointIndex, newStack, prevValue);
+
         prevValue += pointValue;
-      });
+      }
     }
   }
 
@@ -1705,29 +1749,41 @@ class minimap_Minimap {
   }
 
   bindEvents(){
+    let supportsPassive = false;
+    try {
+      let opts = Object.defineProperty({}, 'passive', {
+        get: function() {
+          supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
+
     this.nodes.wrapper.addEventListener('mousedown', (event) => {
       this.viewportMousedown(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     document.body.addEventListener('mousemove', (event) => {
       this.viewportMousemove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     document.body.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchstart', (event) => {
       this.viewportMousedown(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchmove', (event) => {
       this.viewportMousemove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchend', (event) => {
       this.viewportMouseup(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
   }
 
   /**
@@ -1737,7 +1793,7 @@ class minimap_Minimap {
   viewportMousedown(event){
     const {target} = event;
 
-    event.preventDefault();
+    // event.preventDefault();
 
     const leftScalerClicked = !!target.closest(`.${minimap_Minimap.CSS.leftZoneScaler}`);
     const rightScalerClicked = !!target.closest(`.${minimap_Minimap.CSS.rightZoneScaler}`);
@@ -1831,9 +1887,17 @@ class minimap_Minimap {
     this.moveViewport(delta);
     // console.log('delta', delta);
     // this.modules.chart.scrollByDelta((prevScrolledValue - delta) * this.modules.chart.width / this.wrapperWidth );
+
     this.syncScrollWithChart();
 
-    this.modules.chart.fitToMax(true);
+    if (this._ftmd){
+      clearTimeout(this._ftmd);
+    }
+
+    this._ftmd = setTimeout(() => {
+      this.modules.chart.fitToMax(true);
+    }, 50)
+
   }
 
   /**
@@ -1905,7 +1969,14 @@ class minimap_Minimap {
 
     this.modules.chart.scale(scaling, direction);
     this.syncScrollWithChart(side === 'left' ? newScalerWidth : this.leftZoneWidth, true);
-    this.modules.chart.fitToMax();
+
+    if (this._ftmd){
+      clearTimeout(this._ftmd);
+    }
+
+    this._ftmd = setTimeout(() => {
+      this.modules.chart.fitToMax();
+    }, 20)
   }
 
   /**
@@ -1916,10 +1987,10 @@ class minimap_Minimap {
     this.graph.togglePathVisibility(name);
 
     if (this.state.type === 'bar'){
-      this.graph.recalculatePointsHeight();
+      this.graph.recalculatePointsHeight(true);
       this.fitToMax();
     } else if (this.state.type === 'area') {
-      this.graph.recalculatePointsHeight();
+      this.graph.recalculatePointsHeight(true);
     } else {
       this.fitToMax();
     }
@@ -1940,8 +2011,6 @@ class minimap_Minimap {
         })
       }
     }
-
-
   }
 }
 // CONCATENATED MODULE: ./src/modules/tooltip.js
@@ -2440,9 +2509,6 @@ class chart_Chart {
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
-
-    // console.log('stepY', stepY);
-
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
     if (this.state.isYScaled){
@@ -2451,21 +2517,8 @@ class chart_Chart {
 
       kYSecond = height / (maxSecond - minSecond);
       let kYRatio = kY / kYSecond;
-      // let kYRatio = kY / kYSecond;
-      // console.log('ky %o / ky2 %o = %o', kY , kYRatio, kY/kYSecond )
 
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
-      // console.log('maxSecond',maxSecond , 'minSecond', minSecond, 'kYSecond', kYSecond, kYRatio, 'stepYSecond', stepYSecond);
-      //
-      // let oldStyle = this.graph.charts['y1'].path.style.transform;
-      //
-      // if (oldStyle){
-      //   let oldScale = oldStyle.match(/scaleY\((\S+)\)/);
-      //   let newScale = parseFloat(oldScale[1]) - parseFloat(oldScale[1])  * kYRatio;
-      //   let newZeroShifting = minSecond * kY;
-      //   console.log('oldStyle', oldStyle, parseFloat(oldScale[1]), newScale);
-      //   this.graph.charts['y1'].path.style.transform = oldStyle.replace(/scaleY\(\S+\)/, `scaleY(${newScale})`);
-      // }
     }
 
     if (this.state.type === 'area'){
@@ -2498,13 +2551,15 @@ class chart_Chart {
       let bottom = y * kY;
 
       if (bottom > this.height){
-        return;
+        continue;
       }
 
       line.classList.remove(chart_Chart.CSS.gridSectionHidden);
       line.style.bottom = `${y * kY}px`;
 
       line.innerHTML = '';
+
+
 
       let counter = this.getLegendCounter(y + min, 'y0');
       line.appendChild(counter);
@@ -2516,6 +2571,10 @@ class chart_Chart {
         counter2.style.color = this.state.getLineColor('y1');
         line.appendChild(counter2);
       }
+    }
+
+    if (this.state.isYScaled){
+      this.toggleGridLabelsForChart();
     }
   }
 
@@ -2605,7 +2664,7 @@ class chart_Chart {
   }
 
   addOnscreenDates(){
-    // return;
+    return;
     /**
      * Get slice of timestamps that currently visible on the screen
      */
@@ -2670,7 +2729,6 @@ class chart_Chart {
     this.onscreenDates.delete(originalIndex);
     this.onscreenDatesElements[originalIndex].remove();
     this.onscreenDatesElements[originalIndex] = null;
-    delete this.onscreenDatesElements[originalIndex];
   }
 
   /**
@@ -2692,11 +2750,10 @@ class chart_Chart {
   scroll(position, fromScale){
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
-    // this.nodes.legend.style.transform = `translateX(${this.scrollValue}px)`;
     this.tooltip.hide();
     this.pointer.hide();
-
-    this.addOnscreenDates();
+    //
+    // this.addOnscreenDates();
   }
 
   scrollByDelta(delta){
@@ -2798,21 +2855,32 @@ class chart_Chart {
   }
 
   bindEvents(){
+    let supportsPassive = false;
+    try {
+      let opts = Object.defineProperty({}, 'passive', {
+        get: function() {
+          supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
     this.nodes.wrapper.addEventListener('mousemove', (event) => {
       this.mouseMove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('mouseleave', (event) => {
       this.mouseLeave(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchmove', (event) => {
       this.mouseMove(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
 
     this.nodes.wrapper.addEventListener('touchcancel', (event) => {
       this.mouseLeave(event);
-    });
+    }, supportsPassive ? { passive: true } : false);
   }
 
   /**
@@ -2905,20 +2973,17 @@ class chart_Chart {
    * @param {string} name - graph name
    */
   togglePath(name){
-    this.pointer.toggleVisibility(name);
     this.graph.togglePathVisibility(name);
+    this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){
+      console.log('recal from chart', name);
       this.graph.recalculatePointsHeight();
       this.fitToMax();
     } else if (this.state.type === 'area') {
       this.graph.recalculatePointsHeight();
     } else {
       this.fitToMax();
-    }
-
-    if (this.state.isYScaled){
-      this.toggleGridLabelsForChart();
     }
   }
 
@@ -3019,7 +3084,11 @@ class legend_Legend {
 
       this.buttons[name] = item;
 
-      item.addEventListener('click', () => {
+      item.addEventListener('mouseup', () => {
+        this.itemClicked(name);
+      });
+
+      item.addEventListener('touchend', () => {
         this.itemClicked(name);
       });
 
@@ -3034,7 +3103,10 @@ class legend_Legend {
    */
   itemClicked(name){
     this.modules.chart.togglePath(name);
-    this.modules.minimap.togglePath(name);
+    // setTimeout(() => {
+      this.modules.minimap.togglePath(name);
+    // }, 50)
+
 
     this.buttons[name].classList.toggle(legend_Legend.CSS.itemEnabled);
 

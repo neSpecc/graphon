@@ -25,6 +25,8 @@ export default class State {
       dates: this.columns[0].slice(1),
       daysCount: this.columns[0].slice(1).length
     };
+
+    this._recalculatedPoints = [];
   }
 
   /**
@@ -266,4 +268,25 @@ export default class State {
   get namesList(){
     return Object.entries(this.names).map(([name, value]) => value);
   }
+
+  /**
+   * Stores previously calculated values to prevent do the same both for chart and for mini map
+   * @type {Array}
+   */
+  saveRecalculatedValues(values){
+    this._recalculatedPoints.push(values);
+  }
+
+  /**
+   * Dealloc used values
+   * @type {Array}
+   */
+  clearRecalculatedValues(){
+    this._recalculatedPoints = [];
+  }
+
+  get recalculatedValues(){
+    return this._recalculatedPoints;
+  }
+
 }
