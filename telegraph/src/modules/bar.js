@@ -11,10 +11,12 @@ export default class Bar {
 
     this.prevX = 0;
     this.stepX = stepX;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
     this.wrapper = Dom.make('g');
     this.wrapper.setAttribute('class', Bar.CSS.wrapper);
     this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.wrapper.setAttribute('id', this.id);
     this.hidden = false;
   }
 
@@ -88,5 +90,9 @@ export default class Bar {
   toggleVisibility(){
     this.hidden = !this.hidden;
     this.wrapper.classList.toggle(Bar.CSS.graphHidden);
+  }
+
+  get height(){
+    return this.wrapper.getBoundingClientRect().height;
   }
 }

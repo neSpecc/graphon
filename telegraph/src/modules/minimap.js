@@ -127,16 +127,29 @@ export default class Minimap {
    * Fill UI with chart and set initial Position
    */
   renderMap(){
+    let width = this.nodes.wrapper.offsetWidth;
+    let height = this.nodes.wrapper.offsetHeight;
+
     this.nodes.canvas = this.graph.renderCanvas({
-      width: this.nodes.wrapper.offsetWidth,
-      height: this.nodes.wrapper.offsetHeight
+      width,
+      height,
     });
 
-    this.graph.renderCharts();
+    this.graph.renderChartsCopy();
 
     this.setInitialPosition();
 
     this.nodes.wrapper.appendChild(this.nodes.canvas);
+  }
+
+  show(){
+    let widthRatio = this.nodes.wrapper.offsetWidth / this.modules.chart.width * this.modules.chart.scaling;
+    let heightRatio = this.nodes.wrapper.offsetHeight / this.modules.chart.graph.chartsHeight;
+
+    console.warn('d', this.nodes.wrapper.offsetWidth, this.modules.chart.width);
+
+    this.graph.oyGroup.setAttribute('transform', `scale(${widthRatio} ${heightRatio})`);
+    // console.log(heightRatio);
   }
 
   /**
@@ -154,6 +167,15 @@ export default class Minimap {
   get width(){
     return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
   }
+
+  /**
+   * Compute current minimap width
+   * @return {number}
+   */
+  get width(){
+    return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
+  }
+
 
   /**
    * Left zone width setter
@@ -427,6 +449,7 @@ export default class Minimap {
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
     this.modules.chart.scroll(chartScroll, fromScale);
+
   }
 
   /**
@@ -497,24 +520,24 @@ export default class Minimap {
    * @param {string} name - graph name
    */
   togglePath(name){
-    this.graph.togglePathVisibility(name);
+    // this.graph.togglePathVisibility(name);
 
-    if (this.state.type === 'bar'){
-      this.graph.recalculatePointsHeight(true);
-      this.fitToMax();
-    } else if (this.state.type === 'area') {
-      this.graph.recalculatePointsHeight(true);
-    } else {
-      this.fitToMax();
-    }
-
-
+    // if (this.state.type === 'bar'){
+    //   this.graph.recalculatePointsHeight(true);
+    //   this.fitToMax();
+    // } else if (this.state.type === 'area') {
+    //   this.graph.recalculatePointsHeight(true);
+    // } else {
+    //   this.fitToMax();
+    // }
   }
 
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
+    console.log('fit');
+    return;
     if (this.state.type !== 'area'){
       if (!this.state.isYScaled){
         this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible());

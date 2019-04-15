@@ -7,7 +7,7 @@
  */
 export function make(tagName, classNames = undefined, attributes = {}) {
   const svgNamespace = 'http://www.w3.org/2000/svg';
-  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g', 'animate'];
+  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g', 'animate', 'use'];
   const isSvg = svgElements.includes(tagName);
   const el = !isSvg ? document.createElement(tagName) : document.createElementNS(svgNamespace, tagName);
 

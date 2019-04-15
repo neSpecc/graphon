@@ -56,6 +56,14 @@
     shape-rendering: optimizespeed;
 }
 
+.tg-minimap .oy-group {
+    transform-origin: top left !important;
+}
+
+.tg-minimap use {
+    transform: none !important;
+}
+
 .tg-chart path.scaled {
     transition: transform 400ms ease, opacity 300ms ease;
     will-change: transform, opacity;

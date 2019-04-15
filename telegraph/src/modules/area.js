@@ -12,6 +12,7 @@ export default class Area {
     this.prevX = 0;
     this.stepX = stepX;
     this.hidden = false;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
 
     this.path = this.createPath();
@@ -25,6 +26,8 @@ export default class Area {
       fill : this.color,
       'vector-effect': 'non-scaling-stroke',
     });
+
+    path.setAttribute('id', this.id);
 
     path.classList.add(Area.CSS.path);
 
@@ -133,5 +136,9 @@ export default class Area {
   toggleVisibility(){
     this.hidden = !this.hidden;
     this.path.classList.toggle(Area.CSS.graphHidden);
+  }
+
+  get height(){
+    return this.path.getBoundingClientRect().height;
   }
 }

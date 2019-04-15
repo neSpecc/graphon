@@ -112,9 +112,10 @@ export default class Graph {
    * Prepares the SVG element
    * @param {number} [width] - strict canvas width
    * @param {number} [height] - strict canvas height
+   * @param {array} [scaling] - [width ratio, height ratio]
    * @return {SVGElement}
    */
-  renderCanvas({width, height} = {}){
+  renderCanvas({width, height, scaling} = {}){
     this.canvas = Dom.make('svg');
     this.oxGroup = Dom.make('g');
     this.oyGroup = Dom.make('g');
@@ -235,6 +236,24 @@ export default class Graph {
 
         break;
     }
+  }
+
+  renderChartsCopy(){
+    const type = this.state.getCommonChartsType();
+    let lines = this.state.linesAvailable;
+
+    if (type !== 'line'){
+      lines = lines.reverse();
+    }
+
+    lines.forEach(line => {
+      let use = Dom.make('use');
+
+      use.setAttribute('transform', 'scale(1 1)');
+
+      use.setAttribute('href', '#' + this.modules.chart.graph.charts[line].id);
+      this.oxGroup.appendChild(use);
+    })
   }
 
   drawAreaCharts(){
@@ -506,6 +525,7 @@ export default class Graph {
       this.currentMinimum = newMin;
 
       this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
+      console.warn('shift', shift)
 
     } else {
       const chart = this.charts[line];
@@ -522,6 +542,9 @@ export default class Graph {
       let oyScaling = newKY / kY;
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
+
+      chart.oyScaling = oyScaling;
+      chart.shift = shift;
 
       chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
       // chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
@@ -598,7 +621,6 @@ export default class Graph {
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
-        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
         let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 
@@ -617,5 +639,17 @@ export default class Graph {
 
   togglePathVisibility(name){
     this.charts[name].toggleVisibility();
+  }
+
+  get chartsHeight(){
+    if (!this.state.isYScaled) {
+      return Math.max(...Object.values(this.charts).map( chart => chart.height * this.oyScaling));
+    } else {
+      return Math.max(...Object.values(this.charts).map( chart => {
+        console.log('chart.height * chart.oyScaling', chart.height , chart.oyScaling, chart.height * chart.oyScaling);
+        return chart.height * chart.oyScaling
+      }));
+    }
+
   }
 }

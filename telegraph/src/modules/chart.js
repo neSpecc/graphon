@@ -826,5 +826,4 @@ export default class Chart {
   hideOverlays(){
     this.nodes.overlays.style.opacity = 0;
   }
-
 }

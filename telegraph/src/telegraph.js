@@ -79,6 +79,9 @@ export default class Telegraph {
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
     this.holder.appendChild(this.legend.render());
+    setTimeout(() => {
+      this.minimap.show();
+    }, 20);
   }
 
   /**

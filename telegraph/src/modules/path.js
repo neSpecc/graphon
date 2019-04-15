@@ -12,6 +12,7 @@ export default class Path {
     this.prevX = 0;
     this.max = max;
     this.min = min;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
     // here will be stored current minimum value for 2-y axis charts
     this.currentMinimum = 0;
@@ -24,6 +25,8 @@ export default class Path {
       'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
     });
+
+    this.path.setAttribute('id', this.id);
 
     if (isScaled){
       this.path.classList.add('scaled');
@@ -90,5 +93,9 @@ export default class Path {
 
   toggleVisibility(){
     this.path.classList.toggle(Path.CSS.graphHidden);
+  }
+
+  get height(){
+    return this.path.getBoundingClientRect().height;
   }
 }

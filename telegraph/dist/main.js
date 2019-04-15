@@ -395,7 +395,7 @@ class State {
  */
 function make(tagName, classNames = undefined, attributes = {}) {
   const svgNamespace = 'http://www.w3.org/2000/svg';
-  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g', 'animate'];
+  const svgElements = ['svg', 'path', 'rect', 'circle', 'text', 'g', 'animate', 'use'];
   const isSvg = svgElements.includes(tagName);
   const el = !isSvg ? document.createElement(tagName) : document.createElementNS(svgNamespace, tagName);
 
@@ -478,6 +478,7 @@ class path_Path {
     this.prevX = 0;
     this.max = max;
     this.min = min;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
     // here will be stored current minimum value for 2-y axis charts
     this.currentMinimum = 0;
@@ -490,6 +491,8 @@ class path_Path {
       'stroke-linejoin' : 'round',
       'vector-effect': 'non-scaling-stroke',
     });
+
+    this.path.setAttribute('id', this.id);
 
     if (isScaled){
       this.path.classList.add('scaled');
@@ -557,6 +560,10 @@ class path_Path {
   toggleVisibility(){
     this.path.classList.toggle(path_Path.CSS.graphHidden);
   }
+
+  get height(){
+    return this.path.getBoundingClientRect().height;
+  }
 }
 // CONCATENATED MODULE: ./src/modules/bar.js
 
@@ -572,10 +579,12 @@ class bar_Bar {
 
     this.prevX = 0;
     this.stepX = stepX;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
     this.wrapper = make('g');
     this.wrapper.setAttribute('class', bar_Bar.CSS.wrapper);
     this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
+    this.wrapper.setAttribute('id', this.id);
     this.hidden = false;
   }
 
@@ -650,6 +659,10 @@ class bar_Bar {
     this.hidden = !this.hidden;
     this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden);
   }
+
+  get height(){
+    return this.wrapper.getBoundingClientRect().height;
+  }
 }
 // CONCATENATED MODULE: ./src/modules/area.js
 
@@ -666,6 +679,7 @@ class area_Area {
     this.prevX = 0;
     this.stepX = stepX;
     this.hidden = false;
+    this.id = 'path_' + Math.round(Math.random() * 10000);
 
 
     this.path = this.createPath();
@@ -679,6 +693,8 @@ class area_Area {
       fill : this.color,
       'vector-effect': 'non-scaling-stroke',
     });
+
+    path.setAttribute('id', this.id);
 
     path.classList.add(area_Area.CSS.path);
 
@@ -787,6 +803,10 @@ class area_Area {
   toggleVisibility(){
     this.hidden = !this.hidden;
     this.path.classList.toggle(area_Area.CSS.graphHidden);
+  }
+
+  get height(){
+    return this.path.getBoundingClientRect().height;
   }
 }
 // CONCATENATED MODULE: ./src/utils/numbers.js
@@ -977,9 +997,10 @@ class graph_Graph {
    * Prepares the SVG element
    * @param {number} [width] - strict canvas width
    * @param {number} [height] - strict canvas height
+   * @param {array} [scaling] - [width ratio, height ratio]
    * @return {SVGElement}
    */
-  renderCanvas({width, height} = {}){
+  renderCanvas({width, height, scaling} = {}){
     this.canvas = make('svg');
     this.oxGroup = make('g');
     this.oyGroup = make('g');
@@ -1100,6 +1121,24 @@ class graph_Graph {
 
         break;
     }
+  }
+
+  renderChartsCopy(){
+    const type = this.state.getCommonChartsType();
+    let lines = this.state.linesAvailable;
+
+    if (type !== 'line'){
+      lines = lines.reverse();
+    }
+
+    lines.forEach(line => {
+      let use = make('use');
+
+      use.setAttribute('transform', 'scale(1 1)');
+
+      use.setAttribute('href', '#' + this.modules.chart.graph.charts[line].id);
+      this.oxGroup.appendChild(use);
+    })
   }
 
   drawAreaCharts(){
@@ -1371,6 +1410,7 @@ class graph_Graph {
       this.currentMinimum = newMin;
 
       this.oyGroup.style.transform = `scaleY(${this.oyScaling}) translateY(${shift}px)`;
+      console.warn('shift', shift)
 
     } else {
       const chart = this.charts[line];
@@ -1387,6 +1427,9 @@ class graph_Graph {
       let oyScaling = newKY / kY;
       let zeroShiftingScaling = shift !== 0 ? newZeroShifting / zeroShifting  : 1;
       chart.currentMinimum = newMin;
+
+      chart.oyScaling = oyScaling;
+      chart.shift = shift;
 
       chart.path.style.transform = `scaleY(${oyScaling}) translateY(${shift}px)`;
       // chart.path.setAttribute('transform', `scale(1 ${oyScaling}) translate(0, ${shift})`);
@@ -1463,7 +1506,6 @@ class graph_Graph {
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
-        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
         let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 
@@ -1482,6 +1524,18 @@ class graph_Graph {
 
   togglePathVisibility(name){
     this.charts[name].toggleVisibility();
+  }
+
+  get chartsHeight(){
+    if (!this.state.isYScaled) {
+      return Math.max(...Object.values(this.charts).map( chart => chart.height * this.oyScaling));
+    } else {
+      return Math.max(...Object.values(this.charts).map( chart => {
+        console.log('chart.height * chart.oyScaling', chart.height , chart.oyScaling, chart.height * chart.oyScaling);
+        return chart.height * chart.oyScaling
+      }));
+    }
+
   }
 }
 // CONCATENATED MODULE: ./src/modules/minimap.js
@@ -1614,16 +1668,29 @@ class minimap_Minimap {
    * Fill UI with chart and set initial Position
    */
   renderMap(){
+    let width = this.nodes.wrapper.offsetWidth;
+    let height = this.nodes.wrapper.offsetHeight;
+
     this.nodes.canvas = this.graph.renderCanvas({
-      width: this.nodes.wrapper.offsetWidth,
-      height: this.nodes.wrapper.offsetHeight
+      width,
+      height,
     });
 
-    this.graph.renderCharts();
+    this.graph.renderChartsCopy();
 
     this.setInitialPosition();
 
     this.nodes.wrapper.appendChild(this.nodes.canvas);
+  }
+
+  show(){
+    let widthRatio = this.nodes.wrapper.offsetWidth / this.modules.chart.width * this.modules.chart.scaling;
+    let heightRatio = this.nodes.wrapper.offsetHeight / this.modules.chart.graph.chartsHeight;
+
+    console.warn('d', this.nodes.wrapper.offsetWidth, this.modules.chart.width);
+
+    this.graph.oyGroup.setAttribute('transform', `scale(${widthRatio} ${heightRatio})`);
+    // console.log(heightRatio);
   }
 
   /**
@@ -1641,6 +1708,15 @@ class minimap_Minimap {
   get width(){
     return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
   }
+
+  /**
+   * Compute current minimap width
+   * @return {number}
+   */
+  get width(){
+    return this.wrapperWidth - this.leftZoneWidth - this.rightZoneWidth;
+  }
+
 
   /**
    * Left zone width setter
@@ -1914,6 +1990,7 @@ class minimap_Minimap {
     const chartScroll = minimapScrolledPortion * this.modules.chart.width;
 
     this.modules.chart.scroll(chartScroll, fromScale);
+
   }
 
   /**
@@ -1984,24 +2061,24 @@ class minimap_Minimap {
    * @param {string} name - graph name
    */
   togglePath(name){
-    this.graph.togglePathVisibility(name);
+    // this.graph.togglePathVisibility(name);
 
-    if (this.state.type === 'bar'){
-      this.graph.recalculatePointsHeight(true);
-      this.fitToMax();
-    } else if (this.state.type === 'area') {
-      this.graph.recalculatePointsHeight(true);
-    } else {
-      this.fitToMax();
-    }
-
-
+    // if (this.state.type === 'bar'){
+    //   this.graph.recalculatePointsHeight(true);
+    //   this.fitToMax();
+    // } else if (this.state.type === 'area') {
+    //   this.graph.recalculatePointsHeight(true);
+    // } else {
+    //   this.fitToMax();
+    // }
   }
 
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
+    console.log('fit');
+    return;
     if (this.state.type !== 'area'){
       if (!this.state.isYScaled){
         this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible());
@@ -3031,7 +3108,6 @@ class chart_Chart {
   hideOverlays(){
     this.nodes.overlays.style.opacity = 0;
   }
-
 }
 // CONCATENATED MODULE: ./src/modules/legend.js
 
@@ -3207,6 +3283,9 @@ class telegraph_Telegraph {
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
     this.holder.appendChild(this.legend.render());
+    setTimeout(() => {
+      this.minimap.show();
+    }, 20);
   }
 
   /**
