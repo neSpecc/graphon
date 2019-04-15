@@ -842,3 +842,6 @@
 .tg--night-mode .tg-grid {
     color: rgba(217, 242, 255, 0.27);
 }
+.tg--night-mode .all b {
+    color: #fff !important;
+}

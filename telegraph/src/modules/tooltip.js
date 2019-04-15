@@ -124,7 +124,7 @@ export default class Tooltip {
         });
 
         if (this.modules.state.type === 'bar' && values.length > 1){
-          this.createItem('All', '#000', summ, null, values.length, values)
+          this.createItem('All', '#000', summ, null, values.length, values, true)
         }
       }, 150)
 
@@ -134,15 +134,19 @@ export default class Tooltip {
         });
 
         if (this.modules.state.type === 'bar' && values.length > 1){
-          this.createItem('All', '#fff', null, values.length, values)
+          this.createItem('All', '#fff', null, values.length, values, true)
         }
     }
 
   }
 
-  createItem(title, color, value, prevValue, index = 0, all){
+  createItem(title, color, value, prevValue, index = 0, all, isAll= false){
     const item = Dom.make('div', Tooltip.CSS.value);
     const counter = Dom.make('b');
+
+    if (isAll){
+      item.classList.add('all');
+    }
 
     if (this.modules.state.type === 'area'){
       let total = all.reduce((acc, cur) => acc += cur.value, 0);
