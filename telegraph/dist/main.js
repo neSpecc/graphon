@@ -429,6 +429,24 @@ function insertAfter(target, element) {
 function insertBefore(target, element) {
   target.parentNode.insertBefore(element, target);
 }
+
+function animateCounter(holder, val, prevVal){
+  let prev = make('span', 'counter-prev');
+  let cur = make('span', 'counter-cur');
+
+  holder.style.width = val.length * 7 ;
+
+  console.log(prevVal);
+
+  prev.textContent = prevVal;
+  cur.textContent = val;
+
+  holder.innerHTML = '';
+  holder.appendChild(prev);
+
+  holder.appendChild(cur);
+
+}
 // CONCATENATED MODULE: ./src/utils/event.js
 /**
  * Return pageX for passed Event
@@ -847,16 +865,16 @@ function addSpaces(number) {
 }
 
 // CONCATENATED MODULE: ./src/utils/log.js
-let prevValues = {};
+let log_prevValues = {};
 
 
 function log(obj){
   let el = document.getElementById('log');
-   Object.assign(prevValues, obj);
+   Object.assign(log_prevValues, obj);
 
    let content = '';
 
-   Object.entries(prevValues).forEach(([key, value]) => {
+   Object.entries(log_prevValues).forEach(([key, value]) => {
      content += `${key} ${!isNaN(value) ? value.toFixed(3) : value}   `
    })
 
@@ -2050,6 +2068,7 @@ class tooltip_Tooltip {
     };
 
     this._width = 0;
+    this._values = [];
   }
 
   /**
@@ -2121,16 +2140,29 @@ class tooltip_Tooltip {
   set values(values){
     this.clear();
 
-    values.forEach( ({name, value}) => {
+    const prevValues = this._values;
+
+    this._values = [];
+
+    values.forEach( ({name, value}, index) => {
       const item = make('div', tooltip_Tooltip.CSS.value);
       const color = this.modules.state.colors[name];
       const title = this.modules.state.names[name];
+      const counter = make('b');
 
+      item.textContent = title;
+      item.appendChild(counter);
 
-      item.innerHTML = `${title} <b style="color: ${color}">${addSpaces(value)}</b>`;
+      counter.style.color = color;
+
+      setTimeout(() => {
+        animateCounter(counter, addSpaces(value), prevValues[index]);
+      }, 20 * index)
+
 
       this.nodes.values.appendChild(item);
-    })
+      this._values.push(value);
+    });
   }
 
   set title(string){
@@ -2311,8 +2343,7 @@ class chart_Chart {
   }
 
   get minimalMapWidth(){
-    // return 2 * this.initialStep;
-    return 50;
+    return 80;
   }
 
   get initialScale(){
@@ -2434,7 +2465,6 @@ class chart_Chart {
 
     this.nodes.wrapper.appendChild(this.nodes.viewport);
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
-
     this.nodes.wrapper.appendChild(this.tooltip.render());
 
     this.nodes.wrapper.classList.add(chart_Chart.CSS.wrapper + '--' + this.state.type);
@@ -2771,11 +2801,16 @@ class chart_Chart {
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
+    this.hideBarHighlighting();
     this.addOnscreenDates();
-  }
 
-  scrollByDelta(delta){
-    this.scroll(this.scrollValue + delta);
+    if (this._sd){
+      clearTimeout(this._sd);
+    }
+
+    this._sd = setTimeout(()=>{
+      this.modules.header.setPeriod(this.state.dates[this.leftPointIndex], this.state.dates[this.rightPointIndex]);
+    }, 50)
   }
 
   /**
@@ -2784,8 +2819,6 @@ class chart_Chart {
    */
   scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
-
-    // log({scaling});
 
     this.scaling = scaling;
   }
@@ -2995,7 +3028,6 @@ class chart_Chart {
     this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){
-      console.log('recal from chart', name);
       this.graph.recalculatePointsHeight();
       this.fitToMax();
     } else if (this.state.type === 'area') {
@@ -3018,6 +3050,10 @@ class chart_Chart {
     this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
     this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
     this.nodes.overlayRight.setAttribute('width', (this.onscreenPointsCount - index) * this.stepScaled - scrollOffset );
+  }
+
+  hideBarHighlighting(){
+    this.nodes.overlays.style.opacity = '0';
   }
 
   renderOverlays(){
@@ -3142,8 +3178,61 @@ class legend_Legend {
   }
 }
 
+// CONCATENATED MODULE: ./src/modules/header.js
+
+
+class header_Header {
+  constructor(){
+    this.nodes = {
+      wrapper: undefined,
+      title: undefined,
+      dates: undefined,
+    };
+
+  }
+
+  static get CSS(){
+    return {
+      wrapper: 'tg-header',
+      title: 'tg-header__title',
+      dates: 'tg-header__dates',
+    }
+  }
+
+  render(){
+    this.nodes.wrapper = make('div', header_Header.CSS.wrapper);
+    this.nodes.title = make('div', header_Header.CSS.title);
+    this.nodes.dates = make('div', header_Header.CSS.dates);
+
+    this.nodes.title.textContent = 'Messages';
+
+    this.nodes.wrapper.appendChild(this.nodes.title);
+    this.nodes.wrapper.appendChild(this.nodes.dates);
+
+    return this.nodes.wrapper
+  }
+
+  setPeriod(leftDateTimestamp, rightDateTimestamp){
+    this._sd = setTimeout(() => {
+      let leftDate = (new Date(leftDateTimestamp)).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+      let rightDate = (new Date(rightDateTimestamp)).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+
+      this.nodes.dates.innerHTML = `${leftDate} - ${rightDate}`;
+
+    }, 20)
+  }
+}
 // CONCATENATED MODULE: ./src/telegraph.js
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return telegraph_Telegraph; });
+
 
 
 
@@ -3195,12 +3284,17 @@ class telegraph_Telegraph {
     this.legend = new legend_Legend(this);
 
     /**
+     * Header module
+     */
+    this.header = new header_Header(this);
+
+    /**
      * Create base UI elements
      */
     this.prepareUi();
 
     /**
-     * Render chart and minimap
+     * Render chart and mini map
      */
     this.chart.renderCharts();
     this.minimap.renderMap();
@@ -3222,6 +3316,7 @@ class telegraph_Telegraph {
    * Create base app UI
    */
   prepareUi(){
+    this.holder.appendChild(this.header.render());
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
     this.holder.appendChild(this.legend.render());

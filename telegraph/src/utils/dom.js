@@ -41,3 +41,21 @@ export function insertAfter(target, element) {
 export function insertBefore(target, element) {
   target.parentNode.insertBefore(element, target);
 }
+
+export function animateCounter(holder, val, prevVal){
+  let prev = make('span', 'counter-prev');
+  let cur = make('span', 'counter-cur');
+
+  holder.style.width = val.length * 7 ;
+
+  console.log(prevVal);
+
+  prev.textContent = prevVal;
+  cur.textContent = val;
+
+  holder.innerHTML = '';
+  holder.appendChild(prev);
+
+  holder.appendChild(cur);
+
+}

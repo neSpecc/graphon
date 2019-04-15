@@ -86,8 +86,7 @@ export default class Chart {
   }
 
   get minimalMapWidth(){
-    // return 2 * this.initialStep;
-    return 50;
+    return 80;
   }
 
   get initialScale(){
@@ -209,7 +208,6 @@ export default class Chart {
 
     this.nodes.wrapper.appendChild(this.nodes.viewport);
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
-
     this.nodes.wrapper.appendChild(this.tooltip.render());
 
     this.nodes.wrapper.classList.add(Chart.CSS.wrapper + '--' + this.state.type);
@@ -546,11 +544,16 @@ export default class Chart {
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
+    this.hideBarHighlighting();
     this.addOnscreenDates();
-  }
 
-  scrollByDelta(delta){
-    this.scroll(this.scrollValue + delta);
+    if (this._sd){
+      clearTimeout(this._sd);
+    }
+
+    this._sd = setTimeout(()=>{
+      this.modules.header.setPeriod(this.state.dates[this.leftPointIndex], this.state.dates[this.rightPointIndex]);
+    }, 50)
   }
 
   /**
@@ -559,8 +562,6 @@ export default class Chart {
    */
   scale(scaling, direction){
     this.graph.scaleLines(scaling, direction);
-
-    // log({scaling});
 
     this.scaling = scaling;
   }
@@ -770,7 +771,6 @@ export default class Chart {
     this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){
-      console.log('recal from chart', name);
       this.graph.recalculatePointsHeight();
       this.fitToMax();
     } else if (this.state.type === 'area') {
@@ -793,6 +793,10 @@ export default class Chart {
     this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
     this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
     this.nodes.overlayRight.setAttribute('width', (this.onscreenPointsCount - index) * this.stepScaled - scrollOffset );
+  }
+
+  hideBarHighlighting(){
+    this.nodes.overlays.style.opacity = '0';
   }
 
   renderOverlays(){

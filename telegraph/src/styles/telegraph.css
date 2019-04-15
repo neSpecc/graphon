@@ -69,9 +69,47 @@
     shape-rendering: optimizespeed;
 }
 
+.tg-chart--line path {
+    shape-rendering: geometricprecision;
+}
+
 .tg-chart .tg-graph--hidden,
 .tg-minimap .tg-graph--hidden {
     opacity: 0;
+}
+
+/**
+ * Header
+ */
+.tg-header {
+    margin-bottom: 20px;
+    padding: 15px;
+    padding-right: 0;
+    font-weight: 600;
+    font-size: 18px;
+    display: flex;
+}
+
+.tg-header__title {
+
+}
+
+.tg-header__dates {
+    margin-left: auto;
+    margin-top: auto;
+    font-size: 15px;
+    vertical-align: bottom;
+}
+
+@media all and (max-width: 1000px) {
+    .tg-header {
+        font-size: 15px;
+        padding-right: 15px;
+    }
+
+    .tg-header__dates {
+        font-size: 13px;
+    }
 }
 
 /**
@@ -250,6 +288,25 @@
     z-index: 2;
     cursor: default;
     will-change: width;
+}
+
+.tg-minimap__left::after,
+.tg-minimap__right::after {
+    content: '';
+    width: 8px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(226,238,249,0.60);
+    z-index: 1;
+}
+
+.tg-minimap__left::after {
+    right: -8px;
+}
+
+.tg-minimap__right::after {
+    left: -8px;
 }
 
 
@@ -476,8 +533,52 @@
 .tg-tooltip__values-item b {
     margin-left: auto;
     white-space: nowrap;
+    position: relative;
 }
 
+.counter-prev {
+    position: absolute;
+    animation: exit 400ms ease;
+    will-change: transform, opacity;
+    animation-fill-mode: forwards;
+    right: 0;
+    height: 1em;
+}
+
+.counter-cur {
+    position: absolute;
+    animation: enter 400ms ease;
+    will-change: transform, opacity;
+    animation-fill-mode: forwards;
+    right: 0;
+    height: 1em;
+}
+
+@keyframes exit {
+    from {
+        transform: none;
+        opacity: 0.9;
+    }
+
+    to {
+        transform: translate(15px,0);
+        /*transform: translate(0px, -5px) scale(1.1);*/
+        opacity: 0;
+    }
+}
+
+@keyframes enter {
+    from {
+        transform: translate(-15px , 0);
+        /*transform: scaleY(0.8) translate(-2px , 3px);*/
+        opacity: 0;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
 
 
 /**

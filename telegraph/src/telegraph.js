@@ -2,6 +2,7 @@ import State from './modules/state';
 import Minimap from './modules/minimap.js';
 import Chart from './modules/chart.js';
 import Legend from './modules/legend.js';
+import Header from './modules/header.js';
 
 /**
  * @typedef {object} ChartData
@@ -49,12 +50,17 @@ export default class Telegraph {
     this.legend = new Legend(this);
 
     /**
+     * Header module
+     */
+    this.header = new Header(this);
+
+    /**
      * Create base UI elements
      */
     this.prepareUi();
 
     /**
-     * Render chart and minimap
+     * Render chart and mini map
      */
     this.chart.renderCharts();
     this.minimap.renderMap();
@@ -76,6 +82,7 @@ export default class Telegraph {
    * Create base app UI
    */
   prepareUi(){
+    this.holder.appendChild(this.header.render());
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
     this.holder.appendChild(this.legend.render());

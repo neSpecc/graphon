@@ -14,6 +14,7 @@ export default class Tooltip {
     };
 
     this._width = 0;
+    this._values = [];
   }
 
   /**
@@ -85,16 +86,29 @@ export default class Tooltip {
   set values(values){
     this.clear();
 
-    values.forEach( ({name, value}) => {
+    const prevValues = this._values;
+
+    this._values = [];
+
+    values.forEach( ({name, value}, index) => {
       const item = Dom.make('div', Tooltip.CSS.value);
       const color = this.modules.state.colors[name];
       const title = this.modules.state.names[name];
+      const counter = Dom.make('b');
 
+      item.textContent = title;
+      item.appendChild(counter);
 
-      item.innerHTML = `${title} <b style="color: ${color}">${Numbers.addSpaces(value)}</b>`;
+      counter.style.color = color;
+
+      setTimeout(() => {
+        Dom.animateCounter(counter, Numbers.addSpaces(value), prevValues[index]);
+      }, 20 * index)
+
 
       this.nodes.values.appendChild(item);
-    })
+      this._values.push(value);
+    });
   }
 
   set title(string){
