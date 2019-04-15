@@ -230,6 +230,9 @@
     margin: 10px 15px 20px;
     cursor: pointer;
     border-radius: 9px;
+    -webkit-tap-highlight-color:  rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 .tg-minimap svg {
@@ -257,17 +260,17 @@
 
 .tg-minimap__center {
     position: absolute;
-    top: -1px;
-    bottom: -1px;
+    top: -2px;
+    bottom: -2px;
     width: 10px;
-    border-top: 1px solid #C0D1E1;
-    border-bottom: 1px solid #C0D1E1;
+    border-top: 2px solid #C0D1E1;
+    border-bottom: 2px solid #C0D1E1;
 }
 
 .tg-minimap__center::before,
 .tg-minimap__center::after {
     content: '';
-    width: 1px;
+    width: 2px;
     background: #fff;
     top: 0;
     bottom: 0;
@@ -292,7 +295,7 @@
 .tg-minimap__right-scaler {
     position: absolute;
     height: calc(100% + 4px);
-    width: 22px;
+    /*width: 22px;*/
     top: -2px;
     z-index: 2;
     cursor: col-resize;
@@ -311,10 +314,11 @@
 .tg-minimap__right-scaler::before {
     content: '';
     position: absolute;
-    height: 100%;
+    height: calc(100% + 4px);
+    top: -2px;
     width: 16px;
     background: #C0D1E1;
-    border: 1px solid #fff;
+    border: 2px solid #fff;
     box-sizing: border-box;
 }
 
@@ -331,21 +335,21 @@
 }
 
 .tg-minimap__right-scaler::after {
-    left: 6px;
+    left: -10px;
 }
 
 .tg-minimap__left-scaler::after {
-    right: 6px;
+    right: -10px;
 }
 
 .tg-minimap__left-scaler::before {
-    right: 0;
+    right: -16px;
     border-radius: 9px 0 0 9px;
     border-right: 0;
 }
 
 .tg-minimap__right-scaler::before {
-    left: 0;
+    left: -16px;
     border-radius: 0 9px 9px 0;
     border-left: 0;
 }

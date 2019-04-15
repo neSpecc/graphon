@@ -459,7 +459,6 @@ export default class Chart {
   }
 
   addOnscreenDates(){
-    return;
     /**
      * Get slice of timestamps that currently visible on the screen
      */
@@ -547,8 +546,7 @@ export default class Chart {
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
-    //
-    // this.addOnscreenDates();
+    this.addOnscreenDates();
   }
 
   scrollByDelta(delta){

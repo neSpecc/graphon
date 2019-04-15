@@ -539,9 +539,26 @@ export default class Graph {
     }
   }
 
-  recalculateArea(){
+  recalculateArea(useRecalculated = false){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
+
+    let recalculated = this.state.recalculatedValues;
+
+    if (useRecalculated && recalculated) {
+      for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
+        if (recalculated[i][1] === 0){
+          this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3], true);
+        } else {
+          this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
+        }
+      }
+
+      this.state.clearRecalculatedValues();
+      return;
+    }
+
+    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
@@ -550,18 +567,20 @@ export default class Graph {
         return val + this.state.getLinePoints(line)[pointIndex];
       }, 0);
 
-      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+      for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+
+        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
 
         if (pointIndex === 0){
-          this.charts[line].move(pointIndex, newStack, prevValue, true);
+          this.charts[lines[i]].move(pointIndex, newStack, prevValue, true);
         } else {
-          this.charts[line].move(pointIndex, newStack, prevValue);
+          this.charts[lines[i]].move(pointIndex, newStack, prevValue);
         }
 
         prevValue += pointValue;
-      });
+      }
     }
 
     Object.entries(this.charts).filter(([line, area]) => this.checkPathVisibility(line)).forEach(([line, area]) => {
@@ -598,7 +617,6 @@ export default class Graph {
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
-        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
         let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 

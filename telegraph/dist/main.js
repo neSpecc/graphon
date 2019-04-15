@@ -1404,9 +1404,26 @@ class graph_Graph {
     }
   }
 
-  recalculateArea(){
+  recalculateArea(useRecalculated = false){
     const pointsCount = this.state.daysCount;
     const stacks = this.state.getStacks();
+
+    let recalculated = this.state.recalculatedValues;
+
+    if (useRecalculated && recalculated) {
+      for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
+        if (recalculated[i][1] === 0){
+          this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3], true);
+        } else {
+          this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
+        }
+      }
+
+      this.state.clearRecalculatedValues();
+      return;
+    }
+
+    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
@@ -1415,18 +1432,20 @@ class graph_Graph {
         return val + this.state.getLinePoints(line)[pointIndex];
       }, 0);
 
-      this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse().forEach( (line, index) => {
+      for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+
+        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
 
         if (pointIndex === 0){
-          this.charts[line].move(pointIndex, newStack, prevValue, true);
+          this.charts[lines[i]].move(pointIndex, newStack, prevValue, true);
         } else {
-          this.charts[line].move(pointIndex, newStack, prevValue);
+          this.charts[lines[i]].move(pointIndex, newStack, prevValue);
         }
 
         prevValue += pointValue;
-      });
+      }
     }
 
     Object.entries(this.charts).filter(([line, area]) => this.checkPathVisibility(line)).forEach(([line, area]) => {
@@ -1463,7 +1482,6 @@ class graph_Graph {
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
-        console.log('u');
         let newStack = stacks[pointIndex] - hiddenPointsValue;
         let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
 
@@ -1648,7 +1666,7 @@ class minimap_Minimap {
   set leftWidth(val){
     this.leftZoneWidth = val;
     this.nodes.leftZone.style.width = val + 'px';
-    this.nodes.centerZone.style.left = val + 'px';
+    this.nodes.centerZone.style.left = val + 16 + 'px';
   }
 
   /**
@@ -1670,8 +1688,11 @@ class minimap_Minimap {
     this.rightWidth = this.wrapperWidth - scrollDistance - value;
 
     this.viewportWidth = value;
-    this.nodes.centerZone.style.width = value + 'px';
+    this.centerWidth = value;
+  }
 
+  set centerWidth(value){
+    this.nodes.centerZone.style.width = (value - 32) + 'px';
   }
 
   /**
@@ -1945,7 +1966,7 @@ class minimap_Minimap {
 
       this.leftWidth = newScalerWidth;
 
-      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth) + 'px';
+      this.centerWidth = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth)
 
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
@@ -1955,8 +1976,7 @@ class minimap_Minimap {
       }
 
       this.rightWidth = newScalerWidth;
-
-      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth) + 'px';
+      this.centerWidth = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth)
     }
 
 
@@ -2664,7 +2684,6 @@ class chart_Chart {
   }
 
   addOnscreenDates(){
-    return;
     /**
      * Get slice of timestamps that currently visible on the screen
      */
@@ -2752,8 +2771,7 @@ class chart_Chart {
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
     this.pointer.hide();
-    //
-    // this.addOnscreenDates();
+    this.addOnscreenDates();
   }
 
   scrollByDelta(delta){

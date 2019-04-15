@@ -161,7 +161,7 @@ export default class Minimap {
   set leftWidth(val){
     this.leftZoneWidth = val;
     this.nodes.leftZone.style.width = val + 'px';
-    this.nodes.centerZone.style.left = val + 'px';
+    this.nodes.centerZone.style.left = val + 16 + 'px';
   }
 
   /**
@@ -183,8 +183,11 @@ export default class Minimap {
     this.rightWidth = this.wrapperWidth - scrollDistance - value;
 
     this.viewportWidth = value;
-    this.nodes.centerZone.style.width = value + 'px';
+    this.centerWidth = value;
+  }
 
+  set centerWidth(value){
+    this.nodes.centerZone.style.width = (value - 32) + 'px';
   }
 
   /**
@@ -458,7 +461,7 @@ export default class Minimap {
 
       this.leftWidth = newScalerWidth;
 
-      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth) + 'px';
+      this.centerWidth = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth)
 
     } else {
       newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
@@ -468,8 +471,7 @@ export default class Minimap {
       }
 
       this.rightWidth = newScalerWidth;
-
-      this.nodes.centerZone.style.width = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth) + 'px';
+      this.centerWidth = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth)
     }
 
 
