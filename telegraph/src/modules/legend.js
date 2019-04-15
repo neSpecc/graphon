@@ -48,11 +48,7 @@ export default class Legend {
 
       this.buttons[name] = item;
 
-      item.addEventListener('mouseup', () => {
-        this.itemClicked(name);
-      });
-
-      item.addEventListener('touchend', () => {
+      item.addEventListener('click', () => {
         this.itemClicked(name);
       });
 
