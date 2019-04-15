@@ -84,7 +84,6 @@
 .tg-header {
     margin-bottom: 20px;
     padding: 15px;
-    padding-right: 0;
     font-weight: 600;
     font-size: 18px;
     display: flex;
@@ -103,7 +102,6 @@
 @media all and (max-width: 1000px) {
     .tg-header {
         font-size: 15px;
-        padding-right: 15px;
     }
 
     .tg-header__dates {
@@ -705,18 +703,43 @@
  */
 .tg--night-mode {
     background: #242F3E;
-    color: #E2E8EE;
+    color: #fff;
 }
 
 .tg--night-mode .tg-minimap__left,
 .tg--night-mode .tg-minimap__right {
-    background: rgba(30, 40, 53, 0.73);
-    border-color: #1f2938;
+    background: rgba(48,66,89,0.60);
 }
 
-.tg--night-mode .tg-chart footer,
-.tg--night-mode .tg-grid {
-    color: #5C6C7B;
+.tg--night-mode .tg-minimap__left::after,
+.tg--night-mode .tg-minimap__right::after {
+    background: rgba(48,66,89,0.60);
+}
+
+.tg--night-mode .tg-minimap__left-scaler::before,
+.tg--night-mode .tg-minimap__right-scaler::before {
+    background: #56626D;
+    border: 0;
+    height: calc(100% + 2px);
+    top: 0;
+}
+
+.tg--night-mode .tg-minimap__left-scaler,
+.tg--night-mode .tg-minimap__right-scaler {
+    height: calc(100% + 2px);
+}
+.tg--night-mode .tg-minimap__center {
+    border-color: #56626D;
+}
+.tg--night-mode .tg-chart--line .tg-grid__counter {
+    background: #242F3E;
+    box-shadow: 0 0 10px 2px #242F3E;
+
+}
+.tg--night-mode .tg-minimap__center::before,
+.tg--night-mode .tg-minimap__center::after {
+    background: #242F3E;
+    opacity: 0.5;
 }
 
 .tg--night-mode .tg-legend__item {
@@ -725,13 +748,27 @@
 
 .tg--night-mode .tg-tooltip {
     background: #273240;
+    color: #fff;
     box-shadow: 0 2px 4px 0 rgba(18,29,39,0.67);
 }
 
 .tg--night-mode .tg-tooltip__title {
-    color: #E2E8EE;
+    color: #fff;
 }
 
 .tg--night-mode .tg-pointer__pointer {
     background: #242F3E;
+}
+
+.tg--night-mode .tg-chart__overlays rect {
+    fill: #242F3E;
+}
+
+.tg--night-mode .tg-grid__section {
+    border-color: rgba(255, 255,255, 0.1);
+}
+
+.tg--night-mode .tg-chart footer,
+.tg--night-mode .tg-grid {
+    color: rgba(217, 242, 255, 0.27);
 }
