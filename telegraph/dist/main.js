@@ -2211,6 +2211,7 @@ class chart_Chart {
 
     this._initialScale = undefined;
     this._initialStep = undefined;
+    this._hoveredPointIndex = undefined;
   }
 
   get initialStep(){
@@ -2518,53 +2519,14 @@ class chart_Chart {
     }
   }
 
-  moveDate(originalIndex, visibleIndex){
-    let centering = 'translateX(-50%)';
-
-    if (visibleIndex === 0){
-      // centering = '';
-    } else if (visibleIndex === this.datesPerScreen - 1){
-      // centering = '';
-    }
-
-
-    let dateEl = this.onscreenDatesElements[originalIndex];
-    let newX = originalIndex * this.stepScaled + this.scrollValue;
-
-    dateEl.style.transform = `translateX(${ newX }px)` + centering;
-
-    // let skippedCount = Math.floor(Math.floor(this.onscreenPointsCount / this.datesPerScreen) / this.datesPerScreen);
+  /**
+   * Check if date under passed index should be visible
+   * @param {number} originalIndex - index in this.state.dates
+   * @return {boolean}
+   */
+  checkDateShouldBeHidden(originalIndex){
     let skippedCount = Math.round(((this.onscreenPointsCount / this.datesPerScreen ) - this._showEveryNDateInitial) / this._showEveryNDateInitial);
     let checks = [];
-
-    // console.warn(this.onscreenPointsCount, this.datesPerScreen, newX, )
-
-    log({
-      step: this.stepScaled,
-      skippedCount: skippedCount,
-    });
-
-
-    let leftReached = newX < ((this.viewportWidth / this.datesPerScreen) / 2) * visibleIndex;
-    //
-    // if (originalIndex === 14){
-    //   console.log(originalIndex, visibleIndex, newX);
-    // }
-    //
-    // let check = (originalIndex + this._showEveryNDateInitial) % (this._showEveryNDateInitial * 2) === 0;
-    // if (leftReached && check){
-    //   dateEl.style.opacity = '0.1';
-    // } else {
-    //   dateEl.style.opacity = '1';
-    // }
-
-
-
-    // console.log('leftReached', leftReached);
-    //
-    // if (leftReached){
-    //   dateEl.style.opacity = '0.5';
-    // }
 
     for (let i = 1; i < skippedCount + 1; i++){
       let idxToCheck = originalIndex + i * this._showEveryNDateInitial;
@@ -2572,15 +2534,29 @@ class chart_Chart {
       checks.push(check)
     }
 
-    if (checks.some(check => !!check)){
-      dateEl.style.opacity = '0';
+    return checks.some(check => !!check);
+  }
+
+  moveDate(originalIndex){
+    let dateEl = this.onscreenDatesElements[originalIndex];
+    let centering = 'translateX(-50%)';
+    let newX = originalIndex * this.stepScaled + this.scrollValue;
+
+    dateEl.style.transform = `translateX(${ newX }px)` + centering;
+
+    if (this.checkDateShouldBeHidden(originalIndex)){
+      dateEl.classList.add('hided');
     } else {
-      dateEl.style.opacity = '1';
+      dateEl.classList.remove('hided');
     }
   }
 
 
   pushDate(date, originIndex, visibleIndex){
+    if (this.checkDateShouldBeHidden(originIndex)){
+      return;
+    }
+
     const dt = new Date(date);
     const dateEl = make('time');
     dateEl.textContent = dt.toLocaleDateString('en-US', {
@@ -2594,7 +2570,7 @@ class chart_Chart {
     this.nodes.legendDates.push(dateEl);
     this.onscreenDates.add(originIndex);
     this.onscreenDatesElements[originIndex] = dateEl;
-    this.moveDate(originIndex, visibleIndex);
+    this.moveDate(originIndex);
   }
 
   get onscreenPointsCount(){
@@ -2628,17 +2604,8 @@ class chart_Chart {
     return this.stepX * this.scaling
   }
 
-  scaleDates(){
-    // let visibleIndex = 0;
-    // this.onscreenDates.forEach((originalIndex) => {
-    //   this.moveDate(originalIndex, visibleIndex);
-    //   visibleIndex++;
-    // });
-
-    this.addOnscreenDates();
-  }
-
   addOnscreenDates(){
+    // return;
     /**
      * Get slice of timestamps that currently visible on the screen
      */
@@ -2648,7 +2615,6 @@ class chart_Chart {
     if (!this._showEveryNDateInitial){
       let pointsOnScreen = this.rightPointIndex - this.leftPointIndex;
       this._showEveryNDateInitial = Math.ceil(pointsOnScreen / this.datesPerScreen);
-      console.log('this._showEveryNDateInitial', this._showEveryNDateInitial);
     }
 
     let visibleIndex = 0;
@@ -2673,7 +2639,7 @@ class chart_Chart {
        * If point already showed, move it
        */
       if (this.onscreenDates.has(originIndex)){
-        this.moveDate(originIndex, visibleIndex);
+        this.moveDate(originIndex);
         visibleIndex++;
         return
       }
@@ -2696,9 +2662,13 @@ class chart_Chart {
   }
 
   removeDate(originalIndex){
-    this.onscreenDatesElements[originalIndex].remove();
+    if (!this.onscreenDatesElements[originalIndex]){
+      return;
+    }
+
     this.onscreenDates[originalIndex] = null;
     this.onscreenDates.delete(originalIndex);
+    this.onscreenDatesElements[originalIndex].remove();
     this.onscreenDatesElements[originalIndex] = null;
     delete this.onscreenDatesElements[originalIndex];
   }
@@ -2726,11 +2696,7 @@ class chart_Chart {
     this.tooltip.hide();
     this.pointer.hide();
 
-    if (!fromScale){
-      this.addOnscreenDates();
-    } else {
-      this.scaleDates();
-    }
+    this.addOnscreenDates();
   }
 
   scrollByDelta(delta){
@@ -2811,7 +2777,14 @@ class chart_Chart {
      * Rerender grid if it was rendered before
      */
     if (this.nodes.grid){
-      this.renderGrid();
+
+      if (this._gd){
+        clearTimeout(this._gd);
+      }
+
+      this._gd = setTimeout(() => {
+        this.renderGrid();
+      }, 15)
     }
   }
 
@@ -2855,6 +2828,15 @@ class chart_Chart {
     let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
     // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
+
+    /**
+     * Prevent recalculations on mousemove with the same point
+     */
+    if (hoveredPointIndex === this._hoveredPointIndex){
+      return;
+    }
+
+    this._hoveredPointIndex = hoveredPointIndex;
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
       pointIndex = pointIndex + 1;

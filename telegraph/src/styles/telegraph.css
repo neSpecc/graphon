@@ -150,15 +150,20 @@
     position: absolute;
     display: block;
     white-space: nowrap;
-    /*text-align: center;*/
-    transition: opacity 100ms ease;
-    will-change: opacit, transform;
-    /*flex-grow: 1;*/
-    /*right: 0;*/
-    /*min-width: 55px;*/
-    /*transform: translateX(-50%);*/
-    /*background: #eee;*/
-    /*margin-left: -26px;*/
+    transition: opacity 250ms ease;
+    will-change: opacity, transform;
+
+    animation: fade-in 250ms ease;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .tg-chart time.hided {
@@ -427,8 +432,8 @@
 */
 .tg-tooltip {
     position: absolute;
-    background: rgba(255,255,255,.94);
-    border-radius: 5px;
+    background: rgba(255,255,255,1);
+    border-radius: 10px;
     box-shadow: 0 1px 4px 0 rgba(0,0,0,0.13);
     top: 20px;
     padding: 10px 15px;
@@ -438,6 +443,7 @@
     opacity: 0;
     min-width: 130px;
     font-size: 13px;
+    font-family: Roboto, 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, sans-serif;
 }
 
 .tg-tooltip--showed {
