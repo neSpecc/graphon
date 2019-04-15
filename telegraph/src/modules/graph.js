@@ -633,7 +633,7 @@ export default class Graph {
     return !this.charts[name].isHidden;
   }
 
-  togglePathVisibility(name){
-    this.charts[name].toggleVisibility();
+  togglePathVisibility(name, status){
+    this.charts[name].toggleVisibility(status);
   }
 }

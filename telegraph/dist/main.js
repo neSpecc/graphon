@@ -570,8 +570,8 @@ class path_Path {
     return this.path.classList.contains(path_Path.CSS.graphHidden);
   }
 
-  toggleVisibility(){
-    this.path.classList.toggle(path_Path.CSS.graphHidden);
+  toggleVisibility(status){
+    this.path.classList.toggle(path_Path.CSS.graphHidden, status);
   }
 }
 // CONCATENATED MODULE: ./src/modules/bar.js
@@ -662,9 +662,9 @@ class bar_Bar {
     return this.hidden;
   }
 
-  toggleVisibility(){
+  toggleVisibility(status){
     this.hidden = !this.hidden;
-    this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden);
+    this.wrapper.classList.toggle(bar_Bar.CSS.graphHidden, status);
   }
 }
 // CONCATENATED MODULE: ./src/modules/area.js
@@ -800,9 +800,9 @@ class area_Area {
     return this.hidden;
   }
 
-  toggleVisibility(){
+  toggleVisibility(status){
     this.hidden = !this.hidden;
-    this.path.classList.toggle(area_Area.CSS.graphHidden);
+    this.path.classList.toggle(area_Area.CSS.graphHidden, status);
   }
 }
 // CONCATENATED MODULE: ./src/utils/numbers.js
@@ -1514,8 +1514,8 @@ class graph_Graph {
     return !this.charts[name].isHidden;
   }
 
-  togglePathVisibility(name){
-    this.charts[name].toggleVisibility();
+  togglePathVisibility(name, status){
+    this.charts[name].toggleVisibility(status);
   }
 }
 // CONCATENATED MODULE: ./src/modules/minimap.js
@@ -2019,8 +2019,8 @@ class minimap_Minimap {
    * Toggle path visibility
    * @param {string} name - graph name
    */
-  togglePath(name){
-    this.graph.togglePathVisibility(name);
+  togglePath(name, status){
+    this.graph.togglePathVisibility(name, status);
 
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight(true);
@@ -2112,8 +2112,6 @@ class tooltip_Tooltip {
 
     let offsetLeft = -25;
     let left = lineLeftCoord + offsetLeft;
-
-    console.log(left);
 
     if (maxBottom > 260) {
       left = left - this._width;
@@ -3064,8 +3062,8 @@ class chart_Chart {
    * Toggle path visibility
    * @param {string} name - graph name
    */
-  togglePath(name){
-    this.graph.togglePathVisibility(name);
+  togglePath(name, status){
+    this.graph.togglePathVisibility(name, status);
     this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){
@@ -3148,6 +3146,8 @@ class legend_Legend {
     return {
       wrapper: 'tg-legend',
       item: 'tg-legend__item',
+      itemWobble: 'tg-legend__item--wobble',
+      itemSelected: 'tg-legend__item--selected',
       itemEnabled: 'tg-legend__item--enabled',
       checkbox: 'tg-legend__checkbox',
     }
@@ -3171,16 +3171,37 @@ class legend_Legend {
       let item = make('div', [legend_Legend.CSS.item, legend_Legend.CSS.itemEnabled]),
         checkbox = make('span', legend_Legend.CSS.checkbox);
 
-      checkbox.style.borderColor = this.modules.state.colors[name];
-      checkbox.style.backgroundColor = this.modules.state.colors[name];
+      item.style.borderColor = this.modules.state.colors[name];
+      item.style.backgroundColor = this.modules.state.colors[name];
 
       item.appendChild(checkbox);
       item.appendChild(document.createTextNode(title));
 
       this.buttons[name] = item;
 
+      this._clickPrevented = false;
+
       item.addEventListener('click', () => {
-        this.itemClicked(name);
+        console.log('this._clickPrevented', this._clickPrevented);
+        if (!this._clickPrevented){
+          this.itemClicked(name);
+        }
+      });
+
+      item.addEventListener('mousedown', () => {
+        this.mousedown(name);
+      });
+
+      item.addEventListener('touchstart', () => {
+        this.mousedown(name);
+      });
+
+      item.addEventListener('mouseup', () => {
+        this.mouseup(name);
+      });
+
+      item.addEventListener('touchend', () => {
+        this.mouseup(name);
       });
 
       this.nodes.wrapper.appendChild(item);
@@ -3188,30 +3209,93 @@ class legend_Legend {
     return this.nodes.wrapper;
   }
 
+  mousedown(name){
+    this._timer = setTimeout(() => {
+      this._clickPrevented = true;
+
+      console.log('this._clickPrevented', this._clickPrevented);
+      this.uncheckAllExceptPassed(name);
+    }, 500);
+  }
+
+  uncheckAllExceptPassed(exceptName) {
+    Object.entries(this.buttons).forEach(([name, el], index) => {
+        if (name !== exceptName){
+          this.buttons[name].classList.remove(legend_Legend.CSS.itemEnabled);
+          this.buttons[name].style.backgroundColor = 'transparent';
+          this.buttons[name].style.color = this.modules.state.colors[name];
+
+          this.modules.chart.togglePath(name, true);
+          this.modules.minimap.togglePath(name, true);
+        } else {
+          this.buttons[name].classList.add(legend_Legend.CSS.itemEnabled);
+          this.buttons[name].style.backgroundColor = this.modules.state.colors[name];
+          this.buttons[name].style.color = '#fff';
+
+          this.buttons[name].classList.add(legend_Legend.CSS.itemSelected);
+          setTimeout(() => {
+            this.buttons[name].classList.remove(legend_Legend.CSS.itemSelected);
+          }, 300);
+
+          this.modules.chart.togglePath(name, false);
+          this.modules.minimap.togglePath(name, false);
+        }
+    })
+
+  }
+
+
+  mouseup(name){
+    if (!this._timer){
+      return;
+    }
+
+    setTimeout(() => {
+      this._clickPrevented = false;
+      console.log('1this._clickPrevented', this._clickPrevented);
+    }, 400)
+
+    clearTimeout(this._timer);
+  }
+
+
   /**
    * Click handler for togglers
    * @param {string} name - graph name
    */
   itemClicked(name){
-    this.modules.chart.togglePath(name);
-    // setTimeout(() => {
-      this.modules.minimap.togglePath(name);
-    // }, 50)
+    let isLast = this.modules.state.linesAvailable.filter(line => this.modules.chart.graph.checkPathVisibility(line)).length === 1;
 
+    if (!this.buttons[name].classList.contains(legend_Legend.CSS.itemEnabled)){
+      this.buttons[name].classList.add(legend_Legend.CSS.itemEnabled);
+      this.buttons[name].style.backgroundColor = this.modules.state.colors[name];
+      this.buttons[name].style.color = '#fff';
 
-    this.buttons[name].classList.toggle(legend_Legend.CSS.itemEnabled);
-
-    const checkbox = this.buttons[name].querySelector(`.${legend_Legend.CSS.checkbox}`);
-
-    /**
-     * @todo add animation
-     */
-    if (this.buttons[name].classList.contains(legend_Legend.CSS.itemEnabled)){
-      checkbox.style.boxShadow = `inset 0 0 0 10px ${this.modules.state.colors[name]}`;
+      this.buttons[name].classList.add(legend_Legend.CSS.itemSelected);
+      setTimeout(() => {
+        this.buttons[name].classList.remove(legend_Legend.CSS.itemSelected);
+      }, 300);
     } else {
-      checkbox.style.boxShadow = 'none';
-      checkbox.style.backgroundColor = 'transparent';
+      if (isLast){
+        this.buttons[name].classList.add(legend_Legend.CSS.itemWobble);
+        setTimeout(() => {
+          this.buttons[name].classList.remove(legend_Legend.CSS.itemWobble);
+        }, 300);
+
+        return;
+      }
+
+      this.buttons[name].classList.remove(legend_Legend.CSS.itemEnabled);
+      this.buttons[name].style.backgroundColor = 'transparent';
+      this.buttons[name].style.color = this.modules.state.colors[name];
     }
+
+    this.modules.chart.togglePath(name);
+    this.modules.minimap.togglePath(name);
+  }
+
+  toggle(name){
+
   }
 }
 

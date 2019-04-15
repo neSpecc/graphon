@@ -85,8 +85,8 @@ export default class Bar {
     return this.hidden;
   }
 
-  toggleVisibility(){
+  toggleVisibility(status){
     this.hidden = !this.hidden;
-    this.wrapper.classList.toggle(Bar.CSS.graphHidden);
+    this.wrapper.classList.toggle(Bar.CSS.graphHidden, status);
   }
 }

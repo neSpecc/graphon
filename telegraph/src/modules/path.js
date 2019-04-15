@@ -88,7 +88,7 @@ export default class Path {
     return this.path.classList.contains(Path.CSS.graphHidden);
   }
 
-  toggleVisibility(){
-    this.path.classList.toggle(Path.CSS.graphHidden);
+  toggleVisibility(status){
+    this.path.classList.toggle(Path.CSS.graphHidden, status);
   }
 }

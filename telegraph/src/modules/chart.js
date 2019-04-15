@@ -762,8 +762,8 @@ export default class Chart {
    * Toggle path visibility
    * @param {string} name - graph name
    */
-  togglePath(name){
-    this.graph.togglePathVisibility(name);
+  togglePath(name, status){
+    this.graph.togglePathVisibility(name, status);
     this.pointer.toggleVisibility(name);
 
     if (this.state.type === 'bar'){

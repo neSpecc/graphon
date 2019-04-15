@@ -130,8 +130,8 @@ export default class Area {
     return this.hidden;
   }
 
-  toggleVisibility(){
+  toggleVisibility(status){
     this.hidden = !this.hidden;
-    this.path.classList.toggle(Area.CSS.graphHidden);
+    this.path.classList.toggle(Area.CSS.graphHidden, status);
   }
 }

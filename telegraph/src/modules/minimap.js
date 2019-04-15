@@ -498,8 +498,8 @@ export default class Minimap {
    * Toggle path visibility
    * @param {string} name - graph name
    */
-  togglePath(name){
-    this.graph.togglePathVisibility(name);
+  togglePath(name, status){
+    this.graph.togglePathVisibility(name, status);
 
     if (this.state.type === 'bar'){
       this.graph.recalculatePointsHeight(true);

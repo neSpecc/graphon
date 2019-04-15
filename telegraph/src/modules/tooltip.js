@@ -61,8 +61,6 @@ export default class Tooltip {
     let offsetLeft = -25;
     let left = lineLeftCoord + offsetLeft;
 
-    console.log(left);
-
     if (maxBottom > 260) {
       left = left - this._width;
     }
