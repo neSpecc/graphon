@@ -6,33 +6,24 @@ import Header from './modules/header.js';
 
 /**
  * @typedef {object} ChartData
- * @property {array} columns – List of all data columns in the chart.
- *                             0 - position ("x", "y0", "y1")
- *                             1+ - values
- *                             "x" values are UNIX timestamps in milliseconds.
- * @property {{x, y0, y1}} types – Chart types for each of the columns.
- *                                 Supported values:
- *                                 "line" (line on the graph with linear interpolation),
- *                                 "x" (x axis values for each of the charts at the corresponding positions).
- * @property {{y0: string, y1: string}} colors – Color for each line in 6-hex-digit format (e.g. "#AAAAAA").
- * @property {{y0: string, y1: string}} names – Names for each line.
- * @property {boolean} y_scaled – True if the graph has 2 different OY axis
  */
 
 export default class Telegraph {
   /**
    * Main entry constructor
    * @param {string} holderId - where to append a Chart
-   * @param {ChartData} inputData - chart data
+   * @param {string} data - chart data in csv format
+   * @param {string} type - graph type. Available types: 'line', 'area', 'bar'
+   * @param {string[]} colors - colors list for each line
+   * @param {string[]} titles - titles list for each line
    */
-  constructor({holderId, inputData}){
-    // console.time('telegraph');
+  constructor({holderId, data, colors, titles, type}){
     this.holder = document.getElementById(holderId);
 
     /**
      * Module that stores all main app state values
      */
-    this.state = new State(inputData);
+    this.state = new State(data, colors, titles, type);
 
     /**
      * Module for mini map

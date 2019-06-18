@@ -539,6 +539,11 @@
     margin-top: 7px;
 }
 
+.tg-tooltip__values-item-title {
+    display: inline-block;
+    padding-right: 20px;
+}
+
 .tg-tooltip .percents {
     display: inline-block;
     font-weight: 500;

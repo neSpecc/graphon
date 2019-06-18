@@ -28,6 +28,7 @@ export default class Tooltip {
       title: 'tg-tooltip__title',
       values: 'tg-tooltip__values',
       value: 'tg-tooltip__values-item',
+      valueTitle: 'tg-tooltip__values-item-title',
     }
   }
 
@@ -158,9 +159,11 @@ export default class Tooltip {
       item.appendChild(percentEl)
     }
 
+    let titleEl = Dom.make('span', Tooltip.CSS.valueTitle);
 
+    titleEl.textContent = title;
 
-    item.appendChild(document.createTextNode(title));
+    item.appendChild(titleEl);
     item.appendChild(counter);
 
     counter.style.color = color;
