@@ -99,15 +99,37 @@ __webpack_require__.r(__webpack_exports__);
  */
 class State {
   /**
-   * @param {ChartData} chartsData - input data
+   * @param {string} chartsData - input data in csv format
+   * @param {string[]} colors - colors list for each line
+   * @param {string[]} titles - titles list for each line
+   * @param {string} type - graph type - line, area, bar
    */
-  constructor(chartsData){
-    this.columns = chartsData.columns;
-    this.colors = chartsData.colors;
-    this.names = chartsData.names;
-    this.types = chartsData.types;
-    this.type = this.getCommonChartsType();
-    this.isYScaled = !!chartsData.y_scaled;
+  constructor(chartsData, colors, titles, type){
+    const lines = chartsData.split('\n');
+
+    this.columns = [];
+    this.dates = [];
+    this.type = type;
+
+    lines.forEach((line) => {
+      let [date, ...values] = line.split(',');
+
+      values.forEach((val, index) => {
+        val = parseInt(val, 10);
+
+        if (this.columns[index]){
+          this.columns[index].push(val);
+        } else {
+          this.columns[index] = [val];
+        }
+      });
+
+      this.dates.push(date);
+    });
+
+    this.colors = colors;
+    this.names = titles;
+    this.isYScaled = false;
 
     /**
      * Cache
@@ -129,9 +151,9 @@ class State {
    * First element in arrays is column name ("x") so slice it
    * @return {number[]} - array of dates in milliseconds
    */
-  get dates(){
-    return this._cache.dates;
-  }
+  // get dates(){
+  //   return this._cache.dates;
+  // }
 
   /**
    * Return available line names
@@ -159,7 +181,7 @@ class State {
       return this._cache.getLinePoints[lineName];
     }
 
-    this._cache.getLinePoints[lineName] = this.getColumnByName(lineName).slice(1); // slice 0-element because it is a column name
+    this._cache.getLinePoints[lineName] = this.getColumnByName(lineName);
 
 
     return this._cache.getLinePoints[lineName];
@@ -171,7 +193,7 @@ class State {
    * @return {array}
    */
   getColumnByName(name){
-    return this.columns[this.columns.findIndex(column => column[0] === name)];
+    return this.columns[name];
   }
 
   /**
@@ -208,7 +230,7 @@ class State {
    * @return {string}
    */
   getCommonChartsType(){
-    return Object.values(this.types)[0];
+    return this.type;
   }
 
   /**
@@ -1109,6 +1131,7 @@ class graph_Graph {
         if (!this.state.isYScaled) {
           this.maxPoint = this.state.max;
           this.minPoint = this.state.min;
+
           this.drawLineCharts();
         } else {
           this.drawScaledLineCharts();
@@ -2080,6 +2103,7 @@ class tooltip_Tooltip {
       title: 'tg-tooltip__title',
       values: 'tg-tooltip__values',
       value: 'tg-tooltip__values-item',
+      valueTitle: 'tg-tooltip__values-item-title',
     }
   }
 
@@ -2210,9 +2234,11 @@ class tooltip_Tooltip {
       item.appendChild(percentEl)
     }
 
+    let titleEl = make('span', tooltip_Tooltip.CSS.valueTitle);
 
+    titleEl.textContent = title;
 
-    item.appendChild(document.createTextNode(title));
+    item.appendChild(titleEl);
     item.appendChild(counter);
 
     counter.style.color = color;
@@ -3408,33 +3434,24 @@ class header_Header {
 
 /**
  * @typedef {object} ChartData
- * @property {array} columns – List of all data columns in the chart.
- *                             0 - position ("x", "y0", "y1")
- *                             1+ - values
- *                             "x" values are UNIX timestamps in milliseconds.
- * @property {{x, y0, y1}} types – Chart types for each of the columns.
- *                                 Supported values:
- *                                 "line" (line on the graph with linear interpolation),
- *                                 "x" (x axis values for each of the charts at the corresponding positions).
- * @property {{y0: string, y1: string}} colors – Color for each line in 6-hex-digit format (e.g. "#AAAAAA").
- * @property {{y0: string, y1: string}} names – Names for each line.
- * @property {boolean} y_scaled – True if the graph has 2 different OY axis
  */
 
 class telegraph_Telegraph {
   /**
    * Main entry constructor
    * @param {string} holderId - where to append a Chart
-   * @param {ChartData} inputData - chart data
+   * @param {string} data - chart data in csv format
+   * @param {string} type - graph type. Available types: 'line', 'area', 'bar'
+   * @param {string[]} colors - colors list for each line
+   * @param {string[]} titles - titles list for each line
    */
-  constructor({holderId, inputData}){
-    // console.time('telegraph');
+  constructor({holderId, data, colors, titles, type}){
     this.holder = document.getElementById(holderId);
 
     /**
      * Module that stores all main app state values
      */
-    this.state = new State(inputData);
+    this.state = new State(data, colors, titles, type);
 
     /**
      * Module for mini map

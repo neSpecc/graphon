@@ -228,6 +228,7 @@ export default class Graph {
         if (!this.state.isYScaled) {
           this.maxPoint = this.state.max;
           this.minPoint = this.state.min;
+
           this.drawLineCharts();
         } else {
           this.drawScaledLineCharts();
