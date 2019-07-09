@@ -84,68 +84,92 @@
      */
     const instances = [];
 
-    fetch('dataset.csv').then((response) => response.text()).then((data) => {
-      ['line', 'bar', 'area'].forEach((type, index) => {
+    const sources = [
+      {
+        title: 'vc.ru',
+        url: './data/vc.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/vc',
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии']
+      },
+      {
+        title: 'TJ',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/tj',
+        url: './data/tj.csv',
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии']
+      },
+      {
+        title: 'DTF',
+        url: './data/dtf.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/dtf',
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии']
+      },
+      {
+        title: 'vc.ru по месяцам',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/vc',
+        url: './data/vc-month.csv',
+        byMonth: true,
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии'],
+      },
+      {
+        title: 'TJ по месяцам',
+        url: './data/tj-month.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/tj',
+        byMonth: true,
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии'],
+      },
+      {
+        title: 'DTF по месяцам',
+        url: './data/dtf-month.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/dtf',
+        byMonth: true,
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Регистрации', 'Статьи', 'Комментарии'],
+      },
+      {
+        title: 'Платные функции по месяцам',
+        url: './data/paid-all.csv',
+        byMonth: true,
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month_paid/all',
+        colors: ['#3497ED', '#F5BD25', '#f91d72', '#6632B8', '#B142AF', '#EF4B4B'],
+        labels: ['Вакансии vc', 'Промо vc', 'Вакансии dtf', 'Промо dtf', 'Промо TJ', 'Клуб TJ']
+      },
+    ];
 
+    sources.forEach((source, idx) => {
+      /**
+       * Create a holder
+       */
+      const holder = document.createElement('div');
+      const graphId = `telegraph-${idx}`;
 
-        /**
-         * Create a holder
-         */
-        const holder = document.createElement('div');
-        holder.id = `telegraph-${index}`;
-        holder.classList.add('graph');
+      holder.id = graphId;
+      holder.classList.add('graph');
 
-        wrapper.appendChild(holder);
-        /**
-         * Init the Telegraph module
-         */
-        const graph = new Telegraph.default({
-          holderId: `telegraph-${index}`,
-          data,
-          type,
-          colors: ['#3497ED', '#F5BD25', '#f91d72'],
-          titles: ['Регистрации', 'Опубликовано статей', 'Комментариев']
-        });
+      wrapper.appendChild(holder);
 
-        instances.push(graph);
+      if (idx === 0){
+        wrapper.appendChild(modeToggler);
+      }
 
-        if (index === 0){
-          wrapper.appendChild(modeToggler);
-        }
-      })
+      fetch(source.url).then((response) => response.text()).then((data) => {
+          const graph = new Telegraph.default({
+            title: source.title,
+            holderId: graphId,
+            data,
+            type: 'line',
+            colors: source.colors,
+            titles: source.labels,
+            byMonth: source.byMonth
+          });
+
+          instances.push(graph);
+      });
     });
-
-
-
-    // charts.forEach( (chartData, index) => {
-    //
-    //   if (index > 0){
-    //     // return;
-    //   }
-    //
-    //   /**
-    //    * Create a holder
-    //    */
-    //   const holder = document.createElement('div');
-    //   holder.id = `telegraph-${index}`;
-    //   holder.classList.add('graph');
-    //
-    //   wrapper.appendChild(holder);
-    //
-    //   /**
-    //    * Init the Telegraph module
-    //    */
-    //   const graph = new Telegraph.default({
-    //     holderId: `telegraph-${index}`,
-    //     inputData: chartData
-    //   });
-    //
-    //   instances.push(graph);
-    //
-    //   if (index === 0){
-    //     wrapper.appendChild(modeToggler);
-    //   }
-    // });
 
     /**
      * Handler for Toggle Night mode button

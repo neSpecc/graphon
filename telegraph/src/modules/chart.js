@@ -86,6 +86,10 @@ export default class Chart {
   }
 
   get minimalMapWidth(){
+    if (this.modules.state.byMonth){
+      return Math.ceil(this.viewportWidth / 12) * 4;
+    }
+
     return 80;
   }
 

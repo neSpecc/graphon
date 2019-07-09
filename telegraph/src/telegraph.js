@@ -16,14 +16,16 @@ export default class Telegraph {
    * @param {string} type - graph type. Available types: 'line', 'area', 'bar'
    * @param {string[]} colors - colors list for each line
    * @param {string[]} titles - titles list for each line
+   * @param {string} title - Graph title
+   * @param {boolean} byMonth - is graphs represents data grouped by month
    */
-  constructor({holderId, data, colors, titles, type}){
+  constructor({holderId, data, colors, titles, type, title, byMonth}) {
     this.holder = document.getElementById(holderId);
 
     /**
      * Module that stores all main app state values
      */
-    this.state = new State(data, colors, titles, type);
+    this.state = new State(data, colors, titles, type, title, byMonth);
 
     /**
      * Module for mini map

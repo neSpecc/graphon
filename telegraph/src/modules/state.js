@@ -8,13 +8,17 @@ export default class State {
    * @param {string[]} colors - colors list for each line
    * @param {string[]} titles - titles list for each line
    * @param {string} type - graph type - line, area, bar
+   * @param {string} title - graph title
+   * @param {boolean} byMonth - grouped by month
    */
-  constructor(chartsData, colors, titles, type){
+  constructor(chartsData, colors, titles, type, title, byMonth){
     const lines = chartsData.split('\n');
 
     this.columns = [];
     this.dates = [];
     this.type = type;
+    this.title = title;
+    this.byMonth = byMonth;
 
     lines.forEach((line) => {
       let [date, ...values] = line.split(',');
