@@ -127,6 +127,10 @@ export default class Minimap {
    * Fill UI with chart and set initial Position
    */
   renderMap(){
+    if (this.nodes.canvas){
+      this.nodes.canvas.remove();
+    }
+
     this.nodes.canvas = this.graph.renderCanvas({
       width: this.nodes.wrapper.offsetWidth,
       height: this.nodes.wrapper.offsetHeight
