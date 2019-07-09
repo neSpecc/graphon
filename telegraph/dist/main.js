@@ -104,14 +104,16 @@ class State {
    * @param {string[]} titles - titles list for each line
    * @param {string} type - graph type - line, area, bar
    * @param {string} title - graph title
+   * @param {boolean} byMonth - grouped by month
    */
-  constructor(chartsData, colors, titles, type, title){
+  constructor(chartsData, colors, titles, type, title, byMonth){
     const lines = chartsData.split('\n');
 
     this.columns = [];
     this.dates = [];
     this.type = type;
     this.title = title;
+    this.byMonth = byMonth;
 
     lines.forEach((line) => {
       let [date, ...values] = line.split(',');
@@ -2465,6 +2467,10 @@ class chart_Chart {
   }
 
   get minimalMapWidth(){
+    if (this.modules.state.byMonth){
+      return Math.ceil(this.viewportWidth / 12) * 4;
+    }
+
     return 80;
   }
 
@@ -3530,14 +3536,15 @@ class telegraph_Telegraph {
    * @param {string[]} colors - colors list for each line
    * @param {string[]} titles - titles list for each line
    * @param {string} title - Graph title
+   * @param {boolean} byMonth - is graphs represents data grouped by month
    */
-  constructor({holderId, data, colors, titles, type, title}){
+  constructor({holderId, data, colors, titles, type, title, byMonth}) {
     this.holder = document.getElementById(holderId);
 
     /**
      * Module that stores all main app state values
      */
-    this.state = new State(data, colors, titles, type, title);
+    this.state = new State(data, colors, titles, type, title, byMonth);
 
     /**
      * Module for mini map
@@ -3604,4 +3611,3 @@ class telegraph_Telegraph {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=main.js.map
