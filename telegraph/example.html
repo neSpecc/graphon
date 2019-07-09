@@ -62,43 +62,54 @@
     const sources = [
       {
         title: 'vc.ru',
-        url: 'https://kmtt.ru/sheets/osnova_stats/vc',
+        url: './data/vc.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/vc',
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии']
       },
       {
         title: 'TJ',
-        url: 'https://kmtt.ru/sheets/osnova_stats/tj',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/tj',
+        url: './data/tj.csv',
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии']
       },
       {
         title: 'DTF',
-        url: 'https://kmtt.ru/sheets/osnova_stats/dtf',
+        url: './data/dtf.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats/dtf',
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии']
       },
       {
         title: 'vc.ru по месяцам',
-        url: 'https://kmtt.ru/sheets/osnova_stats_month/vc',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/vc',
+        url: './data/vc-month.csv',
+        byMonth: true,
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии'],
       },
       {
         title: 'TJ по месяцам',
-        url: 'https://kmtt.ru/sheets/osnova_stats_month/tj',
+        url: './data/tj-month.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/tj',
+        byMonth: true,
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии'],
       },
       {
         title: 'DTF по месяцам',
-        url: 'https://kmtt.ru/sheets/osnova_stats_month/dtf',
+        url: './data/dtf-month.csv',
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month/dtf',
+        byMonth: true,
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
         labels: ['Регистрации', 'Статьи', 'Комментарии'],
       },
       {
         title: 'Платные функции по месяцам',
-        url: 'https://kmtt.ru/sheets/osnova_stats_month_paid/all',
+        url: './data/paid-all.csv',
+        byMonth: true,
+        // url: 'https://kmtt.ru/sheets/osnova_stats_month_paid/all',
         colors: ['#3497ED', '#F5BD25', '#f91d72', '#6632B8', '#B142AF', '#EF4B4B'],
         labels: ['Вакансии vc', 'Промо vc', 'Вакансии dtf', 'Промо dtf', 'Промо TJ', 'Клуб TJ']
       },
@@ -127,13 +138,13 @@
             data,
             type: 'line',
             colors: source.colors,
-            titles: source.labels
+            titles: source.labels,
+            byMonth: source.byMonth
           });
 
           instances.push(graph);
       });
     });
-
 
     /**
      * Handler for Toggle Night mode button
