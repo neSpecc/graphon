@@ -223,6 +223,10 @@ export default class Chart {
   renderCharts(){
     this.calculateWrapperCoords();
 
+    if (this.nodes.canvas){
+      this.nodes.canvas.remove();
+    }
+
     /**
      * @todo pass height through the initial settings
      */
@@ -825,4 +829,18 @@ export default class Chart {
     this.nodes.overlays.style.opacity = 0;
   }
 
+  destroy(){
+    this.nodes.canvas.remove();
+
+    if (this.nodes.overlays){
+      this.nodes.overlays.remove();
+    }
+
+    if (this.nodes.legend){
+      this.nodes.legend.remove();
+    }
+
+    this.scaling = 1;
+    this.scrollValue = 0;
+  }
 }
