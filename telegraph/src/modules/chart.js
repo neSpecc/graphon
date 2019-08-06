@@ -21,10 +21,6 @@ export default class Chart {
    */
   constructor(modules){
     this.modules = modules;
-    /**
-     * @param {State} state
-     */
-    this.state = modules.state;
     this.nodes = {
       wrapper: undefined,
       viewport: undefined,
@@ -80,7 +76,7 @@ export default class Chart {
 
   get initialStep(){
     if (!this._initialStep){
-      this._initialStep = this.width / (this.state.daysCount - 1);
+      this._initialStep = this.width / (this.modules.state.daysCount - 1);
     }
     return this._initialStep;
   }
@@ -214,7 +210,7 @@ export default class Chart {
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
     this.nodes.wrapper.appendChild(this.tooltip.render());
 
-    this.nodes.wrapper.classList.add(Chart.CSS.wrapper + '--' + this.state.type);
+    this.nodes.wrapper.classList.add(Chart.CSS.wrapper + '--' + this.modules.state.type);
 
     this.bindEvents();
 
@@ -305,14 +301,14 @@ export default class Chart {
 
     let height = this.height;
     let max = this.getMaxVisiblePoint();
-    let min = !this.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
+    let min = !this.modules.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
     let kY = height / (max - min);
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
-    if (this.state.isYScaled){
+    if (this.modules.state.isYScaled){
       maxSecond = this.getMaxVisiblePoint('y1');
       minSecond = this.getMinVisiblePoint('y1');
 
@@ -322,7 +318,7 @@ export default class Chart {
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
     }
 
-    if (this.state.type === 'area'){
+    if (this.modules.state.type === 'area'){
       stepY = 25;
       linesCount = 5;
       max = 100;
@@ -366,22 +362,22 @@ export default class Chart {
       line.appendChild(counter);
 
       if (stepYSecond){
-        counter.style.color = this.state.getLineColor('y0');
+        counter.style.color = this.modules.state.getLineColor('y0');
         let kYRatio = kY / kYSecond;
         let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), 'y1', true);
-        counter2.style.color = this.state.getLineColor('y1');
+        counter2.style.color = this.modules.state.getLineColor('y1');
         line.appendChild(counter2);
       }
     }
 
-    if (this.state.isYScaled){
+    if (this.modules.state.isYScaled){
       this.toggleGridLabelsForChart();
     }
   }
 
   /**
    * Check if date under passed index should be visible
-   * @param {number} originalIndex - index in this.state.dates
+   * @param {number} originalIndex - index in this.modules.state.dates
    * @return {boolean}
    */
   checkDateShouldBeHidden(originalIndex){
@@ -419,10 +415,17 @@ export default class Chart {
 
     const dt = new Date(date);
     const dateEl = Dom.make('time');
-    dateEl.textContent = dt.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short'
-    });
+
+    if (this.modules.state.byMonth){
+      dateEl.textContent = dt.toLocaleDateString('en-US', {
+        month: 'short'
+      });
+    } else {
+      dateEl.textContent = dt.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short'
+      });
+    }
 
     // dateEl.textContent = originIndex;
 
@@ -468,7 +471,7 @@ export default class Chart {
     /**
      * Get slice of timestamps that currently visible on the screen
      */
-    let datesOnScreenSlice = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenSlice = this.modules.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
     if (!this._showEveryNDateInitial){
@@ -560,7 +563,7 @@ export default class Chart {
     }
 
     this._sd = setTimeout(()=>{
-      this.modules.header.setPeriod(this.state.dates[this.leftPointIndex], this.state.dates[this.rightPointIndex]);
+      this.modules.header.setPeriod(this.modules.state.dates[this.leftPointIndex], this.modules.state.dates[this.rightPointIndex]);
     }, 50)
   }
 
@@ -610,23 +613,23 @@ export default class Chart {
    */
   getMinVisiblePoint(line = undefined){
     if (!line){
-      return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-        return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+      return Math.min(...this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
       }));
     }
 
-    return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
   }
 
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    if (this.state.type !== 'area'){
-      if (!this.state.isYScaled){
+    if (this.modules.state.type !== 'area'){
+      if (!this.modules.state.isYScaled){
         this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(), this.getMinVisiblePoint());
       } else {
-        this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).forEach((line) => {
+        this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).forEach((line) => {
           this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(line), this.getMinVisiblePoint(line), line);
         })
       }
@@ -728,16 +731,16 @@ export default class Chart {
 
     this.tooltip.show();
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.highlightBar(pointIndex -1, scrollOffset);
     } else {
       this.pointer.move(newLeft);
     }
 
-    const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
+    const values = this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
         name: line,
-        value: this.state.getLinePoints(line)[hoveredPointIndex]
+        value: this.modules.state.getLinePoints(line)[hoveredPointIndex]
       }
     });
 
@@ -746,7 +749,7 @@ export default class Chart {
      */
     this.pointer.showValues(values);
 
-    const date = this.state.dates[hoveredPointIndex];
+    const date = this.modules.state.dates[hoveredPointIndex];
 
     /**
      * Skip bounding empty positions
@@ -774,10 +777,10 @@ export default class Chart {
     this.graph.togglePathVisibility(name, status);
     this.pointer.toggleVisibility(name);
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.graph.recalculatePointsHeight();
       this.fitToMax();
-    } else if (this.state.type === 'area') {
+    } else if (this.modules.state.type === 'area') {
       this.graph.recalculatePointsHeight();
     } else {
       this.fitToMax();
@@ -785,7 +788,7 @@ export default class Chart {
   }
 
   toggleGridLabelsForChart(){
-    this.state.linesAvailable.forEach(line => {
+    this.modules.state.linesAvailable.forEach(line => {
       this.nodes.grid.querySelectorAll(`[data-name="${line}"]`).forEach( el => {
         el.classList.toggle(Chart.CSS.gridCounterHidden, !this.graph.checkPathVisibility(line))
       });
@@ -835,6 +838,9 @@ export default class Chart {
 
   destroy(){
     this.nodes.canvas.remove();
+
+    this._datesPerScreenInitial = undefined;
+    this._showEveryNDateInitial = undefined;
 
     if (this.nodes.overlays){
       this.nodes.overlays.remove();

@@ -1,0 +1,118 @@
+/**
+ * Legend module
+ * --------------------------------
+ */
+.tg-legend {
+  margin-bottom: 50px;
+  padding: 0 15px;
+  font-family: 'Helvetica Neue', -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;
+
+  &__item {
+    @apply --button;
+
+    margin-right: 5px;
+    padding: 0 22px;
+    color: #fff;
+    transition: background-color 200ms ease;
+    will-change: background-color, border-color, padding;
+    vertical-align: bottom;
+    box-shadow: none;
+
+    &--wobble {
+      animation: wobble 600ms ease-out !important;
+    }
+
+    &--enabled {
+      padding: 0 10px;
+    }
+  }
+
+  &__checkbox {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    display: none;
+    margin: auto 7px auto 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      display: inline-block;
+      width: 11px;
+      height: 5px;
+      border-left: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(-45deg);
+      opacity: 0;
+    }
+  }
+
+}
+
+@keyframes wobble {
+  0%{
+    opacity: 0.5;
+    transform: rotate(-4deg);
+  }
+
+  25%{
+    opacity: 1;
+  }
+
+  75%{
+    opacity: 0.5;
+    transform: rotate(4deg);
+  }
+
+  100% {
+    opacity: 1;
+  }
+
+}
+
+.tg-legend__item--selected {
+  animation: splash 150ms ease;
+  animation-fill-mode: forwards;
+}
+
+.tg-legend__item--enabled .tg-legend__checkbox::before {
+  animation: rolling 200ms 100ms ease;
+  animation-fill-mode: forwards;
+}
+
+.tg-legend__item--enabled .tg-legend__checkbox {
+  display: inline-block;
+}
+
+@keyframes rolling {
+  from {
+    transform: rotate(-20deg) translate(2px, 7px) scale(0.8);
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  to {
+    transform: rotate(-50deg);
+    opacity: 1;
+    width: 11px;
+    height: 5px;
+  }
+}
+
+
+@keyframes splash {
+  from {
+    transform: scale(0.95);
+  }
+
+  80% {
+    transform: scale(1.05);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}

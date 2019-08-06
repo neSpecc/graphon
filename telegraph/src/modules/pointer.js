@@ -55,6 +55,17 @@ export default class Pointer {
    * @param {{name: string, value: number}[]} values
    */
   showValues(values){
+    if (this.modules.state.type === 'area'){
+      if (Object.keys(this.pointers).length){
+        Object.values(this.pointers).forEach((el) => {
+          el.remove();
+        });
+
+        this.pointers = {};
+      }
+      return;
+    }
+
     if (!Object.keys(this.pointers).length){
       values.forEach( ({name}) => {
         const item = Dom.make('div', Pointer.CSS.pointer);

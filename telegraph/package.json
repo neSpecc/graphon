@@ -8,6 +8,13 @@
     "build:dev": "webpack ./src/telegraph.js --output-library=Telegraph --devtool=source-map --watch"
   },
   "devDependencies": {
+    "cssnano": "^4.1.10",
+    "postcss": "^7.0.17",
+    "postcss-apply": "^0.12.0",
+    "postcss-import": "^12.0.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-nested": "^4.1.2",
+    "postcss-preset-env": "^6.7.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0"
   }

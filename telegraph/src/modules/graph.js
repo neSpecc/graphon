@@ -22,8 +22,7 @@ export default class Graph {
     const dateLabelWidth = 45;
 
     this.modules = modules;
-    this.state = modules.state;
-    this.type = this.state.getCommonChartsType();
+    this.type = this.modules.state.getCommonChartsType();
 
     /**
      * @todo move to this.nodes
@@ -146,7 +145,7 @@ export default class Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = (this.state.daysCount - 1) * this.stepX;
+    this.initialWidth = (this.modules.state.daysCount - 1) * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -188,13 +187,13 @@ export default class Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / (this.state.daysCount - 1);
+    this.stepX = this.width / (this.modules.state.daysCount - 1);
 
     /**
      * All lines maximum value
      */
-    const max = this.state.max;
-    const min = this.state.min;
+    const max = this.modules.state.max;
+    const min = this.modules.state.min;
     const stepsAvailable = [5, 10, 25, 50, 100, 1000, 500, 10000, 5000, 100000, 1000000, 10000000];
     let newStepYIndex = stepsAvailable.reverse().findIndex( (step) => {
       let c = (max - min) > step;
@@ -211,23 +210,23 @@ export default class Graph {
   }
 
   renderCharts(){
-    const type = this.state.getCommonChartsType();
+    const type = this.modules.state.getCommonChartsType();
 
     switch (type){
       case 'bar':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
-        this.minPoint = this.state.min;
+        this.maxPoint = this.modules.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.minPoint = this.modules.state.min;
         this.drawBarCharts();
         break;
       case 'area':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.maxPoint = this.modules.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawAreaCharts();
         break;
       default:
       case 'line':
-        if (!this.state.isYScaled) {
-          this.maxPoint = this.state.max;
-          this.minPoint = this.state.min;
+        if (!this.modules.state.isYScaled) {
+          this.maxPoint = this.modules.state.max;
+          this.minPoint = this.modules.state.min;
 
           this.drawLineCharts();
         } else {
@@ -239,27 +238,27 @@ export default class Graph {
   }
 
   drawAreaCharts(){
-    let areas = this.state.linesAvailable.reverse().map( line => {
+    let areas = this.modules.state.linesAvailable.reverse().map( line => {
       return new Area({
         canvasHeight: this.height,
         stepX: this.stepX,
         key: line,
-        color: this.state.getLineColor(line)
+        color: this.modules.state.getLineColor(line)
       });
     });
 
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    this.state.linesAvailable.reverse().forEach( (line, index) => {
-      areas[index].moveTo(0, this.state.getLinePoints(line)[0], stacks[0]);
+    this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+      areas[index].moveTo(0, this.modules.state.getLinePoints(line)[0], stacks[0]);
     });
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      this.state.linesAvailable.reverse().forEach( (line, index) => {
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+      this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+        let pointValue = this.modules.state.getLinePoints(line)[pointIndex];
 
         if (pointIndex === 0){
           areas[index].stepTo(stacks[pointIndex], prevValue, true);
@@ -280,7 +279,7 @@ export default class Graph {
 
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
-    let barmens = this.state.linesAvailable.reverse().map( line => {
+    let barmens = this.modules.state.linesAvailable.reverse().map( line => {
       return new Bar({
         canvasHeight: this.height,
         stepX: this.stepX,
@@ -289,18 +288,18 @@ export default class Graph {
       });
     });
 
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      this.state.linesAvailable.reverse().forEach( (line, index) => {
-        const color = this.state.getLineColor(line);
+      this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+        const color = this.modules.state.getLineColor(line);
 
 
 
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(line)[pointIndex];
 
         // const editorLabelStyle = `line-height: 1em;
         //     color: #fff;
@@ -340,31 +339,31 @@ export default class Graph {
    * Return max visible point
    * If line passed, check for that. Otherwise, return maximum between all
    */
-  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount, line = undefined){
-    const type = this.state.getCommonChartsType();
+  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.modules.state.daysCount, line = undefined){
+    const type = this.modules.state.getCommonChartsType();
 
     switch (type) {
       case 'bar':
-        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
+        return this.modules.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
         break;
       default:
       case 'line':
         if (!line) {
-          return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
-            return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible);
+          return Math.max(...this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
+            return this.modules.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible);
           }));
         }
 
-        return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible, line);
+        return this.modules.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible, line);
         break;
     }
   }
 
   drawScaledLineCharts(){
-    this.state.linesAvailable.forEach( name => {
-      const lineMin = this.state.minForLine(name);
-      const lineMax = this.state.maxForLine(name);
-      const values = this.state.getLinePoints(name);
+    this.modules.state.linesAvailable.forEach( name => {
+      const lineMin = this.modules.state.minForLine(name);
+      const lineMax = this.modules.state.maxForLine(name);
+      const values = this.modules.state.getLinePoints(name);
 
       // console.log('[%o] min %o max %o', name, lineMin, lineMax);
 
@@ -376,9 +375,9 @@ export default class Graph {
        */
       const path = new Path({
         canvasHeight: this.height,
-        isScaled: this.state.isYScaled,
+        isScaled: this.modules.state.isYScaled,
         max: lineMax,
-        color: this.state.getLineColor(name),
+        color: this.modules.state.getLineColor(name),
         zeroShifting,
         kY,
         stroke: this.strokeWidth,
@@ -406,16 +405,16 @@ export default class Graph {
    * Create a 'line' charts
    */
   drawLineCharts(){
-    this.state.linesAvailable.forEach( name => {
+    this.modules.state.linesAvailable.forEach( name => {
       /**
        * Array of chart Y values
        */
-      const values = this.state.getLinePoints(name);
+      const values = this.modules.state.getLinePoints(name);
 
       /**
        * Color of drawing line
        */
-      const color = this.state.getLineColor(name);
+      const color = this.modules.state.getLineColor(name);
 
       /**
        * Point to from which we will start drawing
@@ -487,7 +486,7 @@ export default class Graph {
 
     let max, kY, zeroShifting;
 
-    if (!this.state.isYScaled){
+    if (!this.modules.state.isYScaled){
       max = this.maxPoint;
       kY = this.kY;
 
@@ -541,10 +540,10 @@ export default class Graph {
   }
 
   recalculateArea(useRecalculated = false){
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    let recalculated = this.state.recalculatedValues;
+    let recalculated = this.modules.state.recalculatedValues;
 
     if (useRecalculated && recalculated) {
       for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
@@ -555,24 +554,24 @@ export default class Graph {
         }
       }
 
-      this.state.clearRecalculatedValues();
+      this.modules.state.clearRecalculatedValues();
       return;
     }
 
-    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
+    let lines = this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
       let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
-        return val + this.state.getLinePoints(line)[pointIndex];
+        return val + this.modules.state.getLinePoints(line)[pointIndex];
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(lines[i])[pointIndex];
 
-        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.modules.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
 
         if (pointIndex === 0){
           this.charts[lines[i]].move(pointIndex, newStack, prevValue, true);
@@ -594,35 +593,35 @@ export default class Graph {
    * @param {boolean} useRecalculated - pass true to use saved value (minimap can use values from main Chart)
    */
   recalculateBars(useRecalculated = false){
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    let recalculated = this.state.recalculatedValues;
+    let recalculated = this.modules.state.recalculatedValues;
 
     if (useRecalculated && recalculated) {
       for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
         this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
       }
 
-      this.state.clearRecalculatedValues();
+      this.modules.state.clearRecalculatedValues();
       return;
     }
 
-    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
+    let lines = this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
       let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
-        return val + this.state.getLinePoints(line)[pointIndex];
+        return val + this.modules.state.getLinePoints(line)[pointIndex];
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(lines[i])[pointIndex];
 
 
-        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.modules.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
         this.charts[lines[i]].move(pointIndex, newStack, prevValue);
 
         prevValue += pointValue;

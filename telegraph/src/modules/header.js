@@ -7,11 +7,15 @@ export default class Header {
       wrapper: undefined,
       title: undefined,
       dates: undefined,
-      typeSwitchers: []
+      typeSwitchers: [],
+      detailsTogglers: [],
     };
 
   }
 
+  /**
+   * @return {{wrapper: string, title: string, dates: string, typeSwitcher: string, typeSwitcherCurrent: string, detailsToggler: string, detailsTogglerItem: string, detailsTogglerItemCurrent: string}}
+   */
   static get CSS(){
     return {
       wrapper: 'tg-header',
@@ -19,6 +23,9 @@ export default class Header {
       dates: 'tg-header__dates',
       typeSwitcher: 'tg-header__type-switcher',
       typeSwitcherCurrent: 'tg-header__type-switcher--current',
+      detailsToggler: 'tg-header__details',
+      detailsTogglerItem: 'tg-header__details-item',
+      detailsTogglerItemCurrent: 'tg-header__details-item--current',
     }
   }
 
@@ -30,31 +37,30 @@ export default class Header {
     this.nodes.title.textContent = this.modules.state.title || 'Untitled';
     this.nodes.wrapper.appendChild(this.nodes.title);
 
+    if (this.modules.dataByMonth){
+      this.appendDetailsToggler();
+    }
+
     [
       {
         type: 'line',
-        icon: `<svg width="22" height="16" xmlns="http://www.w3.org/2000/svg">
-                <g fill="none" fill-rule="evenodd">
-                  <rect stroke="#979797" fill="#D8D8D8" x=".5" y="14.5" width="21" height="1" rx=".5"/>
-                  <path d="M17.707 5.708l-2 1.999a3 3 0 1 1-5.685.923l-2.94-1.47A2.99 2.99 0 0 1 5 8c-.463 0-.902-.105-1.293-.292l-2 2L.293 8.292l2-2a3 3 0 1 1 5.685-.923l2.94 1.47A2.99 2.99 0 0 1 13 6c.463 0 .902.105 1.293.292l2-1.999a3 3 0 1 1 1.414 1.414zM5 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm8 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6-6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="#979797" fill-rule="nonzero"/>
-                </g>
+        icon: `<svg width="17" height="9" xmlns="http://www.w3.org/2000/svg" style="margin: auto -2px;">
+                <path d="M13.638 4.28l-1.566 1.5c.147.294.23.623.23.97 0 1.243-1.053 2.25-2.35 2.25-1.298 0-2.35-1.007-2.35-2.25 0-.094.006-.187.018-.278L5.317 5.37c-.422.39-.997.63-1.63.63-.302 0-.59-.054-.854-.153L1 8 0 7l1.717-2.023a2.172 2.172 0 0 1-.38-1.227c0-1.243 1.052-2.25 2.35-2.25 1.297 0 2.349 1.007 2.349 2.25 0 .094-.006.187-.018.278L8.321 5.13c.422-.39.997-.63 1.63-.63.363 0 .707.079 1.014.22l1.565-1.5a2.163 2.163 0 0 1-.229-.97c0-1.243 1.052-2.25 2.35-2.25C15.948 0 17 1.007 17 2.25S15.948 4.5 14.65 4.5c-.362 0-.706-.079-1.012-.22zm-9.952.22c.433 0 .784-.336.784-.75S4.119 3 3.686 3c-.432 0-.783.336-.783.75s.35.75.783.75zm6.266 3c.432 0 .783-.336.783-.75S10.385 6 9.952 6c-.433 0-.784.336-.784.75s.351.75.784.75zM14.65 3c.432 0 .783-.336.783-.75s-.35-.75-.783-.75c-.433 0-.784.336-.784.75s.351.75.784.75z"/>
               </svg>`
       },
       {
         type: 'area',
-        icon: `<svg width="21" height="18" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 11.133L8.445 12.926 5.27 8.694 0 11.705v-4.17l4.98-3.32 6.838 4.884L21 6.344v4.789zm0 2.02V16a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-1.991l4.73-2.703 2.825 3.768L21 13.153zm0-8.897l-8.818 2.645L5.02 1.785 0 5.131V2a2 2 0 0 1 2-2h17a2 2 0 0 1 2 2v2.256z" fill="#979797" fill-rule="evenodd"/>
+        icon: `<svg width="15" height="13" xmlns="http://www.w3.org/2000/svg" style="margin: auto -1px;">
+                <path d="M15 7.952L6.032 9.233 3.765 6.21 0 8.36V5.382l3.557-2.371 4.884 3.488L15 4.531v3.42zm0 1.443v1.462a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-.85l3.378-1.931 2.019 2.69L15 9.396zm0-6.355L8.702 4.93 3.585 1.274 0 3.665V2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1.04z"/>
               </svg>`
       },
       {
         type: 'bar',
-        icon: `<svg width="19" height="18" xmlns="http://www.w3.org/2000/svg">
-                <g fill="#979797" fill-rule="evenodd">
-                  <rect y="10" width="3" height="8" rx="1.5"/>
-                  <path d="M15 9v6h-3V9h3zm0-1h-3V1.5a1.5 1.5 0 0 1 3 0V8zm0 8v.5a1.5 1.5 0 0 1-3 0V16h3z"/>
-                  <rect x="16" y="9" width="3" height="9" rx="1.5"/>
-                  <path d="M7 10v4H4v-4h3zm0-1H4V6.5a1.5 1.5 0 0 1 3 0V9zm0 6v1.5a1.5 1.5 0 0 1-3 0V15h3zM11 14H8V7h3v7zm0 1v1.5a1.5 1.5 0 0 1-3 0V15h3zm0-9H8V1.5a1.5 1.5 0 0 1 3 0V6z"/>
-                </g>
+        icon: `<svg width="14" height="13" xmlns="http://www.w3.org/2000/svg">
+                <rect y="7" width="2" height="6" rx="1"/>
+                <rect x="12" y="6" width="2" height="7" rx="1"/>
+                <rect x="4" y="4" width="2" height="9" rx="1"/>
+                <rect x="8" width="2" height="13" rx="1"/>
               </svg>`,
       },
     ].forEach(({type, icon}) => {
@@ -80,6 +86,40 @@ export default class Header {
     return this.nodes.wrapper
   }
 
+  /**
+   * Create Day|Month toggler
+   */
+  appendDetailsToggler(){
+    const toggler = Dom.make('span', Header.CSS.detailsToggler);
+
+    [
+      {
+        title: 'Day',
+        dataStoringProperty: 'data'
+      },
+      {
+        title: 'Month',
+        dataStoringProperty: 'dataByMonth'
+      }
+    ].forEach(({title, dataStoringProperty}, index) => {
+      const togglerItem = Dom.make('span', Header.CSS.detailsTogglerItem);
+
+      if (index === 0) {
+        togglerItem.classList.add(Header.CSS.detailsTogglerItemCurrent);
+      }
+
+      togglerItem.innerHTML = title;
+      togglerItem.addEventListener('click', () => {
+        this.detailsTogglerClicked(dataStoringProperty, togglerItem);
+      });
+      toggler.appendChild(togglerItem);
+
+      this.nodes.detailsTogglers.push(togglerItem);
+    });
+
+    this.nodes.wrapper.appendChild(toggler);
+  }
+
   typeSwitcherClicked(type, switcher){
     this.modules.state.type = type;
     this.modules.chart.destroy();
@@ -90,6 +130,19 @@ export default class Header {
     this.nodes.typeSwitchers.forEach(el => el.classList.remove(Header.CSS.typeSwitcherCurrent));
 
     switcher.classList.add(Header.CSS.typeSwitcherCurrent);
+  }
+
+  detailsTogglerClicked(dataStoringProperty, toggler){
+    this.modules.createState(dataStoringProperty);
+
+    this.modules.chart.destroy();
+    this.modules.chart.renderCharts();
+    this.modules.minimap.renderMap();
+    this.modules.minimap.syncScrollWithChart();
+
+    this.nodes.detailsTogglers.forEach(el => el.classList.remove(Header.CSS.detailsTogglerItemCurrent));
+
+    toggler.classList.add(Header.CSS.detailsTogglerItemCurrent);
   }
 
   setPeriod(leftDateTimestamp, rightDateTimestamp){

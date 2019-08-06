@@ -19,10 +19,6 @@ export default class Minimap {
    */
   constructor(modules){
     this.modules = modules;
-    /**
-     * @param {State} state
-     */
-    this.state = modules.state;
     this.nodes = {
       wrapper: undefined,
       canvas: undefined,
@@ -505,10 +501,10 @@ export default class Minimap {
   togglePath(name, status){
     this.graph.togglePathVisibility(name, status);
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.graph.recalculatePointsHeight(true);
       this.fitToMax();
-    } else if (this.state.type === 'area') {
+    } else if (this.modules.state.type === 'area') {
       this.graph.recalculatePointsHeight(true);
     } else {
       this.fitToMax();
@@ -521,11 +517,11 @@ export default class Minimap {
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    if (this.state.type !== 'area'){
-      if (!this.state.isYScaled){
+    if (this.modules.state.type !== 'area'){
+      if (!this.modules.state.isYScaled){
         this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible());
       } else {
-        this.state.linesAvailable.filter(line => this.modules.chart.notHiddenGraph(line)).forEach((line) => {
+        this.modules.state.linesAvailable.filter(line => this.modules.chart.notHiddenGraph(line)).forEach((line) => {
           this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible(line), undefined, line);
         })
       }

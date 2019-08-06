@@ -82,15 +82,25 @@ var Telegraph =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = ":root{--color-gray:#939ca1;--gray-line:rgba(24,45,59,0.1);--button-bg:#fff;--button-color:#000;--button-border:#e6e6e6;--button-bg-current:#e3f3ff;--button-border-current:#c5e2fa;@custom-media --mobile (max-width: 1000px)}.tg--night-mode{--color-gray:rgba(217,242,255,0.27);--gray-line:hsla(0,0%,100%,0.1);--button-color:#fff;--button-bg:#242f3e;--button-border:hsla(0,0%,100%,0.2);--button-border-current:rgba(2,13,22,0.26);--button-bg-current:rgba(0,0,0,0.19)}.tg-chart{position:relative;margin-bottom:25px;margin-right:15px;font-size:14px;font-family:Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(255,255,255,0);-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}.tg-chart__viewport{display:block;overflow-x:hidden}.tg-chart svg{width:100%;height:100%}.tg-header{margin-bottom:20px;padding:15px;display:-webkit-box;display:-ms-flexbox;display:flex;-ms-flex-wrap:wrap;flex-wrap:wrap}@media (--mobile){.tg-header{font-size:15px}}.tg-header__title{-ms-flex-preferred-size:100%;flex-basis:100%;margin:0 0 15px;font-weight:600;font-size:18px}.tg-header__dates{margin-left:auto;margin-top:auto;font-size:15px;margin-bottom:auto}@media (--mobile){.tg-header__dates{font-size:13px}}.tg-header__type-switcher{display:-webkit-inline-box;display:-ms-inline-flexbox;display:inline-flex;background:#fff;background:var(--button-bg);border:1px solid #e6e6e6;border:1px solid var(--button-border);-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.03);box-shadow:0 1px 1px 0 rgba(0,0,0,.03);border-radius:2px;height:34px;line-height:34px;padding:0 9px;font-size:14px;font-weight:500;cursor:pointer;z-index:99;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(255,255,255,0);-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}.tg-header__type-switcher:hover{-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.08);box-shadow:0 1px 1px 0 rgba(0,0,0,.08);border-color:#d8d8d8}.tg-header__type-switcher{width:34px;margin-right:5px}.tg-header__type-switcher--current{background:#e3f3ff;background:var(--button-bg-current);border:1px solid #c5e2fa;border:1px solid var(--button-border-current);border-radius:2px}.tg-header__type-switcher--current:hover{border-color:#add6f8}.tg-header__type-switcher svg{fill:currentColor;margin:auto}.tg-header__details{margin-right:15px}.tg-header__details-item{display:-webkit-inline-box;display:-ms-inline-flexbox;display:inline-flex;background:#fff;background:var(--button-bg);border:1px solid #e6e6e6;border:1px solid var(--button-border);-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.03);box-shadow:0 1px 1px 0 rgba(0,0,0,.03);border-radius:2px;height:34px;line-height:34px;padding:0 9px;font-size:14px;font-weight:500;cursor:pointer;z-index:99;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(255,255,255,0);-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}.tg-header__details-item:hover{-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.08);box-shadow:0 1px 1px 0 rgba(0,0,0,.08);border-color:#d8d8d8}.tg-header__details-item{min-width:70px;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center}.tg-header__details-item--current{background:#e3f3ff;background:var(--button-bg-current);border:1px solid #c5e2fa;border:1px solid var(--button-border-current);border-radius:2px}.tg-header__details-item--current:hover{border-color:#add6f8}.tg-header__details-item svg{fill:currentColor}.tg-header__details-item:not(:last-of-type){border-radius:2px 0 0 2px}.tg-header__details-item:not(:first-of-type){border-radius:0 2px 2px 0;margin-left:-1px}.tg-legend{margin-bottom:50px;padding:0 15px;font-family:Helvetica Neue,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif}.tg-legend__item{display:-webkit-inline-box;display:-ms-inline-flexbox;display:inline-flex;background:#fff;background:var(--button-bg);border:1px solid #e6e6e6;border:1px solid var(--button-border);-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.03);box-shadow:0 1px 1px 0 rgba(0,0,0,.03);border-radius:2px;height:34px;line-height:34px;padding:0 9px;font-size:14px;font-weight:500;cursor:pointer;z-index:99;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(255,255,255,0);-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}.tg-legend__item:hover{-webkit-box-shadow:0 1px 1px 0 rgba(0,0,0,.08);box-shadow:0 1px 1px 0 rgba(0,0,0,.08);border-color:#d8d8d8}.tg-legend__item{margin-right:5px;padding:0 22px;color:#fff;-webkit-transition:background-color .2s ease;transition:background-color .2s ease;will-change:background-color,border-color,padding;vertical-align:bottom;-webkit-box-shadow:none;box-shadow:none}.tg-legend__item--current{background:#e3f3ff;background:var(--button-bg-current);border:1px solid #c5e2fa;border:1px solid var(--button-border-current);border-radius:2px}.tg-legend__item--current:hover{border-color:#add6f8}.tg-legend__item svg{fill:currentColor}.tg-legend__item--wobble{-webkit-animation:wobble .6s ease-out!important;animation:wobble .6s ease-out!important}.tg-legend__item--enabled{padding:0 10px}.tg-legend__checkbox{position:relative;width:16px;height:16px;display:none;margin:auto 7px auto 0}.tg-legend__checkbox:before{content:\"\";position:absolute;left:3px;top:3px;display:inline-block;width:11px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;-webkit-transform:rotate(-45deg);transform:rotate(-45deg);opacity:0}@-webkit-keyframes wobble{0%{opacity:.5;-webkit-transform:rotate(-4deg);transform:rotate(-4deg)}25%{opacity:1}75%{opacity:.5;-webkit-transform:rotate(4deg);transform:rotate(4deg)}to{opacity:1}}@keyframes wobble{0%{opacity:.5;-webkit-transform:rotate(-4deg);transform:rotate(-4deg)}25%{opacity:1}75%{opacity:.5;-webkit-transform:rotate(4deg);transform:rotate(4deg)}to{opacity:1}}.tg-legend__item--selected{-webkit-animation:splash .15s ease;animation:splash .15s ease;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.tg-legend__item--enabled .tg-legend__checkbox:before{-webkit-animation:rolling .2s ease .1s;animation:rolling .2s ease .1s;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.tg-legend__item--enabled .tg-legend__checkbox{display:inline-block}@-webkit-keyframes rolling{0%{-webkit-transform:rotate(-20deg) translate(2px,7px) scale(.8);transform:rotate(-20deg) translate(2px,7px) scale(.8);opacity:0;width:0;height:0}to{-webkit-transform:rotate(-50deg);transform:rotate(-50deg);opacity:1;width:11px;height:5px}}@keyframes rolling{0%{-webkit-transform:rotate(-20deg) translate(2px,7px) scale(.8);transform:rotate(-20deg) translate(2px,7px) scale(.8);opacity:0;width:0;height:0}to{-webkit-transform:rotate(-50deg);transform:rotate(-50deg);opacity:1;width:11px;height:5px}}@-webkit-keyframes splash{0%{-webkit-transform:scale(.95);transform:scale(.95)}80%{-webkit-transform:scale(1.05);transform:scale(1.05)}to{-webkit-transform:scale(1);transform:scale(1)}}@keyframes splash{0%{-webkit-transform:scale(.95);transform:scale(.95)}80%{-webkit-transform:scale(1.05);transform:scale(1.05)}to{-webkit-transform:scale(1);transform:scale(1)}}.tg-chart g,.tg-minimap g{-webkit-transform-origin:bottom left;transform-origin:bottom left;will-change:transform}.tg-chart .oy-group,.tg-minimap .oy-group{-webkit-transition:-webkit-transform .3s ease;transition:-webkit-transform .3s ease;transition:transform .3s ease;transition:transform .3s ease,-webkit-transform .3s ease;will-change:transform;shape-rendering:optimizespeed}.tg-chart path.scaled{-webkit-transition:opacity .3s ease,-webkit-transform .4s ease;transition:opacity .3s ease,-webkit-transform .4s ease;transition:transform .4s ease,opacity .3s ease;transition:transform .4s ease,opacity .3s ease,-webkit-transform .4s ease;will-change:transform,opacity}.tg-chart path,.tg-minimap path{-webkit-transform-origin:bottom left;transform-origin:bottom left;-webkit-transition:opacity .3s ease;transition:opacity .3s ease;will-change:opacity;shape-rendering:optimizespeed}.tg-chart--line path{shape-rendering:geometricprecision}.tg-chart .tg-graph--hidden,.tg-minimap .tg-graph--hidden{opacity:0}.tg-bar{will-change:opacity,transform;-webkit-transition:opacity .35s ease,-webkit-transform .3s ease;transition:opacity .35s ease,-webkit-transform .3s ease;transition:opacity .35s ease,transform .3s ease;transition:opacity .35s ease,transform .3s ease,-webkit-transform .3s ease}.tg-bar--hidden{opacity:0}.tg-chart .tg-bar--hidden{-webkit-transform:matrix(1,0,0,.1,0,50);transform:matrix(1,0,0,.1,0,50)}.tg-minimap .tg-bar{-webkit-transition:none!important;transition:none!important}.tg-bar rect{will-change:height,y;shape-rendering:optimizespeed}.tg-chart__overlays{will-change:opacity;-webkit-transition:opacity .25s ease;transition:opacity .25s ease}.tg-chart__overlay-left,.tg-chart__overlay-right{fill:#fff;opacity:.5;will-change:width,x}.tg-area{will-change:opacity,transform!important;-webkit-transition:all .17s ease!important;transition:all .17s ease!important}.tg-area--hidden{-webkit-transform:scaleY(0)!important;transform:scaleY(0)!important}.tg-chart footer{margin-top:10px;margin-left:15px;height:18px;color:#939ca1;color:var(--color-gray);font-size:12px;font-family:Roboto,Helvetica Neue,-apple-system,BlinkMacSystemFont,Segoe UI,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif;position:relative}.tg-chart time{position:absolute;display:block;white-space:nowrap;-webkit-transition:opacity .25s ease;transition:opacity .25s ease;will-change:opacity,transform;-webkit-animation:fade-in .25s ease;animation:fade-in .25s ease}@-webkit-keyframes fade-in{0%{opacity:0}to{opacity:1}}@keyframes fade-in{0%{opacity:0}to{opacity:1}}.tg-chart time.hided{opacity:0}.tg-pointer{position:absolute;top:0;left:0;height:350px;opacity:0;will-change:opacity,left}.tg-pointer--showed{opacity:1}.tg-pointer:before{content:\"\";position:absolute;top:0;left:0;bottom:0;width:1px;background:rgba(170,181,191,.33)}.tg-pointer__pointer{display:inline-block;width:10px;height:10px;border:3px solid #1f2938;background:#fff;border-radius:50%;position:absolute;left:-5px;bottom:0;margin-bottom:-5px;-webkit-box-sizing:border-box;box-sizing:border-box;z-index:2;will-change:transform}.tg-pointer__pointer--hidden{display:none}.tg-minimap{position:relative;height:60px;margin:10px 15px 20px;cursor:pointer;border-radius:9px;-webkit-tap-highlight-color:rgba(255,255,255,0);-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}.tg-minimap svg{border-radius:9px;overflow:hidden}.tg-minimap__left,.tg-minimap__right{position:absolute;top:0;bottom:0;width:20%;background:rgba(226,238,249,.6);z-index:2;cursor:default;will-change:width}.tg-minimap__left:after,.tg-minimap__right:after{content:\"\";width:8px;position:absolute;top:0;bottom:0;background:rgba(226,238,249,.6);z-index:1}.tg-minimap__left:after{right:-8px}.tg-minimap__right:after{left:-8px}.tg-minimap__left{left:0;border-radius:9px 0 0 9px}.tg-minimap__center{position:absolute;top:-2px;bottom:-2px;width:10px;border-top:2px solid #c0d1e1;border-bottom:2px solid #c0d1e1}.tg-minimap__center:after,.tg-minimap__center:before{content:\"\";width:2px;background:#fff;top:0;bottom:0;position:absolute}.tg-minimap__center:before{left:0}.tg-minimap__center:after{right:0}.tg-minimap__right{right:0;border-radius:0 9px 9px 0}.tg-minimap__left-scaler,.tg-minimap__right-scaler{position:absolute;height:calc(100% + 4px);top:-2px;z-index:2;cursor:col-resize}.tg-minimap__left-scaler{right:0}.tg-minimap__right-scaler{left:0}.tg-minimap__left-scaler:before,.tg-minimap__right-scaler:before{content:\"\";position:absolute;height:calc(100% + 4px);top:-2px;width:16px;background:#c0d1e1;border:2px solid #fff;-webkit-box-sizing:border-box;box-sizing:border-box}.tg-minimap__left-scaler:after,.tg-minimap__right-scaler:after{content:\"\";position:absolute;height:15px;width:3px;border-radius:5px;background:#fff;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%)}.tg-minimap__right-scaler:after{left:-10px}.tg-minimap__left-scaler:after{right:-10px}.tg-minimap__left-scaler:before{right:-16px;border-radius:9px 0 0 9px;border-right:0}.tg-minimap__right-scaler:before{left:-16px;border-radius:0 9px 9px 0;border-left:0}.tg-minimap__left-scaler:hover:before,.tg-minimap__right-scaler:hover:before{background:#bbccdb}.tg-grid{position:absolute;right:0;top:0;left:15px;height:350px;color:#939ca1;color:var(--color-gray);font-size:12px;font-family:Roboto,Helvetica Neue,-apple-system,BlinkMacSystemFont,Segoe UI,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif}.tg-grid__section{position:absolute;left:0;right:0;bottom:0;padding-bottom:5px;border-bottom:1px solid rgba(24,45,59,.1);border-bottom:1px solid var(--gray-line);-webkit-transition:opacity .35s ease,bottom .28s ease,-webkit-transform .28s ease;transition:opacity .35s ease,bottom .28s ease,-webkit-transform .28s ease;transition:transform .28s ease,opacity .35s ease,bottom .28s ease;transition:transform .28s ease,opacity .35s ease,bottom .28s ease,-webkit-transform .28s ease;will-change:transfrom,opacity}.tg-grid__counter{-webkit-transition:opacity .3s ease;transition:opacity .3s ease;will-change:opacity}.tg-grid__counter--hidden{opacity:0}.tg-chart--line .tg-grid__counter{display:inline-block;background:hsla(0,0%,100%,.96);-webkit-box-shadow:0 0 5px #fff;box-shadow:0 0 5px #fff;border-radius:4px;padding:0 2px;margin:0 -2px}.tg-grid__counter--second{float:right}.tg-grid__section--hidden{opacity:0;-webkit-transform:translateY(-50px);transform:translateY(-50px)}@-webkit-keyframes jump-in{0%{-webkit-transform:translateY(-30px);transform:translateY(-30px);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}@keyframes jump-in{0%{-webkit-transform:translateY(-30px);transform:translateY(-30px);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}.tg-tooltip{position:absolute;background:#fff;border-radius:10px;-webkit-box-shadow:0 1px 4px 0 rgba(0,0,0,.13);box-shadow:0 1px 4px 0 rgba(0,0,0,.13);top:20px;padding:10px 15px;z-index:3;-webkit-transition:left .3s ease,opacity .4s ease;transition:left .3s ease,opacity .4s ease;will-change:left,opacity;opacity:0;min-width:140px;font-size:13px;font-family:Roboto,Helvetica Neue,-apple-system,BlinkMacSystemFont,Segoe UI,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,sans-serif}.tg-tooltip--showed{opacity:1}.tg-tooltip__title{font-weight:500;white-space:nowrap}.tg-tooltip__title .left{position:relative;margin-right:5px;display:inline-block;vertical-align:top}.tg-tooltip__title .left span{right:auto;left:0}.tg-tooltip__values{-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column}.tg-tooltip__values,.tg-tooltip__values-item{display:-webkit-box;display:-ms-flexbox;display:flex}.tg-tooltip__values-item{margin-top:5px}.tg-tooltip__values-item:first-of-type{margin-top:7px}.tg-tooltip__values-item-title{display:inline-block;padding-right:20px}.tg-tooltip .percents{display:inline-block;font-weight:500;min-width:26px;text-align:right;margin-right:10px}.tg-tooltip__values-item b{margin-left:auto;white-space:nowrap;position:relative}.counter-prev{-webkit-animation:exit .4s ease;animation:exit .4s ease;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.counter-cur,.counter-prev{position:absolute;will-change:transform,opacity;right:0;height:1em}.counter-cur{-webkit-animation:enter .4s ease;animation:enter .4s ease;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.counter-prev.top{-webkit-animation:exitTop .3s ease;animation:exitTop .3s ease;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.counter-cur.top{-webkit-animation:enterTop .3s ease;animation:enterTop .3s ease;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}@-webkit-keyframes exit{0%{-webkit-transform:none;transform:none;opacity:1}to{-webkit-transform:translateY(-1px) scale(1.35);transform:translateY(-1px) scale(1.35);opacity:0}}@keyframes exit{0%{-webkit-transform:none;transform:none;opacity:1}to{-webkit-transform:translateY(-1px) scale(1.35);transform:translateY(-1px) scale(1.35);opacity:0}}@-webkit-keyframes enter{0%{-webkit-transform:scale(.85) translateX(-2px);transform:scale(.85) translateX(-2px);opacity:0}80%{-webkit-transform:scale(1.05);transform:scale(1.05);opacity:1}to{-webkit-transform:none;transform:none}}@keyframes enter{0%{-webkit-transform:scale(.85) translateX(-2px);transform:scale(.85) translateX(-2px);opacity:0}80%{-webkit-transform:scale(1.05);transform:scale(1.05);opacity:1}to{-webkit-transform:none;transform:none}}@-webkit-keyframes exitTop{0%{-webkit-transform:none;transform:none;opacity:1}to{-webkit-transform:translateY(-5px);transform:translateY(-5px);opacity:0}}@keyframes exitTop{0%{-webkit-transform:none;transform:none;opacity:1}to{-webkit-transform:translateY(-5px);transform:translateY(-5px);opacity:0}}@-webkit-keyframes enterTop{0%{-webkit-transform:translateY(5px);transform:translateY(5px);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}@keyframes enterTop{0%{-webkit-transform:translateY(5px);transform:translateY(5px);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}.tg--night-mode{background:#242f3e;color:#fff}.tg--night-mode .tg-minimap__left,.tg--night-mode .tg-minimap__left:after,.tg--night-mode .tg-minimap__right,.tg--night-mode .tg-minimap__right:after{background:rgba(48,66,89,.6)}.tg--night-mode .tg-minimap__left-scaler:before,.tg--night-mode .tg-minimap__right-scaler:before{background:#56626d;border:0;height:calc(100% + 2px);top:0}.tg--night-mode .tg-minimap__left-scaler,.tg--night-mode .tg-minimap__right-scaler{height:calc(100% + 2px)}.tg--night-mode .tg-minimap__center{border-color:#56626d}.tg--night-mode .tg-chart--line .tg-grid__counter{background:#242f3e;-webkit-box-shadow:0 0 10px 2px #242f3e;box-shadow:0 0 10px 2px #242f3e}.tg--night-mode .tg-minimap__center:after,.tg--night-mode .tg-minimap__center:before{background:#242f3e;opacity:.5}.tg--night-mode .tg-legend__item{border-color:#384757}.tg--night-mode .tg-tooltip{background:#1c2533;color:#fff;-webkit-box-shadow:none;box-shadow:none}.tg--night-mode .tg-tooltip__title{color:#fff}.tg--night-mode .tg-pointer__pointer{background:#242f3e}.tg--night-mode .tg-chart__overlays rect{fill:#242f3e}.tg--night-mode .tg-grid__section{border-color:rgba(24,45,59,.1);border-color:var(--gray-line)}.tg--night-mode .tg-chart footer,.tg--night-mode .tg-grid{color:#939ca1;color:var(--color-gray)}.tg--night-mode .all b{color:#fff!important}"
+
+/***/ }),
+/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./src/styles/index.pcss
+var styles = __webpack_require__(0);
+var styles_default = /*#__PURE__*/__webpack_require__.n(styles);
 
 // CONCATENATED MODULE: ./src/modules/state.js
 /**
@@ -929,8 +939,7 @@ class graph_Graph {
     const dateLabelWidth = 45;
 
     this.modules = modules;
-    this.state = modules.state;
-    this.type = this.state.getCommonChartsType();
+    this.type = this.modules.state.getCommonChartsType();
 
     /**
      * @todo move to this.nodes
@@ -1053,7 +1062,7 @@ class graph_Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = (this.state.daysCount - 1) * this.stepX;
+    this.initialWidth = (this.modules.state.daysCount - 1) * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -1095,13 +1104,13 @@ class graph_Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / (this.state.daysCount - 1);
+    this.stepX = this.width / (this.modules.state.daysCount - 1);
 
     /**
      * All lines maximum value
      */
-    const max = this.state.max;
-    const min = this.state.min;
+    const max = this.modules.state.max;
+    const min = this.modules.state.min;
     const stepsAvailable = [5, 10, 25, 50, 100, 1000, 500, 10000, 5000, 100000, 1000000, 10000000];
     let newStepYIndex = stepsAvailable.reverse().findIndex( (step) => {
       let c = (max - min) > step;
@@ -1118,23 +1127,23 @@ class graph_Graph {
   }
 
   renderCharts(){
-    const type = this.state.getCommonChartsType();
+    const type = this.modules.state.getCommonChartsType();
 
     switch (type){
       case 'bar':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
-        this.minPoint = this.state.min;
+        this.maxPoint = this.modules.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.minPoint = this.modules.state.min;
         this.drawBarCharts();
         break;
       case 'area':
-        this.maxPoint = this.state.getMaximumAccumulatedByColumns(); // 20% for padding top
+        this.maxPoint = this.modules.state.getMaximumAccumulatedByColumns(); // 20% for padding top
         this.drawAreaCharts();
         break;
       default:
       case 'line':
-        if (!this.state.isYScaled) {
-          this.maxPoint = this.state.max;
-          this.minPoint = this.state.min;
+        if (!this.modules.state.isYScaled) {
+          this.maxPoint = this.modules.state.max;
+          this.minPoint = this.modules.state.min;
 
           this.drawLineCharts();
         } else {
@@ -1146,27 +1155,27 @@ class graph_Graph {
   }
 
   drawAreaCharts(){
-    let areas = this.state.linesAvailable.reverse().map( line => {
+    let areas = this.modules.state.linesAvailable.reverse().map( line => {
       return new area_Area({
         canvasHeight: this.height,
         stepX: this.stepX,
         key: line,
-        color: this.state.getLineColor(line)
+        color: this.modules.state.getLineColor(line)
       });
     });
 
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    this.state.linesAvailable.reverse().forEach( (line, index) => {
-      areas[index].moveTo(0, this.state.getLinePoints(line)[0], stacks[0]);
+    this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+      areas[index].moveTo(0, this.modules.state.getLinePoints(line)[0], stacks[0]);
     });
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      this.state.linesAvailable.reverse().forEach( (line, index) => {
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+      this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+        let pointValue = this.modules.state.getLinePoints(line)[pointIndex];
 
         if (pointIndex === 0){
           areas[index].stepTo(stacks[pointIndex], prevValue, true);
@@ -1187,7 +1196,7 @@ class graph_Graph {
 
   drawBarCharts(){
     const kY = this.maxPoint !== 0 ? this.height / this.maxPoint : 1;
-    let barmens = this.state.linesAvailable.reverse().map( line => {
+    let barmens = this.modules.state.linesAvailable.reverse().map( line => {
       return new bar_Bar({
         canvasHeight: this.height,
         stepX: this.stepX,
@@ -1196,18 +1205,18 @@ class graph_Graph {
       });
     });
 
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
-      this.state.linesAvailable.reverse().forEach( (line, index) => {
-        const color = this.state.getLineColor(line);
+      this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
+        const color = this.modules.state.getLineColor(line);
 
 
 
-        let pointValue = this.state.getLinePoints(line)[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(line)[pointIndex];
 
         // const editorLabelStyle = `line-height: 1em;
         //     color: #fff;
@@ -1247,31 +1256,31 @@ class graph_Graph {
    * Return max visible point
    * If line passed, check for that. Otherwise, return maximum between all
    */
-  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.state.daysCount, line = undefined){
-    const type = this.state.getCommonChartsType();
+  getMaxFromVisible(leftPointIndex = 0, pointsVisible = this.modules.state.daysCount, line = undefined){
+    const type = this.modules.state.getCommonChartsType();
 
     switch (type) {
       case 'bar':
-        return this.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
+        return this.modules.state.getMaximumAccumulatedByColumns(leftPointIndex, leftPointIndex + pointsVisible, this.hiddenCharts);
         break;
       default:
       case 'line':
         if (!line) {
-          return Math.max(...this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
-            return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible);
+          return Math.max(...this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).map(line => {
+            return this.modules.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible);
           }));
         }
 
-        return this.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible, line);
+        return this.modules.state.getMaxForLineSliced(line, leftPointIndex, pointsVisible, line);
         break;
     }
   }
 
   drawScaledLineCharts(){
-    this.state.linesAvailable.forEach( name => {
-      const lineMin = this.state.minForLine(name);
-      const lineMax = this.state.maxForLine(name);
-      const values = this.state.getLinePoints(name);
+    this.modules.state.linesAvailable.forEach( name => {
+      const lineMin = this.modules.state.minForLine(name);
+      const lineMax = this.modules.state.maxForLine(name);
+      const values = this.modules.state.getLinePoints(name);
 
       // console.log('[%o] min %o max %o', name, lineMin, lineMax);
 
@@ -1283,9 +1292,9 @@ class graph_Graph {
        */
       const path = new path_Path({
         canvasHeight: this.height,
-        isScaled: this.state.isYScaled,
+        isScaled: this.modules.state.isYScaled,
         max: lineMax,
-        color: this.state.getLineColor(name),
+        color: this.modules.state.getLineColor(name),
         zeroShifting,
         kY,
         stroke: this.strokeWidth,
@@ -1313,16 +1322,16 @@ class graph_Graph {
    * Create a 'line' charts
    */
   drawLineCharts(){
-    this.state.linesAvailable.forEach( name => {
+    this.modules.state.linesAvailable.forEach( name => {
       /**
        * Array of chart Y values
        */
-      const values = this.state.getLinePoints(name);
+      const values = this.modules.state.getLinePoints(name);
 
       /**
        * Color of drawing line
        */
-      const color = this.state.getLineColor(name);
+      const color = this.modules.state.getLineColor(name);
 
       /**
        * Point to from which we will start drawing
@@ -1394,7 +1403,7 @@ class graph_Graph {
 
     let max, kY, zeroShifting;
 
-    if (!this.state.isYScaled){
+    if (!this.modules.state.isYScaled){
       max = this.maxPoint;
       kY = this.kY;
 
@@ -1448,10 +1457,10 @@ class graph_Graph {
   }
 
   recalculateArea(useRecalculated = false){
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    let recalculated = this.state.recalculatedValues;
+    let recalculated = this.modules.state.recalculatedValues;
 
     if (useRecalculated && recalculated) {
       for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
@@ -1462,24 +1471,24 @@ class graph_Graph {
         }
       }
 
-      this.state.clearRecalculatedValues();
+      this.modules.state.clearRecalculatedValues();
       return;
     }
 
-    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
+    let lines = this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
       let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
-        return val + this.state.getLinePoints(line)[pointIndex];
+        return val + this.modules.state.getLinePoints(line)[pointIndex];
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(lines[i])[pointIndex];
 
-        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.modules.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
 
         if (pointIndex === 0){
           this.charts[lines[i]].move(pointIndex, newStack, prevValue, true);
@@ -1501,35 +1510,35 @@ class graph_Graph {
    * @param {boolean} useRecalculated - pass true to use saved value (minimap can use values from main Chart)
    */
   recalculateBars(useRecalculated = false){
-    const pointsCount = this.state.daysCount;
-    const stacks = this.state.getStacks();
+    const pointsCount = this.modules.state.daysCount;
+    const stacks = this.modules.state.getStacks();
 
-    let recalculated = this.state.recalculatedValues;
+    let recalculated = this.modules.state.recalculatedValues;
 
     if (useRecalculated && recalculated) {
       for (let i = 0, lenCached = recalculated.length; i < lenCached; i++) {
         this.charts[recalculated[i][0]].move(recalculated[i][1], recalculated[i][2], recalculated[i][3]);
       }
 
-      this.state.clearRecalculatedValues();
+      this.modules.state.clearRecalculatedValues();
       return;
     }
 
-    let lines = this.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
+    let lines = this.modules.state.linesAvailable.filter(line => this.checkPathVisibility(line)).reverse();
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
 
       let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
-        return val + this.state.getLinePoints(line)[pointIndex];
+        return val + this.modules.state.getLinePoints(line)[pointIndex];
       }, 0);
 
       for (let i = 0, lenCached = lines.length; i < lenCached; i++) {
         let newStack = stacks[pointIndex] - hiddenPointsValue;
-        let pointValue = this.state.getLinePoints(lines[i])[pointIndex];
+        let pointValue = this.modules.state.getLinePoints(lines[i])[pointIndex];
 
 
-        this.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
+        this.modules.state.saveRecalculatedValues([lines[i], pointIndex, newStack, prevValue]);
         this.charts[lines[i]].move(pointIndex, newStack, prevValue);
 
         prevValue += pointValue;
@@ -1567,10 +1576,6 @@ class minimap_Minimap {
    */
   constructor(modules){
     this.modules = modules;
-    /**
-     * @param {State} state
-     */
-    this.state = modules.state;
     this.nodes = {
       wrapper: undefined,
       canvas: undefined,
@@ -2053,10 +2058,10 @@ class minimap_Minimap {
   togglePath(name, status){
     this.graph.togglePathVisibility(name, status);
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.graph.recalculatePointsHeight(true);
       this.fitToMax();
-    } else if (this.state.type === 'area') {
+    } else if (this.modules.state.type === 'area') {
       this.graph.recalculatePointsHeight(true);
     } else {
       this.fitToMax();
@@ -2069,11 +2074,11 @@ class minimap_Minimap {
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    if (this.state.type !== 'area'){
-      if (!this.state.isYScaled){
+    if (this.modules.state.type !== 'area'){
+      if (!this.modules.state.isYScaled){
         this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible());
       } else {
-        this.state.linesAvailable.filter(line => this.modules.chart.notHiddenGraph(line)).forEach((line) => {
+        this.modules.state.linesAvailable.filter(line => this.modules.chart.notHiddenGraph(line)).forEach((line) => {
           this.graph.scaleToMaxPoint(this.graph.getMaxFromVisible(line), undefined, line);
         })
       }
@@ -2351,6 +2356,17 @@ class pointer_Pointer {
    * @param {{name: string, value: number}[]} values
    */
   showValues(values){
+    if (this.modules.state.type === 'area'){
+      if (Object.keys(this.pointers).length){
+        Object.values(this.pointers).forEach((el) => {
+          el.remove();
+        });
+
+        this.pointers = {};
+      }
+      return;
+    }
+
     if (!Object.keys(this.pointers).length){
       values.forEach( ({name}) => {
         const item = make('div', pointer_Pointer.CSS.pointer);
@@ -2402,10 +2418,6 @@ class chart_Chart {
    */
   constructor(modules){
     this.modules = modules;
-    /**
-     * @param {State} state
-     */
-    this.state = modules.state;
     this.nodes = {
       wrapper: undefined,
       viewport: undefined,
@@ -2461,7 +2473,7 @@ class chart_Chart {
 
   get initialStep(){
     if (!this._initialStep){
-      this._initialStep = this.width / (this.state.daysCount - 1);
+      this._initialStep = this.width / (this.modules.state.daysCount - 1);
     }
     return this._initialStep;
   }
@@ -2595,7 +2607,7 @@ class chart_Chart {
     this.nodes.wrapper.appendChild(this.nodes.cursorLine);
     this.nodes.wrapper.appendChild(this.tooltip.render());
 
-    this.nodes.wrapper.classList.add(chart_Chart.CSS.wrapper + '--' + this.state.type);
+    this.nodes.wrapper.classList.add(chart_Chart.CSS.wrapper + '--' + this.modules.state.type);
 
     this.bindEvents();
 
@@ -2686,14 +2698,14 @@ class chart_Chart {
 
     let height = this.height;
     let max = this.getMaxVisiblePoint();
-    let min = !this.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
+    let min = !this.modules.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
     let kY = height / (max - min);
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
 
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
-    if (this.state.isYScaled){
+    if (this.modules.state.isYScaled){
       maxSecond = this.getMaxVisiblePoint('y1');
       minSecond = this.getMinVisiblePoint('y1');
 
@@ -2703,7 +2715,7 @@ class chart_Chart {
       stepYSecond = this.getLegendStep(maxSecond, minSecond, linesCount, kYSecond, kYRatio);
     }
 
-    if (this.state.type === 'area'){
+    if (this.modules.state.type === 'area'){
       stepY = 25;
       linesCount = 5;
       max = 100;
@@ -2747,22 +2759,22 @@ class chart_Chart {
       line.appendChild(counter);
 
       if (stepYSecond){
-        counter.style.color = this.state.getLineColor('y0');
+        counter.style.color = this.modules.state.getLineColor('y0');
         let kYRatio = kY / kYSecond;
         let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), 'y1', true);
-        counter2.style.color = this.state.getLineColor('y1');
+        counter2.style.color = this.modules.state.getLineColor('y1');
         line.appendChild(counter2);
       }
     }
 
-    if (this.state.isYScaled){
+    if (this.modules.state.isYScaled){
       this.toggleGridLabelsForChart();
     }
   }
 
   /**
    * Check if date under passed index should be visible
-   * @param {number} originalIndex - index in this.state.dates
+   * @param {number} originalIndex - index in this.modules.state.dates
    * @return {boolean}
    */
   checkDateShouldBeHidden(originalIndex){
@@ -2800,10 +2812,17 @@ class chart_Chart {
 
     const dt = new Date(date);
     const dateEl = make('time');
-    dateEl.textContent = dt.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short'
-    });
+
+    if (this.modules.state.byMonth){
+      dateEl.textContent = dt.toLocaleDateString('en-US', {
+        month: 'short'
+      });
+    } else {
+      dateEl.textContent = dt.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short'
+      });
+    }
 
     // dateEl.textContent = originIndex;
 
@@ -2849,7 +2868,7 @@ class chart_Chart {
     /**
      * Get slice of timestamps that currently visible on the screen
      */
-    let datesOnScreenSlice = this.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
+    let datesOnScreenSlice = this.modules.state.dates.slice(this.leftPointIndex, this.rightPointIndex + 2);
     let datesOnScreenIndexes = new Set();
 
     if (!this._showEveryNDateInitial){
@@ -2941,7 +2960,7 @@ class chart_Chart {
     }
 
     this._sd = setTimeout(()=>{
-      this.modules.header.setPeriod(this.state.dates[this.leftPointIndex], this.state.dates[this.rightPointIndex]);
+      this.modules.header.setPeriod(this.modules.state.dates[this.leftPointIndex], this.modules.state.dates[this.rightPointIndex]);
     }, 50)
   }
 
@@ -2991,23 +3010,23 @@ class chart_Chart {
    */
   getMinVisiblePoint(line = undefined){
     if (!line){
-      return Math.min(...this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-        return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+      return Math.min(...this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
+        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
       }));
     }
 
-    return this.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
   }
 
   /**
    * Upscale or downscale graph to fit visible points
    */
   fitToMax(){
-    if (this.state.type !== 'area'){
-      if (!this.state.isYScaled){
+    if (this.modules.state.type !== 'area'){
+      if (!this.modules.state.isYScaled){
         this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(), this.getMinVisiblePoint());
       } else {
-        this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).forEach((line) => {
+        this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).forEach((line) => {
           this.graph.scaleToMaxPoint(this.getMaxVisiblePoint(line), this.getMinVisiblePoint(line), line);
         })
       }
@@ -3109,16 +3128,16 @@ class chart_Chart {
 
     this.tooltip.show();
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.highlightBar(pointIndex -1, scrollOffset);
     } else {
       this.pointer.move(newLeft);
     }
 
-    const values = this.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
+    const values = this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map( line => {
       return {
         name: line,
-        value: this.state.getLinePoints(line)[hoveredPointIndex]
+        value: this.modules.state.getLinePoints(line)[hoveredPointIndex]
       }
     });
 
@@ -3127,7 +3146,7 @@ class chart_Chart {
      */
     this.pointer.showValues(values);
 
-    const date = this.state.dates[hoveredPointIndex];
+    const date = this.modules.state.dates[hoveredPointIndex];
 
     /**
      * Skip bounding empty positions
@@ -3155,10 +3174,10 @@ class chart_Chart {
     this.graph.togglePathVisibility(name, status);
     this.pointer.toggleVisibility(name);
 
-    if (this.state.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.graph.recalculatePointsHeight();
       this.fitToMax();
-    } else if (this.state.type === 'area') {
+    } else if (this.modules.state.type === 'area') {
       this.graph.recalculatePointsHeight();
     } else {
       this.fitToMax();
@@ -3166,7 +3185,7 @@ class chart_Chart {
   }
 
   toggleGridLabelsForChart(){
-    this.state.linesAvailable.forEach(line => {
+    this.modules.state.linesAvailable.forEach(line => {
       this.nodes.grid.querySelectorAll(`[data-name="${line}"]`).forEach( el => {
         el.classList.toggle(chart_Chart.CSS.gridCounterHidden, !this.graph.checkPathVisibility(line))
       });
@@ -3216,6 +3235,9 @@ class chart_Chart {
 
   destroy(){
     this.nodes.canvas.remove();
+
+    this._datesPerScreenInitial = undefined;
+    this._showEveryNDateInitial = undefined;
 
     if (this.nodes.overlays){
       this.nodes.overlays.remove();
@@ -3412,11 +3434,15 @@ class header_Header {
       wrapper: undefined,
       title: undefined,
       dates: undefined,
-      typeSwitchers: []
+      typeSwitchers: [],
+      detailsTogglers: [],
     };
 
   }
 
+  /**
+   * @return {{wrapper: string, title: string, dates: string, typeSwitcher: string, typeSwitcherCurrent: string, detailsToggler: string, detailsTogglerItem: string, detailsTogglerItemCurrent: string}}
+   */
   static get CSS(){
     return {
       wrapper: 'tg-header',
@@ -3424,6 +3450,9 @@ class header_Header {
       dates: 'tg-header__dates',
       typeSwitcher: 'tg-header__type-switcher',
       typeSwitcherCurrent: 'tg-header__type-switcher--current',
+      detailsToggler: 'tg-header__details',
+      detailsTogglerItem: 'tg-header__details-item',
+      detailsTogglerItemCurrent: 'tg-header__details-item--current',
     }
   }
 
@@ -3435,31 +3464,30 @@ class header_Header {
     this.nodes.title.textContent = this.modules.state.title || 'Untitled';
     this.nodes.wrapper.appendChild(this.nodes.title);
 
+    if (this.modules.dataByMonth){
+      this.appendDetailsToggler();
+    }
+
     [
       {
         type: 'line',
-        icon: `<svg width="22" height="16" xmlns="http://www.w3.org/2000/svg">
-                <g fill="none" fill-rule="evenodd">
-                  <rect stroke="#979797" fill="#D8D8D8" x=".5" y="14.5" width="21" height="1" rx=".5"/>
-                  <path d="M17.707 5.708l-2 1.999a3 3 0 1 1-5.685.923l-2.94-1.47A2.99 2.99 0 0 1 5 8c-.463 0-.902-.105-1.293-.292l-2 2L.293 8.292l2-2a3 3 0 1 1 5.685-.923l2.94 1.47A2.99 2.99 0 0 1 13 6c.463 0 .902.105 1.293.292l2-1.999a3 3 0 1 1 1.414 1.414zM5 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm8 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm6-6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="#979797" fill-rule="nonzero"/>
-                </g>
+        icon: `<svg width="17" height="9" xmlns="http://www.w3.org/2000/svg" style="margin: auto -2px;">
+                <path d="M13.638 4.28l-1.566 1.5c.147.294.23.623.23.97 0 1.243-1.053 2.25-2.35 2.25-1.298 0-2.35-1.007-2.35-2.25 0-.094.006-.187.018-.278L5.317 5.37c-.422.39-.997.63-1.63.63-.302 0-.59-.054-.854-.153L1 8 0 7l1.717-2.023a2.172 2.172 0 0 1-.38-1.227c0-1.243 1.052-2.25 2.35-2.25 1.297 0 2.349 1.007 2.349 2.25 0 .094-.006.187-.018.278L8.321 5.13c.422-.39.997-.63 1.63-.63.363 0 .707.079 1.014.22l1.565-1.5a2.163 2.163 0 0 1-.229-.97c0-1.243 1.052-2.25 2.35-2.25C15.948 0 17 1.007 17 2.25S15.948 4.5 14.65 4.5c-.362 0-.706-.079-1.012-.22zm-9.952.22c.433 0 .784-.336.784-.75S4.119 3 3.686 3c-.432 0-.783.336-.783.75s.35.75.783.75zm6.266 3c.432 0 .783-.336.783-.75S10.385 6 9.952 6c-.433 0-.784.336-.784.75s.351.75.784.75zM14.65 3c.432 0 .783-.336.783-.75s-.35-.75-.783-.75c-.433 0-.784.336-.784.75s.351.75.784.75z"/>
               </svg>`
       },
       {
         type: 'area',
-        icon: `<svg width="21" height="18" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 11.133L8.445 12.926 5.27 8.694 0 11.705v-4.17l4.98-3.32 6.838 4.884L21 6.344v4.789zm0 2.02V16a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-1.991l4.73-2.703 2.825 3.768L21 13.153zm0-8.897l-8.818 2.645L5.02 1.785 0 5.131V2a2 2 0 0 1 2-2h17a2 2 0 0 1 2 2v2.256z" fill="#979797" fill-rule="evenodd"/>
+        icon: `<svg width="15" height="13" xmlns="http://www.w3.org/2000/svg" style="margin: auto -1px;">
+                <path d="M15 7.952L6.032 9.233 3.765 6.21 0 8.36V5.382l3.557-2.371 4.884 3.488L15 4.531v3.42zm0 1.443v1.462a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-.85l3.378-1.931 2.019 2.69L15 9.396zm0-6.355L8.702 4.93 3.585 1.274 0 3.665V2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1.04z"/>
               </svg>`
       },
       {
         type: 'bar',
-        icon: `<svg width="19" height="18" xmlns="http://www.w3.org/2000/svg">
-                <g fill="#979797" fill-rule="evenodd">
-                  <rect y="10" width="3" height="8" rx="1.5"/>
-                  <path d="M15 9v6h-3V9h3zm0-1h-3V1.5a1.5 1.5 0 0 1 3 0V8zm0 8v.5a1.5 1.5 0 0 1-3 0V16h3z"/>
-                  <rect x="16" y="9" width="3" height="9" rx="1.5"/>
-                  <path d="M7 10v4H4v-4h3zm0-1H4V6.5a1.5 1.5 0 0 1 3 0V9zm0 6v1.5a1.5 1.5 0 0 1-3 0V15h3zM11 14H8V7h3v7zm0 1v1.5a1.5 1.5 0 0 1-3 0V15h3zm0-9H8V1.5a1.5 1.5 0 0 1 3 0V6z"/>
-                </g>
+        icon: `<svg width="14" height="13" xmlns="http://www.w3.org/2000/svg">
+                <rect y="7" width="2" height="6" rx="1"/>
+                <rect x="12" y="6" width="2" height="7" rx="1"/>
+                <rect x="4" y="4" width="2" height="9" rx="1"/>
+                <rect x="8" width="2" height="13" rx="1"/>
               </svg>`,
       },
     ].forEach(({type, icon}) => {
@@ -3485,6 +3513,40 @@ class header_Header {
     return this.nodes.wrapper
   }
 
+  /**
+   * Create Day|Month toggler
+   */
+  appendDetailsToggler(){
+    const toggler = make('span', header_Header.CSS.detailsToggler);
+
+    [
+      {
+        title: 'Day',
+        dataStoringProperty: 'data'
+      },
+      {
+        title: 'Month',
+        dataStoringProperty: 'dataByMonth'
+      }
+    ].forEach(({title, dataStoringProperty}, index) => {
+      const togglerItem = make('span', header_Header.CSS.detailsTogglerItem);
+
+      if (index === 0) {
+        togglerItem.classList.add(header_Header.CSS.detailsTogglerItemCurrent);
+      }
+
+      togglerItem.innerHTML = title;
+      togglerItem.addEventListener('click', () => {
+        this.detailsTogglerClicked(dataStoringProperty, togglerItem);
+      });
+      toggler.appendChild(togglerItem);
+
+      this.nodes.detailsTogglers.push(togglerItem);
+    });
+
+    this.nodes.wrapper.appendChild(toggler);
+  }
+
   typeSwitcherClicked(type, switcher){
     this.modules.state.type = type;
     this.modules.chart.destroy();
@@ -3495,6 +3557,19 @@ class header_Header {
     this.nodes.typeSwitchers.forEach(el => el.classList.remove(header_Header.CSS.typeSwitcherCurrent));
 
     switcher.classList.add(header_Header.CSS.typeSwitcherCurrent);
+  }
+
+  detailsTogglerClicked(dataStoringProperty, toggler){
+    this.modules.createState(dataStoringProperty);
+
+    this.modules.chart.destroy();
+    this.modules.chart.renderCharts();
+    this.modules.minimap.renderMap();
+    this.modules.minimap.syncScrollWithChart();
+
+    this.nodes.detailsTogglers.forEach(el => el.classList.remove(header_Header.CSS.detailsTogglerItemCurrent));
+
+    toggler.classList.add(header_Header.CSS.detailsTogglerItemCurrent);
   }
 
   setPeriod(leftDateTimestamp, rightDateTimestamp){
@@ -3523,6 +3598,8 @@ class header_Header {
 
 
 
+
+
 /**
  * @typedef {object} ChartData
  */
@@ -3532,19 +3609,33 @@ class telegraph_Telegraph {
    * Main entry constructor
    * @param {string} holderId - where to append a Chart
    * @param {string} data - chart data in csv format
+   * @param {string} dataByMonth - chart data grouped by months in csv format
    * @param {string} type - graph type. Available types: 'line', 'area', 'bar'
    * @param {string[]} colors - colors list for each line
    * @param {string[]} titles - titles list for each line
    * @param {string} title - Graph title
    * @param {boolean} byMonth - is graphs represents data grouped by month
    */
-  constructor({holderId, data, colors, titles, type, title, byMonth}) {
+  constructor({holderId, data, dataByMonth, colors, titles, type, title, byMonth}) {
     this.holder = document.getElementById(holderId);
 
     /**
-     * Module that stores all main app state values
+     * Append <style> with all styles
      */
-    this.state = new State(data, colors, titles, type, title, byMonth);
+    this.loadStyles();
+
+    /**
+     * Save input params to allow to recreate State object
+     */
+    this.data = data;
+    this.dataByMonth = dataByMonth;
+    this.colors = colors;
+    this.type = type;
+    this.title = title;
+    this.titles = titles;
+    this.byMonth = byMonth;
+
+    this.createState();
 
     /**
      * Module for mini map
@@ -3591,6 +3682,41 @@ class telegraph_Telegraph {
   }
 
   /**
+   * Create an object with all graphs data
+   * @param {string} dataStoringProperty - name of field that stores input data in csv
+   */
+  createState(dataStoringProperty = 'data'){
+    /**
+     * Module that stores all main app state values
+     */
+    if (dataStoringProperty === 'dataByMonth'){
+      this.byMonth = true;
+    }
+
+    this.state = new State(this[dataStoringProperty], this.colors, this.titles, this.type, this.title, this.byMonth);
+  }
+
+  /**
+   * Load styles and append it via <style id="specc-graph-styles"> tag
+   */
+  loadStyles(){
+    const styleIdentifier = 'specc-graph-styles';
+    const styleExists = document.getElementById(styleIdentifier);
+
+    if (styleExists){
+      return;
+    }
+
+    const style = document.createElement('style');
+    const head = document.querySelector('head');
+
+    style.id = styleIdentifier;
+    style.textContent = styles_default.a;
+
+    head.appendChild(style);
+  }
+
+  /**
    * Create base app UI
    */
   prepareUi(){
@@ -3611,3 +3737,4 @@ class telegraph_Telegraph {
 
 /***/ })
 /******/ ]);
+//# sourceMappingURL=main.js.map

@@ -1,0 +1,27 @@
+:root {
+  --color-gray: #939CA1;
+  --gray-line: rgba(24,45,59,0.10);
+
+  --button-bg: #fff;
+  --button-color: #000;
+  --button-border: #E6E6E6;
+  --button-bg-current: #E3F3FF;
+  --button-border-current: #C5E2FA;
+
+  @custom-media --mobile (max-width: 1000px);
+}
+
+/**
+ * Night mode
+ * --------------------------------
+ */
+.tg--night-mode {
+  --color-gray: rgba(217, 242, 255, 0.27);
+  --gray-line: rgba(255, 255,255, 0.1);
+
+  --button-color: #fff;
+  --button-bg: #242F3E;
+  --button-border: rgba(255, 255,255, 0.2);
+  --button-border-current: rgba(2, 13, 22, 0.26);
+  --button-bg-current: rgba(0, 0, 0, 0.19);
+}
