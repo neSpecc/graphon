@@ -46,13 +46,21 @@
       min-width: 70px;
       justify-content: center;
 
+      &:first-of-type:not(&--current){
+        border-right: 0;
+      }
+
+      &--current + & {
+        border-left: 0;
+        min-width: 69px;
+      }
+
       &:not(:last-of-type){
         border-radius: 2px 0 0 2px;
       }
 
       &:not(:first-of-type){
         border-radius: 0 2px 2px 0;
-        margin-left: -1px;
       }
     }
   }
