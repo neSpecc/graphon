@@ -52,7 +52,6 @@ export default class Bar {
    * @param {number} y
    */
   add(y, stackValue, prevValue, color){
-    this.prevX = this.prevX + this.stepX;
     let stackScaled = stackValue * this.kY;
     let heightPrev = prevValue * this.kY;
     let height = stackScaled - heightPrev;
@@ -63,6 +62,8 @@ export default class Bar {
     bar.setAttribute('x', this.prevX);
     bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
+
+    this.prevX = this.prevX + this.stepX;
     // bar.setAttribute('stroke', color);
     // bar.setAttribute('opacity', 0.6);
 

@@ -84,7 +84,6 @@ export default class Legend {
     this._timer = setTimeout(() => {
       this._clickPrevented = true;
 
-      console.log('this._clickPrevented', this._clickPrevented);
       this.uncheckAllExceptPassed(name);
     }, 500);
   }

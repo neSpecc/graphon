@@ -732,7 +732,7 @@ export default class Chart {
     this.tooltip.show();
 
     if (this.modules.state.type === 'bar'){
-      this.highlightBar(pointIndex -1, scrollOffset);
+      this.highlightBar(pointIndex, scrollOffset);
     } else {
       this.pointer.move(newLeft);
     }

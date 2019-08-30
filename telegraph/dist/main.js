@@ -665,7 +665,6 @@ class bar_Bar {
    * @param {number} y
    */
   add(y, stackValue, prevValue, color){
-    this.prevX = this.prevX + this.stepX;
     let stackScaled = stackValue * this.kY;
     let heightPrev = prevValue * this.kY;
     let height = stackScaled - heightPrev;
@@ -676,6 +675,8 @@ class bar_Bar {
     bar.setAttribute('x', this.prevX);
     bar.setAttribute('y', this.y(stackValue - prevValue));
     bar.setAttribute('fill', color);
+
+    this.prevX = this.prevX + this.stepX;
     // bar.setAttribute('stroke', color);
     // bar.setAttribute('opacity', 0.6);
 
@@ -1633,6 +1634,12 @@ class minimap_Minimap {
     this.leftZoneWidth = 0;
     this.rightZoneWidth = 0;
 
+    /**
+     * Wrapper rect cache
+     * @type {ClientRect}
+     */
+    this.wrapperRect = null;
+
     this.prevX = 0;
 
     this.graph = new graph_Graph(this.modules, {
@@ -1670,6 +1677,13 @@ class minimap_Minimap {
     this.nodes.wrapper.appendChild(this.nodes.leftZone);
     this.nodes.wrapper.appendChild(this.nodes.centerZone);
     this.nodes.wrapper.appendChild(this.nodes.rightZone);
+
+    /**
+     * Wait dom appending
+     */
+    setTimeout(() => {
+      this.wrapperRect = this.nodes.wrapper.getBoundingClientRect();
+    }, 100);
 
     this.bindEvents();
 
@@ -1838,11 +1852,11 @@ class minimap_Minimap {
       this.viewportMousedown(event);
     }, supportsPassive ? { passive: true } : false);
 
-    document.body.addEventListener('mousemove', (event) => {
+    window.addEventListener('mousemove', (event) => {
       this.viewportMousemove(event);
     }, supportsPassive ? { passive: true } : false);
 
-    document.body.addEventListener('mouseup', (event) => {
+    window.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
     }, supportsPassive ? { passive: true } : false);
 
@@ -2000,6 +2014,10 @@ class minimap_Minimap {
 
     let direction = this.prevX < pageX ? 'right' : 'left';
 
+    if (pageX > this.wrapperRect.right || pageX < this.wrapperRect.left){
+      return;
+    }
+
     if (!delta || this.prevX === pageX){
       return;
     }
@@ -2010,7 +2028,7 @@ class minimap_Minimap {
 
     if (side === 'left'){
       delta = delta * -1;
-      newScalerWidth = this.viewportOffsetLeft - delta;
+      newScalerWidth = Math.max(0, this.viewportOffsetLeft - delta);
 
       if (newScalerWidth > this.leftZoneMaximumWidth) {
         return;
@@ -2021,7 +2039,7 @@ class minimap_Minimap {
       this.centerWidth = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth)
 
     } else {
-      newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
+      newScalerWidth = Math.max(0, this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta));
 
       if (newScalerWidth > this.rightZoneMaximumWidth){
         return;
@@ -3129,7 +3147,7 @@ class chart_Chart {
     this.tooltip.show();
 
     if (this.modules.state.type === 'bar'){
-      this.highlightBar(pointIndex -1, scrollOffset);
+      this.highlightBar(pointIndex, scrollOffset);
     } else {
       this.pointer.move(newLeft);
     }
@@ -3338,7 +3356,6 @@ class legend_Legend {
     this._timer = setTimeout(() => {
       this._clickPrevented = true;
 
-      console.log('this._clickPrevented', this._clickPrevented);
       this.uncheckAllExceptPassed(name);
     }, 500);
   }
@@ -3737,4 +3754,3 @@ class telegraph_Telegraph {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=main.js.map

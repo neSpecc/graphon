@@ -76,6 +76,12 @@ export default class Minimap {
     this.leftZoneWidth = 0;
     this.rightZoneWidth = 0;
 
+    /**
+     * Wrapper rect cache
+     * @type {ClientRect}
+     */
+    this.wrapperRect = null;
+
     this.prevX = 0;
 
     this.graph = new Graph(this.modules, {
@@ -113,6 +119,13 @@ export default class Minimap {
     this.nodes.wrapper.appendChild(this.nodes.leftZone);
     this.nodes.wrapper.appendChild(this.nodes.centerZone);
     this.nodes.wrapper.appendChild(this.nodes.rightZone);
+
+    /**
+     * Wait dom appending
+     */
+    setTimeout(() => {
+      this.wrapperRect = this.nodes.wrapper.getBoundingClientRect();
+    }, 100);
 
     this.bindEvents();
 
@@ -281,11 +294,11 @@ export default class Minimap {
       this.viewportMousedown(event);
     }, supportsPassive ? { passive: true } : false);
 
-    document.body.addEventListener('mousemove', (event) => {
+    window.addEventListener('mousemove', (event) => {
       this.viewportMousemove(event);
     }, supportsPassive ? { passive: true } : false);
 
-    document.body.addEventListener('mouseup', (event) => {
+    window.addEventListener('mouseup', (event) => {
       this.viewportMouseup(event);
     }, supportsPassive ? { passive: true } : false);
 
@@ -443,6 +456,10 @@ export default class Minimap {
 
     let direction = this.prevX < pageX ? 'right' : 'left';
 
+    if (pageX > this.wrapperRect.right || pageX < this.wrapperRect.left){
+      return;
+    }
+
     if (!delta || this.prevX === pageX){
       return;
     }
@@ -453,7 +470,7 @@ export default class Minimap {
 
     if (side === 'left'){
       delta = delta * -1;
-      newScalerWidth = this.viewportOffsetLeft - delta;
+      newScalerWidth = Math.max(0, this.viewportOffsetLeft - delta);
 
       if (newScalerWidth > this.leftZoneMaximumWidth) {
         return;
@@ -464,7 +481,7 @@ export default class Minimap {
       this.centerWidth = (this.wrapperWidth - newScalerWidth - this.rightZoneWidth)
 
     } else {
-      newScalerWidth = this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta);
+      newScalerWidth = Math.max(0, this.wrapperWidth - this.viewportOffsetLeft - (this.viewportWidthBeforeDrag + delta));
 
       if (newScalerWidth > this.rightZoneMaximumWidth){
         return;
