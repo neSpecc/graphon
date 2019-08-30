@@ -34,6 +34,7 @@ export default class Minimap {
     this.viewportWidth = 100;
     this.viewportWidthInitial = 100;
     this.viewportOffsetLeft = 0;
+    this.scalerWidth = 14;
 
     /**
      * Remember width on touch start
@@ -142,7 +143,7 @@ export default class Minimap {
 
     this.nodes.canvas = this.graph.renderCanvas({
       width: this.nodes.wrapper.offsetWidth,
-      height: this.nodes.wrapper.offsetHeight
+      height: this.nodes.wrapper.offsetHeight - 2 // 2 for borders
     });
 
     this.graph.renderCharts();
@@ -174,7 +175,7 @@ export default class Minimap {
   set leftWidth(val){
     this.leftZoneWidth = val;
     this.nodes.leftZone.style.width = val + 'px';
-    this.nodes.centerZone.style.left = val + 16 + 'px';
+    this.nodes.centerZone.style.left = val + this.scalerWidth + 'px';
   }
 
   /**
@@ -200,7 +201,7 @@ export default class Minimap {
   }
 
   set centerWidth(value){
-    this.nodes.centerZone.style.width = (value - 32) + 'px';
+    this.nodes.centerZone.style.width = (value - this.scalerWidth*2) + 'px';
   }
 
   /**
@@ -491,8 +492,6 @@ export default class Minimap {
       this.centerWidth = (this.wrapperWidth - newScalerWidth - this.leftZoneWidth)
     }
 
-
-
     const newViewportWidth = side === 'left' ?
       this.wrapperWidth - newScalerWidth - this.rightZoneWidth :
       this.wrapperWidth - this.leftZoneWidth - newScalerWidth;
@@ -526,8 +525,6 @@ export default class Minimap {
     } else {
       this.fitToMax();
     }
-
-
   }
 
   /**

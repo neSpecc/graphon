@@ -122,6 +122,7 @@ export default class Header {
 
   typeSwitcherClicked(type, switcher){
     this.modules.state.type = type;
+    this.modules.state.clearRecalculatedValues();
     this.modules.chart.destroy();
     this.modules.chart.renderCharts();
     this.modules.minimap.renderMap();

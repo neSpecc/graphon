@@ -101,8 +101,14 @@ export default class Area {
     let pointToChange = this.pathData[index + 1]; // +1 to skip M value
     let [l, x, y] = pointToChange.trim().split(' ');
 
-    let prevPercents = 100 / total * prev;
-    let percentage = this.percentToValue(100 - prevPercents);
+    let prevPercents, percentage;
+
+    if (total > 0){
+      prevPercents = 100 / total * prev;
+      percentage = this.percentToValue(100 - prevPercents);
+    } else {
+      percentage = this.percentToValue(0 );
+    }
 
     this.pathData[index + 1] = ` L ${x} ${this.y(percentage)}`;
   }

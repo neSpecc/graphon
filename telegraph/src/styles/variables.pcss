@@ -1,4 +1,5 @@
 :root {
+  --color-bg: #fff;
   --color-gray: #939CA1;
   --gray-line: rgba(24,45,59,0.10);
 
@@ -7,6 +8,9 @@
   --button-border: #E6E6E6;
   --button-bg-current: #E3F3FF;
   --button-border-current: #C5E2FA;
+  --minimap-overlays-color: rgba(212, 215, 217, 0.25);
+  --minimap-scaler-bg: rgba(137, 138, 152, 0.7);
+  --minimap-scaler-bg--hover: rgba(137, 138, 152, 1);
 
   @custom-media --mobile (max-width: 1000px);
 }
@@ -16,12 +20,18 @@
  * --------------------------------
  */
 .tg--night-mode {
+  --color-bg: #242F3E;
   --color-gray: rgba(217, 242, 255, 0.27);
   --gray-line: rgba(255, 255,255, 0.1);
 
   --button-color: #fff;
-  --button-bg: #242F3E;
+  --button-bg: #293039;
   --button-border: rgba(255, 255,255, 0.2);
-  --button-border-current: rgba(2, 13, 22, 0.26);
-  --button-bg-current: rgba(0, 0, 0, 0.19);
+
+  --button-border-current: rgba(195, 214, 231, 0.26);
+  --button-bg-current: rgba(131, 145, 163, 0.11);
+
+  --minimap-overlays-color: rgba(38, 41, 43, 0.62);
+  --minimap-scaler-bg: rgba(109, 146, 185, 0.4);
+  --minimap-scaler-bg--hover: rgba(109, 146, 185, 0.7);
 }

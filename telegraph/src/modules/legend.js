@@ -53,7 +53,6 @@ export default class Legend {
       this._clickPrevented = false;
 
       item.addEventListener('click', () => {
-        console.log('this._clickPrevented', this._clickPrevented);
         if (!this._clickPrevented){
           this.itemClicked(name);
         }
@@ -122,7 +121,6 @@ export default class Legend {
 
     setTimeout(() => {
       this._clickPrevented = false;
-      console.log('1this._clickPrevented', this._clickPrevented);
     }, 400)
 
     clearTimeout(this._timer);

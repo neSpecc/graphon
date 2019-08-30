@@ -276,8 +276,13 @@ export default class Chart {
 
   getLegendCounter(value, name, isSecond){
     let counter = Dom.make('span', Chart.CSS.gridCounter);
-    counter.textContent = Numbers.beautify(Math.round(value));
+    let text = Numbers.beautify(Math.round(value));
 
+    if (this.modules.state.type === 'area'){
+      text += '%';
+    }
+
+    counter.textContent = text;
     counter.dataset.name = name;
 
     if (isSecond){

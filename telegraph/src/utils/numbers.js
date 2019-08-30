@@ -51,5 +51,9 @@ export function beautify(number) {
  * @return {string}
  */
 export function addSpaces(number) {
+  if (isNaN(parseInt(number, 10))){
+    return '';
+  }
+
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }

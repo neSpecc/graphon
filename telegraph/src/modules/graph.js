@@ -22,7 +22,6 @@ export default class Graph {
     const dateLabelWidth = 45;
 
     this.modules = modules;
-    this.type = this.modules.state.getCommonChartsType();
 
     /**
      * @todo move to this.nodes
@@ -532,9 +531,9 @@ export default class Graph {
    * Change bars height and Y to fit hidden charts place
    */
   recalculatePointsHeight(useRecalculated = false){
-    if (this.type === 'bar'){
+    if (this.modules.state.type === 'bar'){
       this.recalculateBars(useRecalculated);
-    } else if (this.type === 'area') {
+    } else if (this.modules.state.type === 'area') {
       this.recalculateArea(useRecalculated);
     }
   }
@@ -562,7 +561,6 @@ export default class Graph {
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;
-
       let hiddenPointsValue = this.hiddenCharts.reduce( (val, line) => {
         return val + this.modules.state.getLinePoints(line)[pointIndex];
       }, 0);

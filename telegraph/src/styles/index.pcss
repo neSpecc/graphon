@@ -7,6 +7,7 @@
 @import "components/chart.pcss";
 @import "components/header.pcss";
 @import "components/legend.pcss";
+@import "components/minimap.pcss";
 
 /**
  * @todo refactor styles below
@@ -194,164 +195,6 @@
     display: none;
 }
 
-/**
- * Mini map module
- * --------------------------------
- */
-.tg-minimap {
-    position: relative;
-    height: 60px;
-    margin: 10px 15px 20px;
-    cursor: pointer;
-    border-radius: 9px;
-    -webkit-tap-highlight-color:  rgba(255, 255, 255, 0);
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-}
-
-.tg-minimap svg {
-    border-radius: 9px;
-    overflow: hidden;
-}
-
-.tg-minimap__left,
-.tg-minimap__right {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 20%;
-    background: rgba(226,238,249,0.60);
-    z-index: 2;
-    cursor: default;
-    will-change: width;
-}
-
-.tg-minimap__left::after,
-.tg-minimap__right::after {
-    content: '';
-    width: 8px;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    background: rgba(226,238,249,0.60);
-    z-index: 1;
-}
-
-.tg-minimap__left::after {
-    right: -8px;
-}
-
-.tg-minimap__right::after {
-    left: -8px;
-}
-
-
-.tg-minimap__left {
-    left: 0;
-    border-radius: 9px 0 0 9px;
-}
-
-.tg-minimap__center {
-    position: absolute;
-    top: -2px;
-    bottom: -2px;
-    width: 10px;
-    border-top: 2px solid #C0D1E1;
-    border-bottom: 2px solid #C0D1E1;
-}
-
-.tg-minimap__center::before,
-.tg-minimap__center::after {
-    content: '';
-    width: 2px;
-    background: #fff;
-    top: 0;
-    bottom: 0;
-    position: absolute;
-}
-
-.tg-minimap__center::before{
-    left: 0;
-}
-
-.tg-minimap__center::after{
-    right: 0;
-}
-
-
-.tg-minimap__right {
-    right: 0;
-    border-radius: 0 9px 9px 0;
-}
-
-.tg-minimap__left-scaler,
-.tg-minimap__right-scaler {
-    position: absolute;
-    height: calc(100% + 4px);
-    /*width: 22px;*/
-    top: -2px;
-    z-index: 2;
-    cursor: col-resize;
-}
-
-.tg-minimap__left-scaler {
-    right: 0;
-}
-
-.tg-minimap__right-scaler {
-    left: 0;
-
-}
-
-.tg-minimap__left-scaler::before,
-.tg-minimap__right-scaler::before {
-    content: '';
-    position: absolute;
-    height: calc(100% + 4px);
-    top: -2px;
-    width: 16px;
-    background: #C0D1E1;
-    border: 2px solid #fff;
-    box-sizing: border-box;
-}
-
-.tg-minimap__left-scaler::after,
-.tg-minimap__right-scaler::after {
-    content: '';
-    position: absolute;
-    height: 15px;
-    width: 3px;
-    border-radius: 5px;
-    background: #fff;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.tg-minimap__right-scaler::after {
-    left: -10px;
-}
-
-.tg-minimap__left-scaler::after {
-    right: -10px;
-}
-
-.tg-minimap__left-scaler::before {
-    right: -16px;
-    border-radius: 9px 0 0 9px;
-    border-right: 0;
-}
-
-.tg-minimap__right-scaler::before {
-    left: -16px;
-    border-radius: 0 9px 9px 0;
-    border-left: 0;
-}
-
-.tg-minimap__left-scaler:hover::before,
-.tg-minimap__right-scaler:hover::before {
-    background: #BBCCDB;
-}
-
 
 /**
 * Grid
@@ -390,10 +233,10 @@
 
 .tg-chart--line .tg-grid__counter{
     display: inline-block;
-    background: rgba(255,255,255,0.96);
-    box-shadow: 0 0 5px #fff;
-    border-radius: 4px;
-    padding: 0px 2px;
+    background: var(--color-bg);
+    color: var(--color-gray);
+    border-radius: 2px;
+    padding: 2px 4px;
     margin: 0 -2px;
 }
 
@@ -591,44 +434,8 @@
  * --------------------------------
  */
 .tg--night-mode {
-    background: #242F3E;
+    background: #2b3037;
     color: #fff;
-}
-
-.tg--night-mode .tg-minimap__left,
-.tg--night-mode .tg-minimap__right {
-    background: rgba(48,66,89,0.60);
-}
-
-.tg--night-mode .tg-minimap__left::after,
-.tg--night-mode .tg-minimap__right::after {
-    background: rgba(48,66,89,0.60);
-}
-
-.tg--night-mode .tg-minimap__left-scaler::before,
-.tg--night-mode .tg-minimap__right-scaler::before {
-    background: #56626D;
-    border: 0;
-    height: calc(100% + 2px);
-    top: 0;
-}
-
-.tg--night-mode .tg-minimap__left-scaler,
-.tg--night-mode .tg-minimap__right-scaler {
-    height: calc(100% + 2px);
-}
-.tg--night-mode .tg-minimap__center {
-    border-color: #56626D;
-}
-.tg--night-mode .tg-chart--line .tg-grid__counter {
-    background: #242F3E;
-    box-shadow: 0 0 10px 2px #242F3E;
-
-}
-.tg--night-mode .tg-minimap__center::before,
-.tg--night-mode .tg-minimap__center::after {
-    background: #242F3E;
-    opacity: 0.5;
 }
 
 .tg--night-mode .tg-legend__item {
@@ -646,11 +453,11 @@
 }
 
 .tg--night-mode .tg-pointer__pointer {
-    background: #242F3E;
+    background: #2b3037;
 }
 
 .tg--night-mode .tg-chart__overlays rect {
-    fill: #242F3E;
+    fill: #2b3037;
 }
 
 .tg--night-mode .tg-grid__section {

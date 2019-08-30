@@ -1,0 +1,121 @@
+/**
+ * Mini map module
+ * --------------------------------
+ */
+.tg-minimap {
+  position: relative;
+  height: 60px;
+  margin: 10px 15px 20px;
+  cursor: pointer;
+  border-radius: 3px;
+  -webkit-tap-highlight-color:  rgba(255, 255, 255, 0);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  border: 1px solid var(--gray-line);
+  box-sizing: border-box;
+  user-select: none;
+  //border: 1px solid #ebebeb;
+}
+
+.tg-minimap svg {
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.tg-minimap__left,
+.tg-minimap__right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20%;
+  background: var(--minimap-overlays-color);
+  z-index: 2;
+  cursor: default;
+  will-change: width;
+}
+
+
+.tg-minimap__left {
+  left: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.tg-minimap__center {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 10px;
+  border-top: 2px solid var(--minimap-scaler-bg);
+  border-bottom: 2px solid var(--minimap-scaler-bg);
+}
+
+.tg-minimap__right {
+  right: 0;
+  border-radius: 0 3px 3px 0;
+}
+
+.tg-minimap__left-scaler,
+.tg-minimap__right-scaler {
+  position: absolute;
+  height: calc(100% + 4px);
+  /*width: 22px;*/
+  top: -2px;
+  z-index: 2;
+  cursor: col-resize;
+}
+
+.tg-minimap__left-scaler {
+  right: 0;
+}
+
+.tg-minimap__right-scaler {
+  left: 0;
+
+}
+
+.tg-minimap__left-scaler::before,
+.tg-minimap__right-scaler::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 14px;
+  background: var(--minimap-scaler-bg);
+  box-sizing: border-box;
+}
+
+.tg-minimap__left-scaler::after,
+.tg-minimap__right-scaler::after {
+  content: '';
+  position: absolute;
+  height: 15px;
+  width: 2px;
+  border-radius: 5px;
+  background: #fff;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tg-minimap__right-scaler::after {
+  left: -8px;
+}
+
+.tg-minimap__left-scaler::after {
+  right: -8px;
+}
+
+.tg-minimap__left-scaler::before {
+  right: -14px;
+  border-radius: 3px 0 0 3px;
+  border-right: 0;
+}
+
+.tg-minimap__right-scaler::before {
+  left: -14px;
+  border-radius: 0 3px 3px 0;
+  border-left: 0;
+}
+
+.tg-minimap__left-scaler:hover::before,
+.tg-minimap__right-scaler:hover::before {
+  background: var(--minimap-scaler-bg--hover);
+}
