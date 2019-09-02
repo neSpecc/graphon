@@ -1,0 +1,23 @@
+{
+  "name": "graphon",
+  "version": "1.0.0",
+  "description": "Module for charts rendering",
+  "author": "Peter Savchenko <specc.dev@gmail.com>",
+  "scripts": {
+    "build": "webpack src/graphon.js --output-library=Graphon --mode=production",
+    "build:dev": "webpack src/graphon.js --output-library=Graphon --devtool=source-map --watch --mode=development"
+  },
+  "devDependencies": {
+    "cssnano": "^4.1.10",
+    "hawk.javascript": "codex-team/hawk.javascript#hawk2.0",
+    "postcss": "^7.0.17",
+    "postcss-apply": "^0.12.0",
+    "postcss-import": "^12.0.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-nested": "^4.1.2",
+    "postcss-nested-ancestors": "^2.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
+  }
+}

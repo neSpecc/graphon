@@ -12,7 +12,7 @@ import log from '../utils/log.js';
  */
 export default class Graph {
   /**
-   * @param {Telegraph} modules
+   * @param {Graphon} modules
    */
   constructor(modules, {stroke}){
     /**

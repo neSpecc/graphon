@@ -3,7 +3,7 @@ import * as Numbers from '../utils/numbers';
 
 export default class Tooltip {
   /**
-   * @param {Telegraph} modules
+   * @param {Graphon} modules
    */
   constructor(modules){
     this.modules = modules;

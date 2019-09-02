@@ -62,42 +62,32 @@
     modeToggler.textContent = 'Switch to Night Mode';
 
     /**
-     * Created Telegraph instances will be stored here;
+     * Created Graphon instances will be stored here;
      */
     const instances = [];
 
     const sources = [
       {
-        title: 'vc.ru',
-        url: './data/vc.csv',
-        urlByMonth: './data/vc-month.csv',
-        // url: 'https://kmtt.ru/sheets/osnova_stats/vc',
+        title: 'Example lines chart',
+        url: './data/example.csv',
+        urlByMonth: './data/example-month.csv',
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
-        labels: ['Регистрации', 'Статьи', 'Комментарии']
+        labels: ['Registered', 'Articles', 'Comments']
       },
       {
-        title: 'TJ',
-        // url: 'https://kmtt.ru/sheets/osnova_stats/tj',
-        url: './data/tj.csv',
-        urlByMonth: './data/tj-month.csv',
+        title: 'Example area charts',
+        url: './data/example.csv',
+        urlByMonth: './data/example-month.csv',
         colors: ['#3497ED', '#F5BD25', '#f91d72'],
-        labels: ['Регистрации', 'Статьи', 'Комментарии']
+        labels: ['Registered', 'Articles', 'Comments'],
+        type: 'area'
       },
       {
-        title: 'DTF',
-        url: './data/dtf.csv',
-        urlByMonth: './data/dtf-month.csv',
-        // url: 'https://kmtt.ru/sheets/osnova_stats/dtf',
-        colors: ['#3497ED', '#F5BD25', '#f91d72'],
-        labels: ['Регистрации', 'Статьи', 'Комментарии']
-      },
-      {
-        title: 'Платные функции по месяцам',
-        url: './data/paid-all.csv',
+        title: 'Example grouped by month',
+        url: './data/example-month.csv',
         byMonth: true,
-        // url: 'https://kmtt.ru/sheets/osnova_stats_month_paid/all',
-        colors: ['#e25a76', '#db3053', '#af1e3c', 'rgb(51, 170, 221)', 'rgb(73, 154, 210)', 'rgb(240, 187, 19)', 'rgb(250, 216, 58)'],
-        labels: ['Вакансии vc', 'Промо vc', 'Мероприятия vc', 'Вакансии dtf', 'Промо dtf', 'Промо TJ', 'Клуб TJ'],
+        colors: ['#3497ED', '#F5BD25', '#f91d72'],
+        labels: ['Registered', 'Articles', 'Comments'],
         type: 'bar'
       },
     ];
@@ -125,7 +115,7 @@
         dataByMonth = await fetch(source.urlByMonth).then((response) => response.text());
       }
 
-      const graph = new Telegraph.default({
+      const graph = new Graphon({
         title: source.title,
         holderId: graphId,
         data,

@@ -2,7 +2,7 @@ import * as Dom from '../utils/dom.js';
 
 export default class Legend {
   /**
-   * @param {Telegraph} modules
+   * @param {Graphon} modules
    */
   constructor(modules){
     this.modules = modules;

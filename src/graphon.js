@@ -6,7 +6,7 @@ import Chart from './modules/chart.js';
 import Legend from './modules/legend.js';
 import Header from './modules/header.js';
 
-export default class Telegraph {
+export default class Graphon {
   /**
    * Main entry constructor
    * @param {string} holderId - where to append a Chart
@@ -133,6 +133,6 @@ export default class Telegraph {
    * Toggles night mode
    */
   toggleNightMode(){
-    this.holder.classList.toggle(Telegraph.CSS.nightModeEnabled);
+    this.holder.classList.toggle(Graphon.CSS.nightModeEnabled);
   }
 }

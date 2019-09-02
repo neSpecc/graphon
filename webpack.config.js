@@ -1,4 +1,7 @@
 module.exports = {
+  output: {
+    libraryExport: 'default'
+  },
   module: {
     rules: [
       {

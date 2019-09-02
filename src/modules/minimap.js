@@ -14,7 +14,7 @@ import log from '../utils/log.js';
  */
 export default class Minimap {
   /**
-   * Telegraph
+   * Graphon
    * @param modules
    */
   constructor(modules){

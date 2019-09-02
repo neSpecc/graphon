@@ -17,7 +17,7 @@ import Bar from "./bar";
  */
 export default class Chart {
   /**
-   * @param {Telegraph} modules
+   * @param {Graphon} modules
    */
   constructor(modules){
     this.modules = modules;
@@ -83,7 +83,7 @@ export default class Chart {
 
   get minimalMapWidth(){
     if (this.modules.state.byMonth){
-      return Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4; // 4 month
+      return Math.max(80, Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4); // 4 month
     }
 
     return 80;
@@ -556,7 +556,6 @@ export default class Chart {
    * @param position
    */
   scroll(position, fromScale){
-    console.log('scroll', position);
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();
