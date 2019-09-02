@@ -1,7 +1,4 @@
 module.exports = {
-  optimization: {
-    minimize: false
-  },
   module: {
     rules: [
       {
@@ -12,5 +9,6 @@ module.exports = {
         ]
       },
     ]
-  }
+  },
+  devtool: 'source-map'
 };

@@ -196,17 +196,23 @@ export default class Tooltip {
     let left = Dom.make('span', 'left');
     let right = Dom.make('span');
 
-    right.textContent = months[month] + ' ' +year;
+    let newDate = ''
 
+    if (!this.modules.state.byMonth){
+      newDate =   `${week[weekday]}, ${day}`;
+      right.textContent = months[month] + ' ' + year;
+    } else {
+      newDate = months[month] + ' ';
+      right.textContent = year;
+    }
 
     this.nodes.title.innerHTML = '';
     this.nodes.title.appendChild(left);
     this.nodes.title.appendChild(right);
 
-    let newDate = `${week[weekday]}, ${day}`;
 
 
-    Dom.animateCounter(left, `${week[weekday]}, ${day}`, this._prevDate, 'top' );
+    Dom.animateCounter(left, newDate, this._prevDate, 'top' );
     this._prevDate = newDate
   }
 }

@@ -1,4 +1,12 @@
 <script src="dist/main.js?v=10"></script>
+<script src="node_modules/hawk.javascript/dist/hawk.js"></script>
+<script>
+  new HawkCatcher({
+    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9qZWN0SWQiOiI1ZDY3MGVmMzc3YzM3YTAwMTIxMTYyNjEiLCJpYXQiOjE1NjcwNDA5ODN9.NLR229AS0qhLLR8UrDKF97Kg2L2snVHAfEV-yfnCC68',
+    collectorEndpoint: 'ws://localhost:3000/ws',
+    release: 26141
+  });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
 <style>
@@ -88,8 +96,8 @@
         url: './data/paid-all.csv',
         byMonth: true,
         // url: 'https://kmtt.ru/sheets/osnova_stats_month_paid/all',
-        colors: ['#3497ED', '#F5BD25', '#f91d72', '#6632B8', '#B142AF', '#EF4B4B'],
-        labels: ['Вакансии vc', 'Промо vc', 'Вакансии dtf', 'Промо dtf', 'Промо TJ', 'Клуб TJ'],
+        colors: ['#e25a76', '#db3053', '#af1e3c', 'rgb(51, 170, 221)', 'rgb(73, 154, 210)', 'rgb(240, 187, 19)', 'rgb(250, 216, 58)'],
+        labels: ['Вакансии vc', 'Промо vc', 'Мероприятия vc', 'Вакансии dtf', 'Промо dtf', 'Промо TJ', 'Клуб TJ'],
         type: 'bar'
       },
     ];

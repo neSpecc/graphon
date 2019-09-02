@@ -186,7 +186,15 @@ export default class Graph {
    * Calculates stepX by canvas width and total points count
    */
   computeSteps(){
-    this.stepX = this.width / (this.modules.state.daysCount - 1);
+    if (this.modules.state.byMonth){
+      if (this.modules.state.type === 'bar'){
+        this.stepX = this.width / (this.modules.state.daysCount);
+      } else {
+        this.stepX = this.width / (this.modules.state.daysCount - 1);
+      }
+    } else {
+      this.stepX = this.width / (this.modules.state.daysCount + 1);
+    }
 
     /**
      * All lines maximum value
@@ -252,6 +260,7 @@ export default class Graph {
     this.modules.state.linesAvailable.reverse().forEach( (line, index) => {
       areas[index].moveTo(0, this.modules.state.getLinePoints(line)[0], stacks[0]);
     });
+
 
     for (let pointIndex = 0; pointIndex < pointsCount; pointIndex++) {
       let prevValue = 0;

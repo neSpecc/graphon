@@ -83,7 +83,7 @@ export default class Chart {
 
   get minimalMapWidth(){
     if (this.modules.state.byMonth){
-      return Math.ceil(this.viewportWidth / 12) * 4;
+      return Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4; // 4 month
     }
 
     return 80;
@@ -400,7 +400,7 @@ export default class Chart {
 
   moveDate(originalIndex){
     let dateEl = this.onscreenDatesElements[originalIndex];
-    let centering = 'translateX(-50%)';
+    let centering = 'translateX(-85%)';
     let newX = originalIndex * this.stepScaled + this.scrollValue;
 
     dateEl.style.transform = `translateX(${ newX }px)` + centering;
@@ -556,6 +556,7 @@ export default class Chart {
    * @param position
    */
   scroll(position, fromScale){
+    console.log('scroll', position);
     this.scrollValue = position * -1;
     this.graph.scroll(this.scrollValue);
     this.tooltip.hide();

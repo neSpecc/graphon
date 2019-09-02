@@ -48,8 +48,8 @@ export default class State {
        * @todo maybe array copying worst than slice
        */
       getLinePoints: {},
-      dates: this.columns[0].slice(1),
-      daysCount: this.columns[0].slice(1).length
+      dates: this.columns[0],
+      daysCount: this.columns[0].length
     };
 
     this._recalculatedPoints = [];

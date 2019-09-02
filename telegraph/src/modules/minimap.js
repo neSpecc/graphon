@@ -142,8 +142,8 @@ export default class Minimap {
     }
 
     this.nodes.canvas = this.graph.renderCanvas({
-      width: this.nodes.wrapper.offsetWidth,
-      height: this.nodes.wrapper.offsetHeight - 2 // 2 for borders
+      width: this.nodes.wrapper.offsetWidth - 2,  // 2 for borders
+      height: this.nodes.wrapper.offsetHeight - 2
     });
 
     this.graph.renderCharts();

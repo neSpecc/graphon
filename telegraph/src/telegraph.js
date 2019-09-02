@@ -6,10 +6,6 @@ import Chart from './modules/chart.js';
 import Legend from './modules/legend.js';
 import Header from './modules/header.js';
 
-/**
- * @typedef {object} ChartData
- */
-
 export default class Telegraph {
   /**
    * Main entry constructor
