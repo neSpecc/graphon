@@ -1,8 +1,9 @@
 {
   "name": "graphon",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Module for charts rendering",
   "author": "Peter Savchenko <specc.dev@gmail.com>",
+  "main": "./dist/main.js",
   "scripts": {
     "build": "webpack src/graphon.js --output-library=Graphon --mode=production",
     "build:dev": "webpack src/graphon.js --output-library=Graphon --devtool=source-map --watch --mode=development"
