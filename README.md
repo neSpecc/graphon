@@ -32,8 +32,11 @@ yarn add graphon
 # Input data format
 
 day 1 | chart 1 | ... | chart N
+
 day 2 | chart 1 | ... | chart N
+
 day ... | chart 1 | ... | chart N
+
 day N | chart 1 | ... | chart N
 
 ```
