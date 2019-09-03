@@ -1,6 +1,6 @@
 {
   "name": "graphon",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Module for charts rendering",
   "author": "Peter Savchenko <specc.dev@gmail.com>",
   "main": "./dist/main.js",
