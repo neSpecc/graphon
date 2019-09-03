@@ -306,7 +306,7 @@ export default class Chart {
 
     let height = this.height;
     let max = this.getMaxVisiblePoint();
-    let min = !this.modules.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['y0'].currentMinimum;
+    let min = !this.modules.state.isYScaled ? this.graph.currentMinimum || 0 : this.graph.charts['0'].currentMinimum;
     let kY = height / (max - min);
     let linesCount = 5;
     let stepY = this.getLegendStep(max, min, linesCount, kY);
@@ -314,8 +314,8 @@ export default class Chart {
     let stepYSecond, kYSecond, maxSecond, minSecond;
 
     if (this.modules.state.isYScaled){
-      maxSecond = this.getMaxVisiblePoint('y1');
-      minSecond = this.getMinVisiblePoint('y1');
+      maxSecond = this.getMaxVisiblePoint('1');
+      minSecond = this.getMinVisiblePoint('1');
 
       kYSecond = height / (maxSecond - minSecond);
       let kYRatio = kY / kYSecond;
@@ -363,14 +363,14 @@ export default class Chart {
 
 
 
-      let counter = this.getLegendCounter(y + min, 'y0');
+      let counter = this.getLegendCounter(y + min, '0');
       line.appendChild(counter);
 
       if (stepYSecond){
-        counter.style.color = this.modules.state.getLineColor('y0');
+        counter.style.color = this.modules.state.getLineColor('0');
         let kYRatio = kY / kYSecond;
-        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), 'y1', true);
-        counter2.style.color = this.modules.state.getLineColor('y1');
+        let counter2 = this.getLegendCounter((j * stepYSecond + minSecond), '1', true);
+        counter2.style.color = this.modules.state.getLineColor('1');
         line.appendChild(counter2);
       }
     }

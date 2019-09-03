@@ -21,6 +21,8 @@ Features
 
 ![](https://capella.pics/ea94f3e7-6880-472b-8366-f67c9a71189f.jpg)
 
+![](https://capella.pics/27cb0c74-db1b-402b-8eb3-5638a2e5e0dc.jpg)
+
 # Author
 
 Peter Savchenko

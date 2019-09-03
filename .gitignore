@@ -1,5 +1,3 @@
 .DS_Store
-.idea
-.idea/vcs.xml
 *.zip
 node_modules

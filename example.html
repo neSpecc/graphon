@@ -83,6 +83,13 @@
         type: 'area'
       },
       {
+        title: 'Example 2-axis chart',
+        url: './data/example-2-axis.csv',
+        colors: ['#3497ED', '#f91d72'],
+        labels: ['Visitors', 'Registered'],
+        scaled: true
+      },
+      {
         title: 'Example grouped by month',
         url: './data/example-month.csv',
         byMonth: true,
@@ -123,7 +130,8 @@
         type: source.type || 'line',
         colors: source.colors,
         titles: source.labels,
-        byMonth: source.byMonth
+        byMonth: source.byMonth,
+        scaled: source.scaled
       });
 
       instances.push(graph);

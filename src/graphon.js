@@ -17,8 +17,9 @@ export default class Graphon {
    * @param {string[]} titles - titles list for each line
    * @param {string} title - Graph title
    * @param {boolean} byMonth - is graphs represents data grouped by month
+   * @param {boolean} scaled - enabled 2-axis mode
    */
-  constructor({holderId, data, dataByMonth, colors, titles, type, title, byMonth}) {
+  constructor({holderId, data, dataByMonth, colors, titles, type, title, byMonth, scaled}) {
     this.holder = document.getElementById(holderId);
 
     /**
@@ -36,6 +37,7 @@ export default class Graphon {
     this.title = title;
     this.titles = titles;
     this.byMonth = byMonth;
+    this.scaled = scaled;
 
     this.createState();
 
@@ -95,7 +97,7 @@ export default class Graphon {
       this.byMonth = true;
     }
 
-    this.state = new State(this[dataStoringProperty], this.colors, this.titles, this.type, this.title, this.byMonth);
+    this.state = new State(this[dataStoringProperty], this.colors, this.titles, this.type, this.title, this.byMonth, this.scaled);
   }
 
   /**

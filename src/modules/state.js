@@ -11,7 +11,7 @@ export default class State {
    * @param {string} title - graph title
    * @param {boolean} byMonth - grouped by month
    */
-  constructor(chartsData, colors, titles, type, title, byMonth){
+  constructor(chartsData, colors, titles, type, title, byMonth, scaled){
     const lines = chartsData.split('\n');
 
     this.columns = [];
@@ -38,7 +38,7 @@ export default class State {
 
     this.colors = colors;
     this.names = titles;
-    this.isYScaled = false;
+    this.isYScaled = scaled || false;
 
     /**
      * Cache
