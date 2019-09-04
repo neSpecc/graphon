@@ -117,7 +117,6 @@ export default class Tooltip {
       summ += values[i].value;
     }
 
-
     if (values.length > 2){
       this._setValuesDebounce = setTimeout(() => {
         values.forEach( ({name, value}, index) => {
@@ -152,6 +151,14 @@ export default class Tooltip {
     if (this.modules.state.type === 'area'){
       let total = all.reduce((acc, cur) => acc += cur.value, 0);
       let percent = Math.ceil((value / total) * 100);
+
+      /**
+       * Case for zero values
+       */
+      if (isNaN(percent)){
+        percent = 0;
+      }
+
       let percentEl = Dom.make('span', 'percents');
 
       percentEl.textContent = percent + '%';

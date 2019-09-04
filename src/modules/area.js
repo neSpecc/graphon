@@ -84,6 +84,15 @@ export default class Area {
    */
   stepTo(total, prev, skip = false){
     let prevPercents = 100 / total * prev;
+
+    /**
+     * Case for empty (zero) value
+     */
+    if (isNaN(prevPercents)){
+      prevPercents = 100;
+    }
+
+
     let percentage = this.percentToValue(100 - prevPercents);
     // console.log('current per %o | 100% is %o | prev percents is %o | -->', curPercents, total, prevPercents, percentage);
     if (!skip) {
