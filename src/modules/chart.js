@@ -160,7 +160,7 @@ export default class Chart {
    * @return {number}
    */
   get width(){
-    return this.graph.width;
+    return this.graph.width + 30; // 15+15 is for margins
   }
 
   /**
@@ -231,7 +231,7 @@ export default class Chart {
      * @todo pass height through the initial settings
      */
     this.nodes.canvas = this.graph.renderCanvas({
-      height: 350
+      height: this.modules.state.height
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
 
@@ -300,6 +300,7 @@ export default class Chart {
   renderGrid(){
     if (!this.nodes.grid) {
       this.nodes.grid = Dom.make('div', Chart.CSS.grid);
+      this.nodes.grid.style.height = `${this.modules.state.height}px`;
       this.nodes.gridLines = [];
       Dom.insertBefore(this.nodes.canvas, this.nodes.grid);
     }
@@ -804,7 +805,7 @@ export default class Chart {
     this.nodes.overlays.style.opacity = '1';
     this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
     this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
-    this.nodes.overlayRight.setAttribute('width', (this.onscreenPointsCount - index) * this.stepScaled - scrollOffset );
+    this.nodes.overlayRight.setAttribute('width', Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset );
   }
 
   hideBarHighlighting(){

@@ -1,6 +1,7 @@
 module.exports = {
   output: {
-    libraryExport: 'default'
+    libraryExport: 'default',
+    libraryTarget: 'umd'
   },
   module: {
     rules: [

@@ -28,6 +28,7 @@ export default class Pointer {
 
   render(){
     this.nodes.wrapper = Dom.make('div', Pointer.CSS.wrapper);
+    this.nodes.wrapper.style.height = `${this.modules.state.height}px`;
     return this.nodes.wrapper;
   }
 

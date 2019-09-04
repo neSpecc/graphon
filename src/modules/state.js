@@ -10,8 +10,9 @@ export default class State {
    * @param {string} type - graph type - line, area, bar
    * @param {string} title - graph title
    * @param {boolean} byMonth - grouped by month
+   * @param {number} height - chart height
    */
-  constructor(chartsData, colors, titles, type, title, byMonth, scaled){
+  constructor(chartsData, colors, titles, type, title, byMonth, scaled, height){
     const lines = chartsData.split('\n');
 
     this.columns = [];
@@ -19,6 +20,7 @@ export default class State {
     this.type = type;
     this.title = title;
     this.byMonth = byMonth;
+    this.height = height;
 
     lines.forEach((line) => {
       let [date, ...values] = line.split(',');
