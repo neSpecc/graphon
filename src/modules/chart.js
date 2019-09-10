@@ -592,15 +592,7 @@ export default class Chart {
    * @return {number}
    */
   get leftPointIndex(){
-    const left = Math.ceil(this.scrollValue * -1/ this.graph.step / this.scaling);
-    // log({
-    //   scroll: this.scrollValue * -1,
-    //   step: this.graph.step,
-    //   scale: this.scaling,
-    //   '?': Math.ceil(this.scrollValue * -1 / this.graph.step / this.scaling),
-    //   '---left':left
-    // });
-    return left;
+    return Math.ceil(this.scrollValue * -1/ this.graph.step / this.scaling);
   }
 
   /**
@@ -714,7 +706,6 @@ export default class Chart {
     let x = Event.getPageX(event);
     let viewportX = x - this.wrapperLeftCoord;
 
-
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
     let pointIndex = Math.round((viewportX - scrollOffset) / this.graph.stepX / this.scaling) - 1;
@@ -725,11 +716,6 @@ export default class Chart {
 
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
 
-    if (this.modules.state.type === 'bar'){
-      // hoveredPointIndex--;
-    }
-
-
     /**
      * Prevent recalculations on mousemove with the same point
      */
@@ -738,22 +724,17 @@ export default class Chart {
     }
 
 
+    /**
+     * Case when scrolled chart shows wrong index
+     * @since 2019/09/10 — Does not occurs after 1.0.5
+     */
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
       // console.warn('her');
-      // hoveredPointIndex = (pointIndex) + this.leftPointIndex;
-      // hoveredPointIndex = (pointIndex - 1) + this.leftPointIndex;
     }
 
-    // console.log('left %o hover %o point %o', this.leftPointIndex, hoveredPointIndex, pointIndex);
     this._hoveredPointIndex = hoveredPointIndex;
 
-    // console.log('hoveredPointIndex', hoveredPointIndex);
-
     let newLeft = (pointIndex + 1) * stepXWithScale + scrollOffset;
-
-    if (this.modules.state.type === 'bar'){
-      // hoveredPointIndex--;
-    }
 
     if (this.leftPointIndex === 0){
       newLeft = pointIndex * stepXWithScale + scrollOffset;
@@ -788,9 +769,7 @@ export default class Chart {
         name: line,
         value: this.modules.state.getLinePoints(line)[hoveredPointIndex]
       }
-    });//.filter( point => point.value !== undefined );
-
-    // console.log('values', values);
+    });
 
     /**
      * Show circles
