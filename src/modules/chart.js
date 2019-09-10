@@ -82,11 +82,7 @@ export default class Chart {
   }
 
   get minimalMapWidth(){
-    if (this.modules.state.byMonth){
-      return Math.max(80, Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4); // 4 month
-    }
-
-    return 80;
+    return Math.max(80, Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4); // 4 dates minimum
   }
 
   get initialScale(){
@@ -160,7 +156,7 @@ export default class Chart {
    * @return {number}
    */
   get width(){
-    return this.graph.width + 30; // 15+15 is for margins
+    return this.graph.width;
   }
 
   /**
@@ -231,6 +227,7 @@ export default class Chart {
      * @todo pass height through the initial settings
      */
     this.nodes.canvas = this.graph.renderCanvas({
+      width: this.nodes.viewport.offsetWidth,
       height: this.modules.state.height
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
@@ -261,7 +258,6 @@ export default class Chart {
     let step = diffSize / stepsCount;
     let decimals = Math.log10(diffSize) >> 0;
     let rounding = Math.pow(10, decimals) / 2;
-    // console.log('step', step);
 
     step = Math.ceil(step / rounding) * rounding;
 
@@ -404,6 +400,14 @@ export default class Chart {
     let centering = 'translateX(-85%)';
     let newX = originalIndex * this.stepScaled + this.scrollValue;
 
+    if (originalIndex === 0){
+      centering = '';
+    }
+
+    if (originalIndex === this.modules.state.daysCount - 1){
+      centering = 'translateX(-100%)';
+    }
+
     dateEl.style.transform = `translateX(${ newX }px)` + centering;
 
     if (this.checkDateShouldBeHidden(originalIndex)){
@@ -450,9 +454,9 @@ export default class Chart {
    * Left visible point
    * @return {number}
    */
-  get leftPointIndex(){
-    return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
-  }
+  // get leftPointIndex(){
+  //   return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
+  // }
 
   /**
    * Right visible point
@@ -588,7 +592,15 @@ export default class Chart {
    * @return {number}
    */
   get leftPointIndex(){
-    return Math.round(this.scrollValue * -1/ this.graph.step / this.scaling);
+    const left = Math.ceil(this.scrollValue * -1/ this.graph.step / this.scaling);
+    // log({
+    //   scroll: this.scrollValue * -1,
+    //   step: this.graph.step,
+    //   scale: this.scaling,
+    //   '?': Math.ceil(this.scrollValue * -1 / this.graph.step / this.scaling),
+    //   '---left':left
+    // });
+    return left;
   }
 
   /**
@@ -610,7 +622,7 @@ export default class Chart {
    * If line passed, check for that. Otherwise, return maximum between all
    */
   getMaxVisiblePoint(line = undefined){
-    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible, line);
+    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible + 1, line);
   }
 
   /**
@@ -620,11 +632,11 @@ export default class Chart {
   getMinVisiblePoint(line = undefined){
     if (!line){
       return Math.min(...this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1, this.pointsVisible + 1);
       }));
     }
 
-    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1 , this.pointsVisible + 1);
   }
 
   /**
@@ -702,11 +714,17 @@ export default class Chart {
     let x = Event.getPageX(event);
     let viewportX = x - this.wrapperLeftCoord;
 
+
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
-    let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
+    let pointIndex = Math.round((viewportX - scrollOffset) / this.graph.stepX / this.scaling) - 1;
+
+    if (this.leftPointIndex === 0){
+      pointIndex = pointIndex + 1;
+    }
+
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
-    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
+
 
     /**
      * Prevent recalculations on mousemove with the same point
@@ -715,13 +733,23 @@ export default class Chart {
       return;
     }
 
-    this._hoveredPointIndex = hoveredPointIndex;
 
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
-      pointIndex = pointIndex + 1;
+      // console.warn('her');
+      // hoveredPointIndex = (pointIndex) + this.leftPointIndex;
+      // hoveredPointIndex = (pointIndex - 1) + this.leftPointIndex;
     }
 
-    let newLeft = pointIndex * stepXWithScale + scrollOffset;
+    // console.log('left %o hover %o point %o', this.leftPointIndex, hoveredPointIndex, pointIndex);
+    this._hoveredPointIndex = hoveredPointIndex;
+
+    // console.log('hoveredPointIndex', hoveredPointIndex);
+
+    let newLeft = (pointIndex + 1) * stepXWithScale + scrollOffset;
+
+    if (this.leftPointIndex === 0){
+      newLeft = pointIndex * stepXWithScale + scrollOffset;
+    }
 
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
@@ -733,6 +761,10 @@ export default class Chart {
        //
        // this.modules.minimap.moveViewport(-1 * (old*-1 - newScroll));
        // this.scroll(newScroll);
+     }
+
+     if (newLeft < 0 || newLeft > this.viewportWidth){
+       return;
      }
 
     this.tooltip.show();
@@ -748,12 +780,18 @@ export default class Chart {
         name: line,
         value: this.modules.state.getLinePoints(line)[hoveredPointIndex]
       }
-    });
+    });//.filter( point => point.value !== undefined );
+
+    // console.log('values', values);
 
     /**
      * Show circles
      */
-    this.pointer.showValues(values);
+    if (values.length){
+      this.pointer.showValues(values);
+    } else {
+      this.tooltip.hide();
+    }
 
     const date = this.modules.state.dates[hoveredPointIndex];
 

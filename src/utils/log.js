@@ -3,6 +3,13 @@ let prevValues = {};
 
 export default function log(obj){
   let el = document.getElementById('log');
+
+  if (!el){
+    el = document.createElement('div');
+    el.id = 'log';
+    document.body.appendChild(el);
+  }
+
    Object.assign(prevValues, obj);
 
    let content = '';

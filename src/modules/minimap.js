@@ -142,8 +142,8 @@ export default class Minimap {
     }
 
     this.nodes.canvas = this.graph.renderCanvas({
-      width: this.nodes.wrapper.offsetWidth - 2,  // 2 for borders
-      height: this.nodes.wrapper.offsetHeight - 2
+      width: this.nodes.wrapper.offsetWidth,
+      height: this.nodes.wrapper.offsetHeight
     });
 
     this.graph.renderCharts();
@@ -216,6 +216,7 @@ export default class Minimap {
 
     this.viewportWidthInitial = this.viewportWidthBeforeDrag = this.width;
     this.viewportOffsetLeft = this.wrapperWidth - this.viewportWidthInitial;
+    // this.viewportOffsetLeft = 0;
     this.moveViewport(this.viewportOffsetLeft);
     this.syncScrollWithChart(this.viewportOffsetLeft);
     this.modules.chart.fitToMax();
