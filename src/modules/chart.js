@@ -729,7 +729,7 @@ export default class Chart {
      * @since 2019/09/10 — Does not occurs after 1.0.5
      */
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
-      // console.warn('her');
+      // console.warn('scrolled');
     }
 
     this._hoveredPointIndex = hoveredPointIndex;

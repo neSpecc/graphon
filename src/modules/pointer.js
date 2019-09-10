@@ -88,8 +88,6 @@ export default class Pointer {
       const valueFromZero = value - currentZero;
       const coord = valueFromZero * graph.kYScaled;
 
-      // console.log('value — coord', value, coord);
-
       // item.style.bottom = `${coord}px`;
       item.style.transform = `translateY(-${coord}px)`;
     })
