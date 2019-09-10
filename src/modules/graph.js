@@ -144,7 +144,7 @@ export default class Graph {
    * Compute and set initial canvas width
    */
   computeInitialWidth(){
-    this.initialWidth = (this.modules.state.daysCount - 1) * this.stepX;
+    this.initialWidth = this.modules.state.daysCount * this.stepX;
     this.width = this.initialWidth;
   }
 
@@ -193,7 +193,7 @@ export default class Graph {
         this.stepX = this.width / (this.modules.state.daysCount - 1);
       }
     } else {
-      this.stepX = this.width / (this.modules.state.daysCount + 1);
+      this.stepX = this.width / (this.modules.state.daysCount - 1);
     }
 
     /**

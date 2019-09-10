@@ -134,7 +134,8 @@ export default class Tooltip {
         });
 
         if (this.modules.state.type === 'bar' && values.length > 1){
-          this.createItem('All', '#fff', null, values.length, values, true)
+          this.createItem('All', '#000', summ, null, values.length, values, true)
+          // this.createItem('All', '#fff', null, values.length, values, true)
         }
     }
 

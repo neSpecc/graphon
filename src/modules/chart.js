@@ -82,11 +82,7 @@ export default class Chart {
   }
 
   get minimalMapWidth(){
-    if (this.modules.state.byMonth){
-      return Math.max(80, Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4); // 4 month
-    }
-
-    return 80;
+    return Math.max(80, Math.ceil(this.viewportWidth / this.modules.state.daysCount) * 4); // 4 dates minimum
   }
 
   get initialScale(){
@@ -160,7 +156,7 @@ export default class Chart {
    * @return {number}
    */
   get width(){
-    return this.graph.width + 30; // 15+15 is for margins
+    return this.graph.width;
   }
 
   /**
@@ -231,6 +227,7 @@ export default class Chart {
      * @todo pass height through the initial settings
      */
     this.nodes.canvas = this.graph.renderCanvas({
+      width: this.nodes.viewport.offsetWidth,
       height: this.modules.state.height
     });
     this.nodes.viewport.appendChild(this.nodes.canvas);
@@ -261,7 +258,6 @@ export default class Chart {
     let step = diffSize / stepsCount;
     let decimals = Math.log10(diffSize) >> 0;
     let rounding = Math.pow(10, decimals) / 2;
-    // console.log('step', step);
 
     step = Math.ceil(step / rounding) * rounding;
 
@@ -404,6 +400,14 @@ export default class Chart {
     let centering = 'translateX(-85%)';
     let newX = originalIndex * this.stepScaled + this.scrollValue;
 
+    if (originalIndex === 0){
+      centering = '';
+    }
+
+    if (originalIndex === this.modules.state.daysCount - 1){
+      centering = 'translateX(-100%)';
+    }
+
     dateEl.style.transform = `translateX(${ newX }px)` + centering;
 
     if (this.checkDateShouldBeHidden(originalIndex)){
@@ -450,9 +454,9 @@ export default class Chart {
    * Left visible point
    * @return {number}
    */
-  get leftPointIndex(){
-    return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
-  }
+  // get leftPointIndex(){
+  //   return parseInt(Math.floor(this.scrollValue * -1/ this.stepX / this.scaling));
+  // }
 
   /**
    * Right visible point
@@ -588,7 +592,7 @@ export default class Chart {
    * @return {number}
    */
   get leftPointIndex(){
-    return Math.round(this.scrollValue * -1/ this.graph.step / this.scaling);
+    return Math.ceil(this.scrollValue * -1/ this.graph.step / this.scaling);
   }
 
   /**
@@ -610,7 +614,7 @@ export default class Chart {
    * If line passed, check for that. Otherwise, return maximum between all
    */
   getMaxVisiblePoint(line = undefined){
-    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible, line);
+    return this.graph.getMaxFromVisible(this.leftPointIndex, this.pointsVisible + 1, line);
   }
 
   /**
@@ -620,11 +624,11 @@ export default class Chart {
   getMinVisiblePoint(line = undefined){
     if (!line){
       return Math.min(...this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1, this.pointsVisible + 1);
       }));
     }
 
-    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex, this.pointsVisible);
+    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1 , this.pointsVisible + 1);
   }
 
   /**
@@ -704,9 +708,13 @@ export default class Chart {
 
     let stepXWithScale = this.graph.stepX * this.scaling;
     let scrollOffset = this.scrollValue % stepXWithScale;
-    let pointIndex = Math.round(viewportX / this.graph.stepX / this.scaling);
+    let pointIndex = Math.round((viewportX - scrollOffset) / this.graph.stepX / this.scaling) - 1;
+
+    if (this.leftPointIndex === 0){
+      pointIndex = pointIndex + 1;
+    }
+
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
-    // let firstStepOffset = this.graph.stepX - Math.abs(scrollOffset);
 
     /**
      * Prevent recalculations on mousemove with the same point
@@ -715,13 +723,22 @@ export default class Chart {
       return;
     }
 
-    this._hoveredPointIndex = hoveredPointIndex;
 
+    /**
+     * Case when scrolled chart shows wrong index
+     * @since 2019/09/10 — Does not occurs after 1.0.5
+     */
     if (Math.abs(scrollOffset) > (stepXWithScale / 2) ){
-      pointIndex = pointIndex + 1;
+      // console.warn('scrolled');
     }
 
-    let newLeft = pointIndex * stepXWithScale + scrollOffset;
+    this._hoveredPointIndex = hoveredPointIndex;
+
+    let newLeft = (pointIndex + 1) * stepXWithScale + scrollOffset;
+
+    if (this.leftPointIndex === 0){
+      newLeft = pointIndex * stepXWithScale + scrollOffset;
+    }
 
     // console.log('scroll offset %o | step %o (%o)| index %o | x %o | drawn at %o | first step offset %o | left index %o ', scrollOffset, this.graph.stepX, stepXWithScale, pointIndex, viewportX, newLeft, firstStepOffset, this.leftPointIndex);
 
@@ -733,6 +750,10 @@ export default class Chart {
        //
        // this.modules.minimap.moveViewport(-1 * (old*-1 - newScroll));
        // this.scroll(newScroll);
+     }
+
+     if (newLeft < 0 || newLeft > this.viewportWidth){
+       return;
      }
 
     this.tooltip.show();
@@ -753,7 +774,11 @@ export default class Chart {
     /**
      * Show circles
      */
-    this.pointer.showValues(values);
+    if (values.length){
+      this.pointer.showValues(values);
+    } else {
+      this.tooltip.hide();
+    }
 
     const date = this.modules.state.dates[hoveredPointIndex];
 
@@ -803,9 +828,19 @@ export default class Chart {
 
   highlightBar(index, scrollOffset){
     this.nodes.overlays.style.opacity = '1';
-    this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
-    this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
-    this.nodes.overlayRight.setAttribute('width', Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset );
+    let leftWidth = index * this.stepScaled + scrollOffset - (this.stepScaled / 2);
+
+    if (scrollOffset !== 0){
+      leftWidth = leftWidth + this.stepScaled;
+    }
+
+    let rightX = leftWidth + this.stepScaled;
+    let rightWidth = Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset;
+
+
+    this.nodes.overlayLeft.setAttribute('width', leftWidth );
+    this.nodes.overlayRight.setAttribute('x', rightX);
+    this.nodes.overlayRight.setAttribute('width', rightWidth);
   }
 
   hideBarHighlighting(){

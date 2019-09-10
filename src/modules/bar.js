@@ -16,6 +16,8 @@ export default class Bar {
     this.wrapper.setAttribute('class', Bar.CSS.wrapper);
     this.wrapper.setAttribute('vector-effect', 'non-scaling-stroke');
     this.hidden = false;
+    this.wrapper.style.transform = `translateX(-${this.stepX / 2}px)`
+
   }
 
   getAll(){
