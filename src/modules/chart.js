@@ -725,6 +725,10 @@ export default class Chart {
 
     let hoveredPointIndex = pointIndex + this.leftPointIndex;
 
+    if (this.modules.state.type === 'bar'){
+      // hoveredPointIndex--;
+    }
+
 
     /**
      * Prevent recalculations on mousemove with the same point
@@ -746,6 +750,10 @@ export default class Chart {
     // console.log('hoveredPointIndex', hoveredPointIndex);
 
     let newLeft = (pointIndex + 1) * stepXWithScale + scrollOffset;
+
+    if (this.modules.state.type === 'bar'){
+      // hoveredPointIndex--;
+    }
 
     if (this.leftPointIndex === 0){
       newLeft = pointIndex * stepXWithScale + scrollOffset;
@@ -841,9 +849,19 @@ export default class Chart {
 
   highlightBar(index, scrollOffset){
     this.nodes.overlays.style.opacity = '1';
-    this.nodes.overlayLeft.setAttribute('width', index * this.stepScaled + scrollOffset);
-    this.nodes.overlayRight.setAttribute('x', index * this.stepScaled + this.stepScaled + scrollOffset );
-    this.nodes.overlayRight.setAttribute('width', Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset );
+    let leftWidth = index * this.stepScaled + scrollOffset - (this.stepScaled / 2);
+
+    if (scrollOffset !== 0){
+      leftWidth = leftWidth + this.stepScaled;
+    }
+
+    let rightX = leftWidth + this.stepScaled;
+    let rightWidth = Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset;
+
+
+    this.nodes.overlayLeft.setAttribute('width', leftWidth );
+    this.nodes.overlayRight.setAttribute('x', rightX);
+    this.nodes.overlayRight.setAttribute('width', rightWidth);
   }
 
   hideBarHighlighting(){

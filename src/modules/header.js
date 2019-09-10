@@ -54,15 +54,15 @@ export default class Header {
                 <path d="M15 7.952L6.032 9.233 3.765 6.21 0 8.36V5.382l3.557-2.371 4.884 3.488L15 4.531v3.42zm0 1.443v1.462a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-.85l3.378-1.931 2.019 2.69L15 9.396zm0-6.355L8.702 4.93 3.585 1.274 0 3.665V2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1.04z"/>
               </svg>`
       },
-      // {
-      //   type: 'bar',
-      //   icon: `<svg width="14" height="13" xmlns="http://www.w3.org/2000/svg">
-      //           <rect y="7" width="2" height="6" rx="1"/>
-      //           <rect x="12" y="6" width="2" height="7" rx="1"/>
-      //           <rect x="4" y="4" width="2" height="9" rx="1"/>
-      //           <rect x="8" width="2" height="13" rx="1"/>
-      //         </svg>`,
-      // },
+      {
+        type: 'bar',
+        icon: `<svg width="14" height="13" xmlns="http://www.w3.org/2000/svg">
+                <rect y="7" width="2" height="6" rx="1"/>
+                <rect x="12" y="6" width="2" height="7" rx="1"/>
+                <rect x="4" y="4" width="2" height="9" rx="1"/>
+                <rect x="8" width="2" height="13" rx="1"/>
+              </svg>`,
+      },
     ].forEach(({type, icon}) => {
       const switcher = Dom.make('span', Header.CSS.typeSwitcher);
 
