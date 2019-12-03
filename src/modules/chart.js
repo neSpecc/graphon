@@ -838,9 +838,9 @@ export default class Chart {
     let rightWidth = Math.max(0 , (this.onscreenPointsCount - index)) * this.stepScaled - scrollOffset;
 
 
-    this.nodes.overlayLeft.setAttribute('width', leftWidth );
+    this.nodes.overlayLeft.setAttribute('width', Math.max(0, leftWidth) );
     this.nodes.overlayRight.setAttribute('x', rightX);
-    this.nodes.overlayRight.setAttribute('width', rightWidth);
+    this.nodes.overlayRight.setAttribute('width', Math.max(0, rightWidth));
   }
 
   hideBarHighlighting(){

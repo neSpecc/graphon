@@ -31,8 +31,8 @@ export default class Graphon {
     /**
      * Save input params to allow to recreate State object
      */
-    this.data = data;
-    this.dataByMonth = dataByMonth;
+    this.data = data ? data.trim() : null;
+    this.dataByMonth = dataByMonth ? dataByMonth.trim() : null;
     this.colors = colors;
     this.type = type;
     this.title = title;

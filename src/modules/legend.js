@@ -42,9 +42,6 @@ export default class Legend {
       let item = Dom.make('div', [Legend.CSS.item, Legend.CSS.itemEnabled]),
         checkbox = Dom.make('span', Legend.CSS.checkbox);
 
-      item.style.borderColor = this.modules.state.colors[name];
-      item.style.backgroundColor = this.modules.state.colors[name];
-
       item.appendChild(checkbox);
       item.appendChild(document.createTextNode(title));
 
@@ -74,6 +71,8 @@ export default class Legend {
         this.mouseup(name);
       });
 
+      this.toggle(name, true);
+
       this.nodes.wrapper.appendChild(item);
     });
     return this.nodes.wrapper;
@@ -90,21 +89,12 @@ export default class Legend {
   uncheckAllExceptPassed(exceptName) {
     Object.entries(this.buttons).forEach(([name, el], index) => {
         if (name !== exceptName){
-          this.buttons[name].classList.remove(Legend.CSS.itemEnabled);
-          this.buttons[name].style.backgroundColor = 'transparent';
-          this.buttons[name].style.color = this.modules.state.colors[name];
+          this.toggle(name, false);
 
           this.modules.chart.togglePath(name, true);
           this.modules.minimap.togglePath(name, true);
         } else {
-          this.buttons[name].classList.add(Legend.CSS.itemEnabled);
-          this.buttons[name].style.backgroundColor = this.modules.state.colors[name];
-          this.buttons[name].style.color = '#fff';
-
-          this.buttons[name].classList.add(Legend.CSS.itemSelected);
-          setTimeout(() => {
-            this.buttons[name].classList.remove(Legend.CSS.itemSelected);
-          }, 300);
+          this.toggle(name, true);
 
           this.modules.chart.togglePath(name, false);
           this.modules.minimap.togglePath(name, false);
@@ -135,14 +125,7 @@ export default class Legend {
     let isLast = this.modules.state.linesAvailable.filter(line => this.modules.chart.graph.checkPathVisibility(line)).length === 1;
 
     if (!this.buttons[name].classList.contains(Legend.CSS.itemEnabled)){
-      this.buttons[name].classList.add(Legend.CSS.itemEnabled);
-      this.buttons[name].style.backgroundColor = this.modules.state.colors[name];
-      this.buttons[name].style.color = '#fff';
-
-      this.buttons[name].classList.add(Legend.CSS.itemSelected);
-      setTimeout(() => {
-        this.buttons[name].classList.remove(Legend.CSS.itemSelected);
-      }, 300);
+      this.toggle(name, true);
     } else {
       if (isLast){
         this.buttons[name].classList.add(Legend.CSS.itemWobble);
@@ -153,16 +136,18 @@ export default class Legend {
         return;
       }
 
-      this.buttons[name].classList.remove(Legend.CSS.itemEnabled);
-      this.buttons[name].style.backgroundColor = 'transparent';
-      this.buttons[name].style.color = this.modules.state.colors[name];
+      this.toggle(name, false);
     }
 
     this.modules.chart.togglePath(name);
     this.modules.minimap.togglePath(name);
   }
 
-  toggle(name){
+  toggle(name, status = true){
+    const checkbox = this.buttons[name].querySelector(`.${Legend.CSS.checkbox}`);
 
+    this.buttons[name].classList.toggle(Legend.CSS.itemEnabled, status);
+
+    checkbox.style.backgroundColor = status ? this.modules.state.colors[name] : '#EFEFEF';
   }
 }
