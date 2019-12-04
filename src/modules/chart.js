@@ -573,7 +573,9 @@ export default class Chart {
     }
 
     this._sd = setTimeout(()=>{
-      this.modules.header.setPeriod(this.modules.state.dates[this.leftPointIndex], this.modules.state.dates[this.rightPointIndex]);
+      const rightDate = this.modules.state.dates[this.rightPointIndex] || this.modules.state.dates[this.rightPointIndex - 1];
+
+      this.modules.header.setPeriod(this.modules.state.dates[this.leftPointIndex], rightDate);
     }, 50)
   }
 
