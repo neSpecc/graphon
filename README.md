@@ -13,15 +13,17 @@ Features
 - Scrolling
 - Night Theme
 
-![](https://capella.pics/c6170258-b17d-4b3f-93e4-3add0573b215.jpg)
+![](assets/line.png)
 
-![](https://capella.pics/66156967-8320-49da-babb-2c2b7efa0510.jpg)
+![](assets/tooltip.png)
 
-![](https://capella.pics/87ca0d98-10b5-4bae-8586-181ba88fc5f7.jpg)
+![](assets/2axis.png)
 
-![](https://capella.pics/ea94f3e7-6880-472b-8366-f67c9a71189f.jpg)
+![](assets/area.png)
 
-![](https://capella.pics/27cb0c74-db1b-402b-8eb3-5638a2e5e0dc.jpg)
+![](assets/bar.png)
+
+![](assets/dark.png)
 
 # Install
 
@@ -66,4 +68,3 @@ Peter Savchenko
 
 CodeX
 https://codex.so
-  

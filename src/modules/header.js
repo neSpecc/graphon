@@ -133,6 +133,11 @@ export default class Header {
     switcher.classList.add(Header.CSS.typeSwitcherCurrent);
   }
 
+  /**
+   * Daily/Monthly switcher
+   * @param {string} dataStoringProperty - where to get charts data : 'data' or 'dataByMonth'
+   * @param {Element} toggler - button
+   */
   detailsTogglerClicked(dataStoringProperty, toggler){
     this.modules.createState(dataStoringProperty);
 

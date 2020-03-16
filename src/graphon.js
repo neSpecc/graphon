@@ -93,12 +93,14 @@ export default class Graphon {
    */
   createState(dataStoringProperty = 'data'){
     /**
+     * Force set byMonth state depends on dataStoringProperty
+     * @type {boolean}
+     */
+    this.byMonth = dataStoringProperty === 'dataByMonth';
+
+    /**
      * Module that stores all main app state values
      */
-    if (dataStoringProperty === 'dataByMonth'){
-      this.byMonth = true;
-    }
-
     this.state = new State(this[dataStoringProperty], this.colors, this.titles, this.type, this.title, this.byMonth, this.scaled, this.height);
   }
 

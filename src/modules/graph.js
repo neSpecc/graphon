@@ -488,7 +488,6 @@ export default class Graph {
     // newMax = Numbers.round(newMax);
     // console.warn('min', newMin, Numbers.roundToMin(newMin, (newMax - newMin) / 5));
 
-
     newMin = Numbers.roundToMin(newMin, (newMax - newMin) / 5);
 
 

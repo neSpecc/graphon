@@ -359,7 +359,6 @@ export default class Chart {
       line.innerHTML = '';
 
 
-
       let counter = this.getLegendCounter(y + min, '0');
       line.appendChild(counter);
 
@@ -624,13 +623,15 @@ export default class Chart {
    * If line passed, check for that. Otherwise, return maximum between all
    */
   getMinVisiblePoint(line = undefined){
+    const leftPointVisible = Math.max(0, this.leftPointIndex -1);
+
     if (!line){
       return Math.min(...this.modules.state.linesAvailable.filter(line => this.notHiddenGraph(line)).map(line => {
-        return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1, this.pointsVisible + 1);
+        return this.modules.state.getMinForLineSliced(line, leftPointVisible, this.pointsVisible + 1);
       }));
     }
 
-    return this.modules.state.getMinForLineSliced(line, this.leftPointIndex -1 , this.pointsVisible + 1);
+    return this.modules.state.getMinForLineSliced(line, leftPointVisible , this.pointsVisible + 1);
   }
 
   /**
