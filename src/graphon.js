@@ -19,8 +19,10 @@ export default class Graphon {
    * @param {boolean} byMonth - is graphs represents data grouped by month
    * @param {boolean} scaled - enabled 2-axis mode
    * @param {number} height - chart height
+   * @param {boolean} showLegend - legend visibility state
+   * @param {boolean} showTypeSwitchers - type switchers visibility state
    */
-  constructor({holderId, data, dataByMonth, colors, titles, type, title, byMonth, scaled, height = 350}) {
+  constructor({holderId, data, dataByMonth, colors, titles, type, title, byMonth, scaled, height = 350, showLegend = true, showTypeSwitchers = true}) {
     this.holder = document.getElementById(holderId);
 
     /**
@@ -40,6 +42,8 @@ export default class Graphon {
     this.byMonth = byMonth;
     this.scaled = scaled;
     this.height = height;
+    this.showLegend = showLegend;
+    this.showTypeSwitchers = showTypeSwitchers;
 
     this.createState();
 
@@ -131,7 +135,10 @@ export default class Graphon {
     this.holder.appendChild(this.header.render());
     this.holder.appendChild(this.chart.renderUi());
     this.holder.appendChild(this.minimap.renderUi());
-    this.holder.appendChild(this.legend.render());
+
+    if (this.showLegend) {
+      this.holder.appendChild(this.legend.render());
+    }
   }
 
   /**
