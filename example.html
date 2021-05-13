@@ -72,6 +72,8 @@
         url: './data/example-zeros.csv',
         colors: ['#3497ED', '#f91d72'],
         labels: ['Registered', 'Articles'],
+        showLegend: false,
+        showTypeSwitchers: false,
       },
       {
         title: 'Example lines chart',
@@ -146,7 +148,9 @@
         titles: source.labels,
         byMonth: source.byMonth,
         scaled: source.scaled,
-        height: 250
+        height: 250,
+        showLegend: source.showLegend !== undefined ? source.showLegend : true,
+        showTypeSwitchers: source.showTypeSwitchers !== undefined ? source.showTypeSwitchers : true,
       });
 
       instances.push(graph);
