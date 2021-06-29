@@ -26,7 +26,8 @@ export default class State {
       let [date, ...values] = line.split(',');
 
       values.forEach((val, index) => {
-        val = parseInt(val, 10);
+        val = parseFloat(val);
+        val = Math.round(val * 100) / 100;
 
         if (this.columns[index]){
           this.columns[index].push(val);
